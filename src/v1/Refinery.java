@@ -1,0 +1,15 @@
+package v1;
+
+import battlecode.common.*;
+
+public class Refinery extends Bot {
+
+    public Refinery(RobotController r) throws GameActionException {
+        super(r);
+    }
+
+    public void takeTurn() throws GameActionException {
+        super.takeTurn();
+    }
+
+}
