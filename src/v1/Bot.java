@@ -8,6 +8,7 @@ public class Bot {
     public static Team enemy;
     public static Team us;
     public static MapLocation hqLoc;
+    public static MapLocation here;
 
     public static Direction[] directions = {
             Direction.NORTH,
@@ -39,6 +40,7 @@ public class Bot {
 
     public void takeTurn() throws GameActionException {
         turnCount++;
+        here = rc.getLocation();
         return;
     }
 
@@ -94,6 +96,55 @@ public class Bot {
             rc.move(dir);
             return true;
         } else return false;
+    }
+
+    static boolean explore() throws GameActionException {
+        return goTo(randomDirection());
+    }
+
+    static MapLocation[] getLocationsWithinSensorRad() {
+        int sensorRad = rc.getCurrentSensorRadiusSquared();
+        Utils.log("sensorRad: " + sensorRad);
+        MapLocation[] ret = new MapLocation[1000];
+        int idx = 0;
+        for(int i = 0; i*i+i*i <= sensorRad; i++)
+            for(int j = i; i*i+j*j <= sensorRad; j++) {
+                ret[idx] = here.translate(i,j);
+                idx++;
+                if(i > 0 && j > 0) {
+                    ret[idx] = here.translate(-i, -j);
+                    idx++;
+                }
+                if(i > 0) {
+                    ret[idx] = here.translate(-i,j);
+                    idx++;
+                }
+                if(j > 0){
+                    ret[idx] = here.translate(i,-j);
+                    idx++;
+                }
+                if(i==j)
+                    continue;
+                int temp = i;
+                i = j;
+                j = temp;
+                ret[idx] = here.translate(i,j);
+                idx++;
+                if(i > 0 && j > 0) {
+                    ret[idx] = here.translate(-i, -j);
+                    idx++;
+                }
+                if(i > 0) {
+                    ret[idx] = here.translate(-i,j);
+                    idx++;
+                }
+                if(j > 0){
+                    ret[idx] = here.translate(i,-j);
+                    idx++;
+                }
+            }
+        ret[idx] = null;
+        return ret;
     }
 
 }

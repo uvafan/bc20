@@ -3,30 +3,76 @@ package v1;
 import battlecode.common.*;
 
 public class Miner extends Bot {
+
+    MapLocation targetMineLoc;
+    MapLocation refineLoc;
+
     public Miner(RobotController r) throws GameActionException {
         super(r);
+        refineLoc = hqLoc;
     }
 
     public void takeTurn() throws GameActionException {
         super.takeTurn();
-        for (Direction dir : directions)
-            if (tryRefine(dir))
-                System.out.println("I refined soup! " + rc.getTeamSoup());
-        for (Direction dir : directions)
-            if (tryMine(dir))
-                System.out.println("I mined soup! " + rc.getSoupCarrying());
-        if (!nearbyRobot(RobotType.DESIGN_SCHOOL)){
-            if(tryBuild(RobotType.DESIGN_SCHOOL, randomDirection()))
-                System.out.println("created a design school");
-        }
-
         if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
-            // time to go back to the HQ
-            if(goTo(hqLoc))
-                System.out.println("moved towards HQ");
-        } else if (goTo(randomDirection())) {
-            // otherwise, move randomly as usual
-            System.out.println("I moved randomly!");
+            boolean deposited = false;
+            for (Direction dir : directions)
+                if (tryDeposit(dir)) {
+                    Utils.log("I deposited soup! " + rc.getTeamSoup());
+                    deposited  = true;
+                    break;
+                }
+            if(!deposited && goTo(refineLoc))
+                Utils.log("moved towards refineLoc");
+        }
+        else if(buildIfShould()){
+        }
+        else {
+            updateTargetMineLoc();
+            if (targetMineLoc != null) {
+                if(rc.getLocation().isWithinDistanceSquared(targetMineLoc,2)) {
+                    Direction dir = rc.getLocation().directionTo(targetMineLoc);
+                    tryMine(dir);
+                    Utils.log("I mined soup! " + rc.getSoupCarrying());
+                }
+                else
+                    goTo(targetMineLoc);
+            }
+            else {
+                explore();
+                Utils.log("exploring");
+            }
+        }
+        if(Utils.DEBUG && targetMineLoc != null){
+            rc.setIndicatorLine(here, targetMineLoc, 255, 0, 0);
+        }
+    }
+
+    private boolean buildIfShould() throws GameActionException {
+        if (!nearbyRobot(RobotType.DESIGN_SCHOOL)){
+            if(tryBuild(RobotType.DESIGN_SCHOOL, randomDirection())) {
+                Utils.log("created a design school");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void updateTargetMineLoc() throws GameActionException {
+        if(targetMineLoc != null) {
+            if(rc.canSenseLocation(targetMineLoc) && !rc.isLocationOccupied(targetMineLoc) && rc.senseSoup(targetMineLoc) > 0)
+                return;
+        }
+        targetMineLoc = null;
+        MapLocation[] candidates = getLocationsWithinSensorRad();
+        for(MapLocation cand: candidates){
+            if(cand == null)
+                break;
+            Utils.log("ml " + cand);
+            if(rc.canSenseLocation(cand) && !rc.isLocationOccupied(cand) && rc.senseSoup(cand) > 0){
+                targetMineLoc = cand;
+                return;
+            }
         }
     }
 
@@ -38,7 +84,7 @@ public class Miner extends Bot {
     }
 
 
-    static boolean tryRefine(Direction dir) throws GameActionException {
+    static boolean tryDeposit(Direction dir) throws GameActionException {
         if (rc.isReady() && rc.canDepositSoup(dir)) {
             rc.depositSoup(dir, rc.getSoupCarrying());
             return true;
