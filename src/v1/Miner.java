@@ -22,8 +22,12 @@ public class Miner extends Bot {
                     deposited  = true;
                     break;
                 }
-            if(!deposited && goTo(refineLoc))
-                Utils.log("moved towards refineLoc");
+            if(!deposited) {
+                goTo(refineLoc);
+                if (Utils.DEBUG && refineLoc != null) {
+                    rc.setIndicatorLine(here, refineLoc, 0, 255, 0);
+                }
+            }
         }
         else if(buildIfShould()){
         }
@@ -35,16 +39,17 @@ public class Miner extends Bot {
                     tryMine(dir);
                     Utils.log("I mined soup! " + rc.getSoupCarrying());
                 }
-                else
+                else {
                     goTo(targetMineLoc);
+                    if (Utils.DEBUG && targetMineLoc != null) {
+                        rc.setIndicatorLine(here, targetMineLoc, 255, 0, 0);
+                    }
+                }
             }
             else {
                 explore();
                 Utils.log("exploring");
             }
-        }
-        if(Utils.DEBUG && targetMineLoc != null){
-            rc.setIndicatorLine(here, targetMineLoc, 255, 0, 0);
         }
     }
 
