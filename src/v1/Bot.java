@@ -22,7 +22,8 @@ public class Bot {
     };
     public static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL,
             RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
-
+    public static RobotInfo[] knownEnemyNetGuns = {};
+    public static RobotInfo[] nearbyEnemyDrones = {};
     public static int turnCount = 0;
     public static int numMiners = 0;
 
@@ -86,9 +87,10 @@ public class Bot {
         return false;
     }
 
+    
     // navigate towards a particular location
     static boolean goTo(MapLocation destination) throws GameActionException {
-        return goTo(rc.getLocation().directionTo(destination));
+        return Nav.goTo(destination,new SafetyPolicyAvoidAllUnits());
     }
 
     static boolean tryMove(Direction dir) throws GameActionException {
