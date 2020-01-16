@@ -35,11 +35,11 @@ public class Miner extends Bot {
         else if(buildIfShould()){
         }
         else {
-            updateTargetMineLoc();
+            if(targetMineLoc == null || !(targetMineLoc.equals(here) && rc.senseSoup(here) > 0))
+                updateTargetMineLoc();
             if (targetMineLoc != null) {
-                if(rc.getLocation().isWithinDistanceSquared(targetMineLoc,2)) {
-                    Direction dir = rc.getLocation().directionTo(targetMineLoc);
-                    tryMine(dir);
+                if(here.equals(targetMineLoc)) {
+                    tryMine(Direction.CENTER);
                     Utils.log("I mined soup! " + rc.getSoupCarrying());
                 }
                 else {
@@ -91,11 +91,10 @@ public class Miner extends Bot {
                 return;
         }
         targetMineLoc = null;
-        MapLocation[] candidates = getLocationsWithinSensorRad();
+        MapLocation[] candidates = rc.senseNearbySoup();
         for(MapLocation cand: candidates){
-            if(cand == null)
-                break;
-            if(rc.canSenseLocation(cand) && !rc.isLocationOccupied(cand) && rc.senseSoup(cand) > 0){
+            if(rc.canSenseLocation(cand) && !rc.isLocationOccupied(cand)
+                    && !rc.senseFlooding(cand) && rc.senseSoup(cand) > 0){
                 targetMineLoc = cand;
                 return;
             }
