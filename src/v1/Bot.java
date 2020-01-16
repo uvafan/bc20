@@ -9,16 +9,31 @@ public class Bot {
     public static Team us;
     public static MapLocation hqLoc;
     public static MapLocation here;
+    public static Comms comms;
+    public static int mapHeight;
+    public static int mapWidth;
+    public static MapLocation[] enemyHqLocPossibilities;
+    public static Symmetry[] symmetryPossibilities;
+    public static MapLocation[] refineries;
+    public static int numRefineries;
+    public static MapLocation[] designSchools;
+    public static int numDesignSchools;
+
+    public static enum Symmetry {
+        VERTICAL,
+        HORIZONTAL,
+        ROTATIONAL,
+    }
 
     public static Direction[] directions = {
-            Direction.NORTH,
-            Direction.NORTHEAST,
-            Direction.EAST,
-            Direction.SOUTHEAST,
-            Direction.SOUTH,
-            Direction.SOUTHWEST,
-            Direction.WEST,
-            Direction.NORTHWEST
+        Direction.NORTH,
+        Direction.NORTHEAST,
+        Direction.EAST,
+        Direction.SOUTHEAST,
+        Direction.SOUTH,
+        Direction.SOUTHWEST,
+        Direction.WEST,
+        Direction.NORTHWEST
     };
     public static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL,
             RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
@@ -26,6 +41,7 @@ public class Bot {
     public static RobotInfo[] nearbyEnemyDrones = {};
     public static int turnCount = 0;
     public static int numMiners = 0;
+    public static int round = 0;
 
     public Bot() {
         return;
@@ -36,13 +52,21 @@ public class Bot {
         type = rc.getType();
         us = rc.getTeam();
         enemy = rc.getTeam().opponent();
+        comms = new Comms(this);
+        mapHeight = rc.getMapHeight();
+        mapWidth = rc.getMapWidth();
+        round = rc.getRoundNum() - 1;
+        refineries = new MapLocation[1000];
+        numRefineries = 0;
+        designSchools = new MapLocation[1000];
+        numDesignSchools = 0;
         findHQ();
     }
 
     public void takeTurn() throws GameActionException {
         turnCount++;
+        round++;
         here = rc.getLocation();
-        return;
     }
 
     static void findHQ() throws GameActionException {

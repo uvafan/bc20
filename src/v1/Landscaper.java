@@ -44,6 +44,7 @@ public class Landscaper extends Bot {
         } else {
             tryMove(randomDirection());
         }
+        comms.readMessages();
 
     }
 

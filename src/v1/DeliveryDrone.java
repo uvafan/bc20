@@ -24,6 +24,7 @@ public class DeliveryDrone extends Bot {
             // No close robots, so search for robots within sight radius
             tryMove(randomDirection());
         }
+        comms.readMessages();
     }
 
 }

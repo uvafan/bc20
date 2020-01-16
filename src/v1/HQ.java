@@ -15,6 +15,7 @@ public class HQ extends Bot {
                     numMiners++;
                 }
         }
+        comms.readMessages();
     }
 
 }

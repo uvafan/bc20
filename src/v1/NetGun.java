@@ -11,6 +11,7 @@ public class NetGun extends Bot {
 
     public void takeTurn() throws GameActionException {
         super.takeTurn();
+        comms.readMessages();
     }
 
 }
