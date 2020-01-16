@@ -32,6 +32,7 @@ public class Comms {
         DESIGN_SCHOOL_LOC,
         FULFILLMENT_CENTER_LOC,
         VAPORATOR_LOC,
+        UNIT_CREATED,
     }
 
     static int SECRET_NUM = 155252936;
@@ -63,14 +64,14 @@ public class Comms {
             case REFINERY_LOC:
                 Utils.log("adding refinery");
                 MapLocation rLoc = msgToLocation(msg[6]);
-                bot.refineries[bot.numRefineries] = rLoc;
-                bot.numRefineries++;
+                bot.refineries[bot.unitCounts[RobotType.REFINERY.ordinal()]] = rLoc;
+                bot.unitCounts[RobotType.REFINERY.ordinal()]++;
                 break;
             case DESIGN_SCHOOL_LOC:
                 Utils.log("adding design school");
                 MapLocation dsLoc = msgToLocation(msg[6]);
-                bot.designSchools[bot.numDesignSchools] = dsLoc;
-                bot.numDesignSchools++;
+                bot.designSchools[bot.unitCounts[RobotType.DESIGN_SCHOOL.ordinal()]] = dsLoc;
+                bot.unitCounts[RobotType.DESIGN_SCHOOL.ordinal()]++;
                 break;
             case SOUP_CLUSTER_LOC:
                 Utils.log("adding soup cluster");
@@ -78,6 +79,8 @@ public class Comms {
                 bot.soupClusters[bot.numSoupClusters] = scLoc;
                 bot.numSoupClusters++;
                 break;
+            case UNIT_CREATED:
+                bot.unitCounts[msg[6]]++;
         }
     }
     private int smear(int hashCode) {
@@ -100,8 +103,9 @@ public class Comms {
     }
 
     // Used for broadcasting all the location type messages
-    //if no soup dont broadcast TODO
     public void broadcastLoc(MessageType mt, MapLocation loc) throws GameActionException {
+        if(rc.getTeamSoup() == 0)
+            return;
         int[] message = new int[7];
         message[5] = mt.ordinal();
         message[6] = locationToMsg(loc);
@@ -109,6 +113,17 @@ public class Comms {
         message[1] = generateHash(message);
         rc.submitTransaction(message, 1);
         Utils.log("broadcasting purpose " + mt + " loc " + loc.x + " " + loc.y);
+    }
+
+    public void broadcastUnitCreated(RobotType rt) throws GameActionException {
+        if(rc.getTeamSoup() == 0)
+            return;
+        int[] message = new int[7];
+        message[5] = MessageType.UNIT_CREATED.ordinal();
+        message[6] = rt.ordinal();
+        message[0] = MagicConstants.FAST_SECRET_NUM+bot.us.ordinal();
+        message[1] = generateHash(message);
+        rc.submitTransaction(message, 1);
     }
 
     private int locationToMsg(MapLocation m) {

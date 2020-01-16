@@ -25,6 +25,8 @@ public class Bot {
     public static boolean[] invalidCluster;
     public static Direction lastExploreDir;
     public static Random rand;
+    public static int[] unitCounts = {0,0,0,0,0,0,0,0,0,0};
+    Strategy strat;
 
     public static enum Symmetry {
         VERTICAL,
@@ -64,14 +66,13 @@ public class Bot {
         mapWidth = rc.getMapWidth();
         round = rc.getRoundNum();
         refineries = new MapLocation[100];
-        numRefineries = 0;
         designSchools = new MapLocation[100];
-        numDesignSchools = 0;
         soupClusters = new MapLocation[500];
         invalidCluster = new boolean[500];
         numSoupClusters = 0;
         rand = new Random(rc.getID());
-    }
+        strat = new Turtle(this);
+   }
 
     public void takeTurn() throws GameActionException {
         turnCount++;

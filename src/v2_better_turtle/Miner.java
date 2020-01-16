@@ -60,7 +60,7 @@ public class Miner extends Unit {
     private MapLocation chooseRefineLoc() {
         MapLocation bestLoc = hqLoc;
         int minDist = here.distanceSquaredTo(bestLoc);
-        for(int i=0; i<numRefineries; i++){
+        for(int i=0; i<unitCounts[RobotType.REFINERY.ordinal()]; i++){
             int dist = here.distanceSquaredTo(refineries[i]);
             if(dist < minDist){
                 bestLoc = refineries[i];
@@ -71,12 +71,11 @@ public class Miner extends Unit {
     }
 
     private boolean buildIfShould() throws GameActionException {
-        if(numDesignSchools == 0)
-            if(tryBuild(RobotType.DESIGN_SCHOOL, randomDirection())) {
-                Utils.log("created a design school");
-                return true;
-            }
-        if (!nearbyRobot(RobotType.REFINERY)){
+        RobotType rt = strat.determineBuildingNeeded();
+        if(rt != null && tryBuild(rt, randomDirection())) {
+            return true;
+        }
+        if (!nearbyRobot(RobotType.REFINERY) && rc.senseNearbySoup().length > 2){
             if(tryBuild(RobotType.REFINERY, randomDirection())) {
                 Utils.log("created a refinery");
                 return true;

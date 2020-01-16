@@ -5,34 +5,40 @@ import battlecode.common.*;
 public class Strategy {
     static Bot bot;
     static RobotController rc;
-    static int[] buildingIndices = {2,3,7,8,9};
+    static int[] buildingIndices = {
+            RobotType.DESIGN_SCHOOL.ordinal(),
+            RobotType.REFINERY.ordinal(),
+            RobotType.NET_GUN.ordinal(),
+            RobotType.FULFILLMENT_CENTER.ordinal(),
+            RobotType.VAPORATOR.ordinal()
+    };
     static int[] soupPriorities;
 
     public Strategy(Bot b) {
         bot = b;
         rc = b.rc;
-        // Cow, Drone, School, Fulfillment Center, HQ, Landscaper,
-        // Miner, Net Gun, Refinery, Vaporator
+        // represents the min soup we would need to build. lower is higher priority
         soupPriorities = new int[]{
-                Integer.MAX_VALUE, // Cow
-                Integer.MAX_VALUE, // Drone
-                Integer.MAX_VALUE, // Design School
-                Integer.MAX_VALUE, // Fulfillment Center
-                Integer.MAX_VALUE, // HQ
-                Integer.MAX_VALUE, // Landscaper
-                Integer.MAX_VALUE, // Miner
-                Integer.MAX_VALUE, // Net Gun
-                Integer.MAX_VALUE, // Refinery
-                Integer.MAX_VALUE, // Vaporator
+                Integer.MAX_VALUE,
+                Integer.MAX_VALUE,
+                Integer.MAX_VALUE,
+                Integer.MAX_VALUE,
+                Integer.MAX_VALUE,
+                Integer.MAX_VALUE,
+                Integer.MAX_VALUE,
+                Integer.MAX_VALUE,
+                Integer.MAX_VALUE,
+                Integer.MAX_VALUE,
         };
     }
 
     public RobotType determineBuildingNeeded() {
-        updatePriorities();
+        updatePriorities(bot.unitCounts);
         RobotType ret = null;
         int minPri = rc.getTeamSoup() + 1;
         for(int i=0; i<buildingIndices.length; i++){
             int idx = buildingIndices[i];
+            Utils.log("priority for " + RobotType.values()[idx] + " is " + soupPriorities[idx]);
             if(soupPriorities[idx] < minPri){
                 minPri = soupPriorities[idx];
                 ret = RobotType.values()[idx];
@@ -42,11 +48,13 @@ public class Strategy {
     }
 
     public boolean shouldBuildUnit(RobotType rt) {
-        updatePriorities();
-        return soupPriorities[rt.ordinal()] > rc.getTeamSoup();
+        updatePriorities(bot.unitCounts);
+        Utils.log("priority for " + rt.ordinal()  + " is " + soupPriorities[rt.ordinal()]);
+        Utils.log(bot.unitCounts[rt.ordinal()] + " units have been created.");
+        return soupPriorities[rt.ordinal()] <= rc.getTeamSoup();
     }
 
-    private void updatePriorities() {
+    public void updatePriorities(int[] unitCounts) {
         return;
     }
 

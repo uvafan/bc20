@@ -11,12 +11,6 @@ public class HQ extends Building {
 
     public void takeTurn() throws GameActionException {
         super.takeTurn();
-        if(numMiners < 10) {
-            for (Direction dir : directions)
-                if(tryBuild(RobotType.MINER, dir)){
-                    numMiners++;
-                }
-        }
         comms.readMessages();
     }
 
