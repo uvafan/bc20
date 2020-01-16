@@ -18,6 +18,9 @@ public class Bot {
     public static int numRefineries;
     public static MapLocation[] designSchools;
     public static int numDesignSchools;
+    public static MapLocation[] soupClusters;
+    public static int numSoupClusters;
+    public static boolean[] invalidCluster;
 
     public static enum Symmetry {
         VERTICAL,
@@ -56,10 +59,14 @@ public class Bot {
         mapHeight = rc.getMapHeight();
         mapWidth = rc.getMapWidth();
         round = rc.getRoundNum() - 1;
-        refineries = new MapLocation[1000];
+        refineries = new MapLocation[100];
         numRefineries = 0;
-        designSchools = new MapLocation[1000];
+        designSchools = new MapLocation[100];
         numDesignSchools = 0;
+        soupClusters = new MapLocation[500];
+        invalidCluster = new boolean[500];
+        numSoupClusters = 0;
+
         findHQ();
     }
 

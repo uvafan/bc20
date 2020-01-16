@@ -21,7 +21,7 @@ public class Comms {
         HQ_LOC,
         SYMMETRY_RULED_OUT,
         REFINERY_LOC,
-        SOUP_LOC,
+        SOUP_CLUSTER_LOC,
         OUR_NET_GUN_LOC,
         THEIR_NET_GUN_LOC,
         DESIGN_SCHOOL_LOC,
@@ -67,6 +67,12 @@ public class Comms {
                 MapLocation dsLoc = msgToLocation(msg[6]);
                 bot.designSchools[bot.numDesignSchools] = dsLoc;
                 bot.numDesignSchools++;
+                break;
+            case SOUP_CLUSTER_LOC:
+                Utils.log("adding soup cluster");
+                MapLocation scLoc = msgToLocation(msg[6]);
+                bot.soupClusters[bot.numSoupClusters] = scLoc;
+                bot.numSoupClusters++;
                 break;
         }
     }

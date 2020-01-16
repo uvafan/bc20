@@ -35,7 +35,7 @@ public class Miner extends Bot {
         else if(buildIfShould()){
         }
         else {
-            if(targetMineLoc == null || !(targetMineLoc.equals(here) && rc.senseSoup(here) > 0))
+            if(targetMineLoc == null || !(targetMineLoc.equals(here) && rc.senseSoup(here) > 0) && turnCount % 10 == 0)
                 updateTargetMineLoc();
             if (targetMineLoc != null) {
                 if(here.equals(targetMineLoc)) {
@@ -92,12 +92,45 @@ public class Miner extends Bot {
         }
         targetMineLoc = null;
         MapLocation[] candidates = rc.senseNearbySoup();
+        int minDist = Integer.MAX_VALUE;
+        int xsum = 0;
+        int ysum = 0;
         for(MapLocation cand: candidates){
-            if(rc.canSenseLocation(cand) && !rc.isLocationOccupied(cand)
-                    && !rc.senseFlooding(cand) && rc.senseSoup(cand) > 0){
+            xsum += cand.x;
+            ysum += cand.y;
+            int dist = here.distanceSquaredTo(cand);
+            if(!rc.isLocationOccupied(cand) && !rc.senseFlooding(cand) && dist < minDist){
                 targetMineLoc = cand;
-                return;
+                minDist = dist;
             }
+        }
+        if(targetMineLoc == null) {
+            minDist = Integer.MAX_VALUE;
+            for(int i=0; i<numSoupClusters; i++){
+                if(invalidCluster[i])
+                    continue;
+                int dist = soupClusters[i].distanceSquaredTo(here);
+                if(dist <= MagicConstants.GIVE_UP_CLUSTER_DIST)
+                    invalidCluster[i] = true;
+                else if(dist < minDist) {
+                    targetMineLoc = soupClusters[i];
+                    minDist = dist;
+                }
+            }
+        }
+        else {
+            int xmean = xsum/candidates.length;
+            int ymean = ysum/candidates.length;
+            MapLocation clusterLoc = new MapLocation(xmean, ymean);
+            boolean shouldAdd = true;
+            for(int i=0; i<numSoupClusters; i++){
+                if(soupClusters[i].isWithinDistanceSquared(clusterLoc,MagicConstants.MAX_CLUSTER_DIST)){
+                    shouldAdd = false;
+                    break;
+                }
+            }
+            if(shouldAdd)
+                comms.broadcastLoc(Comms.MessageType.SOUP_CLUSTER_LOC, clusterLoc);
         }
     }
 
