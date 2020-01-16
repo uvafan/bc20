@@ -8,19 +8,18 @@ public class Turtle extends Strategy {
         soupPriorities[RobotType.MINER.ordinal()] = 0;
         soupPriorities[RobotType.LANDSCAPER.ordinal()] = 0;
         soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = 0;
-        soupPriorities[RobotType.VAPORATOR.ordinal()] = 500;
     }
 
     public void updatePriorities(int[] unitCounts) {
         Utils.log("miners: " + unitCounts[RobotType.MINER.ordinal()]);
         if(unitCounts[RobotType.MINER.ordinal()] >= 10) {
-            soupPriorities[RobotType.MINER.ordinal()] = 1000;
+            soupPriorities[RobotType.MINER.ordinal()] = Integer.MAX_VALUE;
         }
         if(unitCounts[RobotType.LANDSCAPER.ordinal()] >= 8) {
-            soupPriorities[RobotType.LANDSCAPER.ordinal()] = 1000;
+            soupPriorities[RobotType.LANDSCAPER.ordinal()] = Integer.MAX_VALUE;
         }
         if(unitCounts[RobotType.DESIGN_SCHOOL.ordinal()] >= 1) {
-            soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = 1000;
+            soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = Integer.MAX_VALUE;
         }
     }
 
