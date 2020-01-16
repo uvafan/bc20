@@ -1,4 +1,4 @@
-package v2;
+package v2_better_turtle;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
