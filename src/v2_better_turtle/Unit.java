@@ -5,6 +5,7 @@ import battlecode.common.*;
 public class Unit extends Bot {
     public Unit(RobotController r) throws GameActionException {
         super(r);
+        comms.broadcastUnitCreated(type);
         findHQ();
     }
 
