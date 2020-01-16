@@ -2,7 +2,7 @@ package v2_better_turtle;
 
 import battlecode.common.*;
 
-public class DesignSchool extends Bot {
+public class DesignSchool extends Building {
 	
 	public static int landscapers;
 

@@ -66,33 +66,11 @@ public class Bot {
         soupClusters = new MapLocation[500];
         invalidCluster = new boolean[500];
         numSoupClusters = 0;
-
-        findHQ();
     }
 
     public void takeTurn() throws GameActionException {
         turnCount++;
         round++;
-        here = rc.getLocation();
-    }
-
-    static void findHQ() throws GameActionException {
-        if (hqLoc == null) {
-            // search surroundings for HQ
-            RobotInfo[] robots = rc.senseNearbyRobots();
-            for (RobotInfo robot : robots) {
-                if (robot.type == RobotType.HQ && robot.team == rc.getTeam()) {
-                    hqLoc = robot.location;
-                }
-            }
-        }
-    }
-
-    static boolean tryBuild(RobotType type, Direction dir) throws GameActionException {
-        if (rc.isReady() && rc.canBuildRobot(type, dir)) {
-            rc.buildRobot(type, dir);
-            return true;
-        } else return false;
     }
 
     static boolean nearbyRobot(RobotType target) throws GameActionException {
@@ -108,33 +86,15 @@ public class Bot {
     static Direction randomDirection() {
         return directions[(int) (Math.random() * directions.length)];
     }
-    // tries to move in the general direction of dir
-    static boolean goTo(Direction dir) throws GameActionException {
-        Direction[] toTry = {dir, dir.rotateLeft(), dir.rotateRight(), dir.rotateLeft().rotateLeft(), dir.rotateRight().rotateRight()};
-        for (Direction d : toTry){
-            if(tryMove(d))
-                return true;
-        }
-        return false;
-    }
 
-    
-    // navigate towards a particular location
-    static boolean goTo(MapLocation destination) throws GameActionException {
-        return Nav.goTo(destination,new SafetyPolicyAvoidAllUnits());
-    }
-
-    static boolean tryMove(Direction dir) throws GameActionException {
-        if (rc.isReady() && rc.canMove(dir) && !rc.senseFlooding(rc.getLocation().add(dir))) {
-            rc.move(dir);
+    static boolean tryBuild(RobotType type, Direction dir) throws GameActionException {
+        if (rc.isReady() && rc.canBuildRobot(type, dir)) {
+            rc.buildRobot(type, dir);
             return true;
         } else return false;
     }
 
-    static boolean explore() throws GameActionException {
-        return goTo(randomDirection());
-    }
-
+/*
     static MapLocation[] getLocationsWithinSensorRad() {
         int sensorRad = rc.getCurrentSensorRadiusSquared();
         Utils.log("sensorRad: " + sensorRad);
@@ -178,6 +138,6 @@ public class Bot {
             }
         ret[idx] = null;
         return ret;
-    }
+    }*/
 
 }

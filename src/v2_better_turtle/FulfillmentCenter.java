@@ -2,7 +2,7 @@ package v2_better_turtle;
 
 import battlecode.common.*;
 
-public class FulfillmentCenter extends Bot {
+public class FulfillmentCenter extends Building {
 
     public FulfillmentCenter(RobotController r) throws GameActionException {
         super(r);

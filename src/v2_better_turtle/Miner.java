@@ -2,7 +2,7 @@ package v2_better_turtle;
 
 import battlecode.common.*;
 
-public class Miner extends Bot {
+public class Miner extends Unit {
 
     MapLocation targetMineLoc;
     MapLocation refineLoc;

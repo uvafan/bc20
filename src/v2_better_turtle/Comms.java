@@ -23,7 +23,7 @@ public class Comms {
         REFINERY_LOC,
         SOUP_CLUSTER_LOC,
         OUR_NET_GUN_LOC,
-        THEIR_NET_GUN_LOC,
+        ENEMY_NET_GUN_LOC,
         DESIGN_SCHOOL_LOC,
         FULFILLMENT_CENTER_LOC,
         VAPORATOR_LOC,

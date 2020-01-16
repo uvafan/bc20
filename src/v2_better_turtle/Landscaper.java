@@ -2,7 +2,7 @@ package v2_better_turtle;
 
 import battlecode.common.*;
 
-public class Landscaper extends Bot {
+public class Landscaper extends Unit {
 
     public Landscaper(RobotController r) throws GameActionException {
         super(r);

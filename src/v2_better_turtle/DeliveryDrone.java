@@ -2,7 +2,7 @@ package v2_better_turtle;
 
 import battlecode.common.*;
 
-public class DeliveryDrone extends Bot {
+public class DeliveryDrone extends Unit {
 
     public DeliveryDrone(RobotController r) throws GameActionException {
         super(r);
