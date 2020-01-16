@@ -58,7 +58,7 @@ public class Bot {
         comms = new Comms(this);
         mapHeight = rc.getMapHeight();
         mapWidth = rc.getMapWidth();
-        round = rc.getRoundNum() - 1;
+        round = rc.getRoundNum();
         refineries = new MapLocation[100];
         numRefineries = 0;
         designSchools = new MapLocation[100];
@@ -72,7 +72,8 @@ public class Bot {
 
     public void takeTurn() throws GameActionException {
         turnCount++;
-        round++;
+        if(turnCount>1)
+        	round++;
         here = rc.getLocation();
     }
 

@@ -9,6 +9,11 @@ import java.util.Random;
     If we're blue, (The sum of the numbers in positions 0,2,3,4) % SECRET_NUM must equal the number in position 1.
     The sixth number is used for specifying message type.
     The last number is used for specifying the actual message.
+    
+    new system:
+    1st int is a dumb hash
+    2nd int is a smarter and slower hash
+    everything else is the message
  */
 
 
@@ -42,8 +47,7 @@ public class Comms {
             Transaction[] transactions = rc.getBlock(readRound);
             for(Transaction t: transactions) {
                 int[] msg = t.getMessage();
-                if(verifyOurs(msg)) {
-                    Utils.log("reading message from round " + readRound);
+                if(verifyOurs(msg, readRound)) {
                     processMessage(msg);
                 }
             }
@@ -76,63 +80,35 @@ public class Comms {
                 break;
         }
     }
-
-    private boolean verifyOurs(int[] msg) {
-        int e = 0;
-        e += msg[0] % SECRET_NUM;
-        e += msg[3] % SECRET_NUM;
-        e += msg[4] % SECRET_NUM;
-        switch(bot.us){
-            case A:
-                e += msg[1] % SECRET_NUM;
-                return msg[2] == e;
-            case B:
-                e += msg[2] % SECRET_NUM;
-                return msg[1] == e;
-        }
-        return false;
+    private int smear(int hashCode) {
+        hashCode ^= (hashCode >>> 20) ^ (hashCode >>> 12);
+        return hashCode ^ (hashCode >>> 7) ^ (hashCode >>> 4);
+      }
+    private int generateHash(int[] msg) {
+    	int hash = msg[2]^msg[3]^msg[4]^msg[5]^msg[6];
+    	Utils.log("The generate round is: " + bot.round);
+    	return smear(hash);
     }
-
-    private int[] genFirstFive() {
-        int[] message = new int[7];
-        Random r = new Random();
-        int e = 0;
-        int a = r.nextInt(Integer.MAX_VALUE);
-        e = a % SECRET_NUM;
-        int b = r.nextInt(Integer.MAX_VALUE);
-        e += b % SECRET_NUM;
-        int c = r.nextInt(Integer.MAX_VALUE);
-        e += c % SECRET_NUM;
-        int d = r.nextInt(Integer.MAX_VALUE);
-        e += d % SECRET_NUM;
-        message[0] = a;
-        message[3] = b;
-        message[4] = c;
-        switch(bot.us){
-            case A:
-                message[1] = d;
-                message[2] = e;
-                break;
-            case B:
-                message[2] = d;
-                message[1] = e;
-        }
-        return message;
+    private int verifyHash(int[] msg, int round) {
+    	int hash = msg[2]^msg[3]^msg[4]^msg[5]^msg[6];
+    	return smear(hash);
+    }
+    private boolean verifyOurs(int[] msg, int round) {
+    	if(msg[0]!=MagicConstants.FAST_SECRET_NUM+bot.us.ordinal())
+    		return false;
+    	return msg[1]==verifyHash(msg, round);
     }
 
     // Used for broadcasting all the location type messages
+    //if no soup dont broadcast TODO
     public void broadcastLoc(MessageType mt, MapLocation loc) throws GameActionException {
-        int[] message = genFirstFive();
+        int[] message = new int[7];
         message[5] = mt.ordinal();
         message[6] = locationToMsg(loc);
+        message[0] = MagicConstants.FAST_SECRET_NUM+bot.us.ordinal();
+        message[1] = generateHash(message);
         rc.submitTransaction(message, 1);
         Utils.log("broadcasting purpose " + mt + " loc " + loc.x + " " + loc.y);
-    }
-
-    public void broadcastSymRuledOut(Bot.Symmetry s) {
-        int[] message = genFirstFive();
-        message[5] = MessageType.SYMMETRY_RULED_OUT.ordinal();
-        message[6] = s.ordinal();
     }
 
     private int locationToMsg(MapLocation m) {

@@ -216,7 +216,6 @@ public class Nav extends Bot {
 
 
 	public static boolean goTo(MapLocation theDest, NavSafetyPolicy theSafety) throws GameActionException {
-		Utils.log("isthisworking");
 		if (!theDest.equals(dest)) {
 			dest = theDest;
 			bugState = BugState.DIRECT;
