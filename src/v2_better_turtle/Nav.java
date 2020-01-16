@@ -51,6 +51,7 @@ public class Nav extends Bot {
 	private static Direction bugLookStartDir;
 	private static int bugRotationCount;
 	private static int bugMovesSinceSeenObstacle = 0;
+	private static int bugMovesSinceMadeProgress = 0;
 	private static Direction lastRetreatDir;
 	private static boolean move(Direction dir) throws GameActionException {
 			rc.move(dir);
@@ -94,6 +95,7 @@ public class Nav extends Bot {
 		bugLookStartDir = here.directionTo(dest);
 		bugRotationCount = 0;
 		bugMovesSinceSeenObstacle = 0;
+		bugMovesSinceMadeProgress = 0;
 		if (bugWallSide == null) {
 			// try to intelligently choose on which side we will keep the wall
 			Direction leftTryDir = bugLastMoveDir.rotateLeft();
@@ -182,7 +184,7 @@ public class Nav extends Bot {
 	}
 
 	private static boolean canEndBug() {
-		if (bugMovesSinceSeenObstacle >= 4)
+		if (bugMovesSinceSeenObstacle >= 4 || bugMovesSinceMadeProgress > MagicConstants.BUG_PATIENCE)
 			return true;
 		return (bugRotationCount <= 0 || bugRotationCount >= 8) && here.distanceSquaredTo(dest) <= bugStartDistSq;
 	}
@@ -196,6 +198,7 @@ public class Nav extends Bot {
 		if (bugState == BugState.BUG) {
 			if (canEndBug()) {
 				bugState = BugState.DIRECT;
+				bugMovesSinceMadeProgress = 0;
 			}
 		}
 
@@ -211,6 +214,7 @@ public class Nav extends Bot {
 		// If that failed, or if bugging, bug
 		if (bugState == BugState.BUG) {
 			bugTurn();
+			bugMovesSinceMadeProgress++;
 		}
 	}
 
