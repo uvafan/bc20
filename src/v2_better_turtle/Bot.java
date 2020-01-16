@@ -1,5 +1,7 @@
 package v2_better_turtle;
 
+import java.util.Random;
+
 import battlecode.common.*;
 
 public class Bot {
@@ -21,6 +23,8 @@ public class Bot {
     public static MapLocation[] soupClusters;
     public static int numSoupClusters;
     public static boolean[] invalidCluster;
+    public static Direction lastExploreDir;
+    public static Random rand;
 
     public static enum Symmetry {
         VERTICAL,
@@ -66,6 +70,7 @@ public class Bot {
         soupClusters = new MapLocation[500];
         invalidCluster = new boolean[500];
         numSoupClusters = 0;
+        rand = new Random(rc.getID());
     }
 
     public void takeTurn() throws GameActionException {

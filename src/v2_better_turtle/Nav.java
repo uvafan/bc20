@@ -53,6 +53,8 @@ public class Nav extends Bot {
 	private static int bugMovesSinceSeenObstacle = 0;
 	private static int bugMovesSinceMadeProgress = 0;
 	private static Direction lastRetreatDir;
+	private static int boredom;
+	private static MapLocation exploreTarget;
 	private static boolean move(Direction dir) throws GameActionException {
 			rc.move(dir);
 			return true;
@@ -232,5 +234,36 @@ public class Nav extends Bot {
 
 		bugMove();
 		return true;
+	}
+	//exploring is fearless! if there are nearby enemies we should flee instead (also implement fleeing)
+	public static void explore() throws GameActionException{
+		if(lastExploreDir == null) {
+			lastExploreDir = hqLoc.directionTo(here);
+			boredom = 0;
+		}
+		if(boredom >= 5) {
+			boredom = 0;
+			lastExploreDir = (new Direction[] {
+					lastExploreDir.rotateLeft(),
+					lastExploreDir,
+					lastExploreDir.rotateRight() })[rand.nextInt(3)];
+		}
+		if (canMove(lastExploreDir)) {
+			move(lastExploreDir);
+			return;
+		}
+
+		Direction[] dirs = new Direction[2];
+		Direction dirLeft = lastExploreDir.rotateLeft();
+		Direction dirRight = lastExploreDir.rotateRight();
+			dirs[0] = dirLeft;
+			dirs[1] = dirRight;
+		for (Direction dir : dirs) {
+			if (canMove(dir)) {
+				move(dir);
+				return;
+			}
+		}
+		return;
 	}
 }
