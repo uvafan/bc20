@@ -12,6 +12,7 @@ public class FulfillmentCenter extends Bot {
         super.takeTurn();
         for (Direction dir : directions)
             tryBuild(RobotType.DELIVERY_DRONE, dir);
+        comms.readMessages();
     }
 
 }

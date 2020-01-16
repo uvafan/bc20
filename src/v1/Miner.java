@@ -9,7 +9,7 @@ public class Miner extends Bot {
 
     public Miner(RobotController r) throws GameActionException {
         super(r);
-        refineLoc = hqLoc;
+        refineLoc = null;
     }
 
     public void takeTurn() throws GameActionException {
@@ -20,9 +20,12 @@ public class Miner extends Bot {
                 if (tryDeposit(dir)) {
                     Utils.log("I deposited soup! " + rc.getTeamSoup());
                     deposited  = true;
+                    refineLoc = null;
                     break;
                 }
             if(!deposited) {
+                if(refineLoc == null)
+                    refineLoc = chooseRefineLoc();
                 goTo(refineLoc);
                 if (Utils.DEBUG && refineLoc != null) {
                     rc.setIndicatorLine(here, refineLoc, 0, 255, 0);
@@ -51,12 +54,31 @@ public class Miner extends Bot {
                 Utils.log("exploring");
             }
         }
+        comms.readMessages();
+    }
+
+    private MapLocation chooseRefineLoc() {
+        MapLocation bestLoc = hqLoc;
+        int minDist = here.distanceSquaredTo(bestLoc);
+        for(int i=0; i<numRefineries; i++){
+            int dist = here.distanceSquaredTo(refineries[i]);
+            if(dist < minDist){
+                bestLoc = refineries[i];
+                minDist = dist;
+            }
+        }
+        return bestLoc;
     }
 
     private boolean buildIfShould() throws GameActionException {
-        if (!nearbyRobot(RobotType.DESIGN_SCHOOL)){
+        if(numDesignSchools == 0)
             if(tryBuild(RobotType.DESIGN_SCHOOL, randomDirection())) {
                 Utils.log("created a design school");
+                return true;
+            }
+        if (!nearbyRobot(RobotType.REFINERY)){
+            if(tryBuild(RobotType.REFINERY, randomDirection())) {
+                Utils.log("created a refinery");
                 return true;
             }
         }
@@ -73,7 +95,6 @@ public class Miner extends Bot {
         for(MapLocation cand: candidates){
             if(cand == null)
                 break;
-            Utils.log("ml " + cand);
             if(rc.canSenseLocation(cand) && !rc.isLocationOccupied(cand) && rc.senseSoup(cand) > 0){
                 targetMineLoc = cand;
                 return;
