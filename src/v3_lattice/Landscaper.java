@@ -21,7 +21,7 @@ public class Landscaper extends Unit {
                     tryDig(randomDirection(), true);
             }
 
-            if (rc.getCooldownTurns() == 0 && hqLoc != null) {
+            if (rc.getCooldownTurns() < 1 && hqLoc != null) {
                 // find best place to build
                 MapLocation bestPlaceToBuildWall = here;
                 int lowestElevation = 9999999;
