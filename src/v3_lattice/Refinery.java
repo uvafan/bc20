@@ -1,17 +1,17 @@
-package v2_better_turtle;
+package v3_lattice;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 
-public class NetGun extends Building {
+public class Refinery extends Building {
 
-    public NetGun(RobotController r) throws GameActionException {
+    public Refinery(RobotController r) throws GameActionException {
         super(r);
+        comms.broadcastLoc(Comms.MessageType.REFINERY_LOC, rc.getLocation());
     }
 
     public void takeTurn() throws GameActionException {
         super.takeTurn();
-        shootDrones();
         comms.readMessages();
     }
 

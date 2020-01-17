@@ -1,4 +1,4 @@
-package v2_better_turtle;
+package v3_lattice;
 
 import battlecode.common.*;
 

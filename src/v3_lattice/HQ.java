@@ -1,6 +1,7 @@
-package v2_better_turtle;
+package v3_lattice;
 
-import battlecode.common.*;
+import battlecode.common.GameActionException;
+import battlecode.common.RobotController;
 
 public class HQ extends Building {
     public HQ(RobotController r) throws GameActionException {
