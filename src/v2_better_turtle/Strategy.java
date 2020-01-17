@@ -38,7 +38,7 @@ public class Strategy {
         int minPri = rc.getTeamSoup() + 1;
         for(int i=0; i<buildingIndices.length; i++){
             int idx = buildingIndices[i];
-            Utils.log("priority for " + RobotType.values()[idx] + " is " + soupPriorities[idx]);
+            //Utils.log("priority for " + RobotType.values()[idx] + " is " + soupPriorities[idx]);
             if(soupPriorities[idx] < minPri){
                 minPri = soupPriorities[idx];
                 ret = RobotType.values()[idx];
@@ -49,8 +49,8 @@ public class Strategy {
 
     public boolean shouldBuildUnit(RobotType rt) {
         updatePriorities(bot.unitCounts);
-        Utils.log("priority for " + rt.ordinal()  + " is " + soupPriorities[rt.ordinal()]);
-        Utils.log(bot.unitCounts[rt.ordinal()] + " units have been created.");
+        //Utils.log("priority for " + rt.ordinal()  + " is " + soupPriorities[rt.ordinal()]);
+        //Utils.log(bot.unitCounts[rt.ordinal()] + " units have been created.");
         return soupPriorities[rt.ordinal()] <= rc.getTeamSoup();
     }
 

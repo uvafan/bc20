@@ -11,7 +11,7 @@ public class Landscaper extends Unit {
     public void takeTurn() throws GameActionException {
         super.takeTurn();
         if(hqLoc != null && hqLoc.distanceSquaredTo(here) < 4) {
-            if (rc.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit) {
+            if (rc.getDirtCarrying() == 0 ) {//< RobotType.LANDSCAPER.dirtLimit) {
                 if (hqLoc != null)
                     tryDig(hqLoc.directionTo(here), true);
                 else
