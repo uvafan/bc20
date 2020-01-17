@@ -23,27 +23,25 @@ public class Landscaper extends Unit {
 
             if (rc.getCooldownTurns() == 0 && hqLoc != null) {
                 // find best place to build
-                MapLocation bestPlaceToBuildWall = null;
+                MapLocation bestPlaceToBuildWall = here;
                 int lowestElevation = 9999999;
                 for (Direction dir : directions) {
                     MapLocation tileToCheck = hqLoc.add(dir);
                     if (rc.getLocation().distanceSquaredTo(tileToCheck) < 4
                             && rc.canDepositDirt(rc.getLocation().directionTo(tileToCheck))) {
-                        if (rc.senseElevation(tileToCheck) < lowestElevation) {
+                        int elevation = rc.senseElevation(tileToCheck);
+                        if (rc.senseElevation(tileToCheck) < lowestElevation && (round > 1000 ||
+                                Utils.getRoundFlooded(elevation) - round < 10)) {
                             lowestElevation = rc.senseElevation(tileToCheck);
                             bestPlaceToBuildWall = tileToCheck;
                         }
                     }
                 }
-                if (round < 300)
-                    bestPlaceToBuildWall = here;
                 // build the wall
-                if (bestPlaceToBuildWall != null) {
-                    Direction dir = here.directionTo(bestPlaceToBuildWall);
-                    if (rc.canDepositDirt(dir))
-                        rc.depositDirt(dir);
-                    Utils.log("building a wall at location " + bestPlaceToBuildWall);
-                }
+                Direction dir = here.directionTo(bestPlaceToBuildWall);
+                if (rc.canDepositDirt(dir))
+                    rc.depositDirt(dir);
+                Utils.log("building a wall at location " + bestPlaceToBuildWall);
             }
         }
         // otherwise try to get to the hq
