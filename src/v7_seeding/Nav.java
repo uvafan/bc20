@@ -270,24 +270,28 @@ public class Nav extends Bot {
 	public static void explore(NavSafetyPolicy theSafety) throws GameActionException{
 		safety = theSafety;
 		if(lastExploreDir == null) {
-		    if(hqLoc != null)
-				lastExploreDir = hqLoc.directionTo(here);
-		    else
+		    //if(hqLoc != null)
+			//	lastExploreDir = hqLoc.directionTo(here);
+		    //else
 		    	lastExploreDir = randomDirection();
 			boredom = 0;
 		}
 		if(boredom >= MagicConstants.EXPLORE_BOREDOM) {
 			boredom = 0;
 			lastExploreDir = (new Direction[] {
+					lastExploreDir.rotateLeft().rotateLeft(),
 					lastExploreDir.rotateLeft(),
 					lastExploreDir,
-					lastExploreDir.rotateRight() })[rand.nextInt(3)];
+					lastExploreDir.rotateRight(),
+					lastExploreDir.rotateRight().rotateRight()})[rand.nextInt(5)];
+		}
+		if(!rc.onTheMap(here.add(lastExploreDir))) {
+			lastExploreDir = lastExploreDir.opposite();
 		}
 		if (canMove(lastExploreDir)) {
 			move(lastExploreDir);
 			return;
 		}
-
 		Direction[] dirs = new Direction[2];
 		Direction dirLeft = lastExploreDir.rotateLeft();
 		Direction dirRight = lastExploreDir.rotateRight();
