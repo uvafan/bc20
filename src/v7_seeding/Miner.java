@@ -18,7 +18,7 @@ public class Miner extends Unit {
 
     public Miner(RobotController r) throws GameActionException {
         super(r);
-        if(round == 2 && strat instanceof Rush) {
+        if(false && round == 2 && strat instanceof Rush) {
             rushing = true;
         }
         refineLoc = null;

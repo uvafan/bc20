@@ -19,7 +19,6 @@ public class Landscaper extends Unit {
             }
         }
     }
-
     public void takeTurn() throws GameActionException {
         super.takeTurn();
         if(rushing) {
@@ -51,11 +50,12 @@ public class Landscaper extends Unit {
                 if(minDist <= 2) {
                     if(rc.getDirtCarrying() == 0) {
                         if(hqLoc != null) {
-                            if (rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0 && rc.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit) {
+                            if (rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0) {
                                 tryDig(here.directionTo(hqLoc), false);
                             }
                             if (rc.getCooldownTurns() < 1 && rc.getDirtCarrying() == 0) {//< RobotType.LANDSCAPER.dirtLimit) {
-                                tryDig(hqLoc.directionTo(here), true);
+                                //TODO : don't dig off enemy buildings
+                            	tryDig(hqLoc.directionTo(here), true);
                             }
                         }
                         else {
@@ -76,7 +76,14 @@ public class Landscaper extends Unit {
                     tryDig(here.directionTo(hqLoc), false);
                 }
                 if (rc.getCooldownTurns() < 1 && (rc.getDirtCarrying() == 0 || rc.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit && round < 250)) {
-                    tryDig(hqLoc.directionTo(here), true);
+                    MapLocation maybe = digLoc();
+                    if(maybe != null) {
+                    	Utils.log("I'm trying to dig in a smart place");
+                	if(!tryDig(here.directionTo(maybe), false)) { 
+                		Utils.log("JK it didn't work");
+                    	tryDig(hqLoc.directionTo(here), true);
+                    }
+                    }
                 }
                 if (rc.getCooldownTurns() < 1 && hqLoc != null) {
                     // find best place to build
@@ -103,13 +110,66 @@ public class Landscaper extends Unit {
             }
             // otherwise try to get to the hq
             else if(hqLoc != null){
+            	if((!spotIsFreeAround(hqLoc) || round > 1000) && inSecondLayer()){
+            			if (rc.getCooldownTurns() < 1 && (rc.getDirtCarrying() == 0)){
+                            	tryDig(hqLoc.directionTo(here), true);
+                            }
+                    
+                        if (rc.getCooldownTurns() < 1 && hqLoc != null) {
+                            // find best place to build
+                            MapLocation bestPlaceToBuildWall = here;
+                            if(!(Utils.getRoundFlooded(rc.senseElevation(here) - 1) < round)) {
+                            int lowestElevation = 9999999;
+                            for (Direction dir : directions) {
+                                MapLocation tileToCheck = hqLoc.add(dir);
+                                if (here.distanceSquaredTo(tileToCheck) < 4
+                                        && rc.canDepositDirt(here.directionTo(tileToCheck))) {
+                                    int elevation = rc.senseElevation(tileToCheck);
+                                    if (rc.senseElevation(tileToCheck) < lowestElevation && (round > 1000 ||
+                                            Utils.getRoundFlooded(elevation - 1) < round)) {
+                                        lowestElevation = rc.senseElevation(tileToCheck);
+                                        bestPlaceToBuildWall = tileToCheck;
+                                    }
+                                }
+                            }
+                            }
+                            Direction dir = here.directionTo(bestPlaceToBuildWall);
+                            if (rc.canDepositDirt(dir))
+                                rc.depositDirt(dir);
+                            Utils.log("building a wall at location " + bestPlaceToBuildWall);
+            		}
+            	}
+            		else {
                 goTo(hqLoc);
-            }
+            		}
+        }
         }
         comms.readMessages();
 
     }
-
+    //assumes hqloc is not null
+    static boolean inSecondLayer() {
+    	return here.distanceSquaredTo(hqLoc)<=8 && here.distanceSquaredTo(hqLoc)>=5;
+    }
+    static MapLocation digLoc() throws GameActionException {
+    	MapLocation possibleLoc1 = new MapLocation(hqLoc.x-2, hqLoc.y);
+    	if(rc.onTheMap(possibleLoc1) && here.distanceSquaredTo(possibleLoc1) <=2 && rc.canDigDirt(here.directionTo(possibleLoc1))){
+    		return possibleLoc1;
+    	}
+    	possibleLoc1 = new MapLocation(hqLoc.x, hqLoc.y-2);
+    	if(rc.onTheMap(possibleLoc1) && here.distanceSquaredTo(possibleLoc1) <=2&& rc.canDigDirt(here.directionTo(possibleLoc1))){
+    		return possibleLoc1;
+    	}
+    	possibleLoc1 = new MapLocation(hqLoc.x+2, hqLoc.y);
+    	if(rc.onTheMap(possibleLoc1) && here.distanceSquaredTo(possibleLoc1) <=2&& rc.canDigDirt(here.directionTo(possibleLoc1))){
+    		return possibleLoc1;
+    	}
+    	possibleLoc1 = new MapLocation(hqLoc.x, hqLoc.y+2);
+    	if(rc.onTheMap(possibleLoc1) && here.distanceSquaredTo(possibleLoc1) <=2&& rc.canDigDirt(here.directionTo(possibleLoc1))){
+    		return possibleLoc1;
+    	}
+    			return null;
+    }
     static boolean tryDig(Direction dir, boolean tryOthers) throws GameActionException {
         if(rc.canDigDirt(dir)){
             rc.digDirt(dir);
