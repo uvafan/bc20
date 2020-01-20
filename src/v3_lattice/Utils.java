@@ -5,7 +5,7 @@ import battlecode.common.Clock;
 public class Utils {
 
     public static boolean DEBUG = true;
-    public static boolean DEBUG_BYTECODE = true;
+    public static boolean DEBUG_BYTECODE = false;
 
     public static void log(String s){
         if(DEBUG) {
@@ -15,7 +15,7 @@ public class Utils {
             }
         }
     }
-
+    
     public static int getRoundFlooded(int elevation) {
         switch(elevation){
             case 0: return 0;
@@ -2519,7 +2519,7 @@ public class Utils {
             case 2498: return 3204;
             case 2499: return 3204;
             case 2500: return 3204;
-            default: return 3205;
+            default: return 0;
         }
     }
 }
