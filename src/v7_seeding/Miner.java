@@ -60,7 +60,7 @@ public class Miner extends Unit {
                     int toleranceDist = 2;
                     for(Direction dir: cardinalDirs) {
                         MapLocation loc = enemyHQLoc.add(dir);
-                        if(!rc.isLocationOccupied(loc)){
+                        if(rc.canSenseLocation(loc) && here.distanceSquaredTo(loc) <= here.distanceSquaredTo(enemyHQLoc) && !rc.isLocationOccupied(loc)){
                             toleranceDist = 1;
                             break;
                         }
