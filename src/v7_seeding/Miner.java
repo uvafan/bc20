@@ -18,7 +18,7 @@ public class Miner extends Unit {
 
     public Miner(RobotController r) throws GameActionException {
         super(r);
-        if(false && round == 2 && strat instanceof Rush) {
+        if(round == 2 && strat instanceof Rush) {
             rushing = true;
         }
         refineLoc = null;
@@ -215,7 +215,7 @@ public class Miner extends Unit {
         MapLocation closestRefine = chooseRefineLoc();
         if(closestRefine != null && here.distanceSquaredTo(closestRefine) < MagicConstants.REQUIRED_REFINERY_DIST)
             return false;
-        if (rc.senseNearbySoup().length > 2 || refineLoc == null){
+        if (rc.senseNearbySoup().length > 2 || closestRefine == null){
             if(tryBuild(RobotType.REFINERY, hqLoc.directionTo(here), true)) {
                 Utils.log("created a refinery");
                 return true;
