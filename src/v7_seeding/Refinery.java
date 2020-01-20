@@ -1,4 +1,4 @@
-package v7_name_tbd;
+package v7_seeding;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
