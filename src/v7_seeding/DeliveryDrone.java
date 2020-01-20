@@ -8,7 +8,7 @@ public class DeliveryDrone extends Unit {
 
     public DeliveryDrone(RobotController r) throws GameActionException {
         super(r);
-        if(strat instanceof Rush && round < 100) {
+        if(strat instanceof Rush) {
             rushing = true;
         }
         if(enemyHQLoc == null) {
