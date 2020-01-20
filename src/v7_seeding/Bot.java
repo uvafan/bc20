@@ -46,6 +46,14 @@ public class Bot {
         Direction.WEST,
         Direction.NORTHWEST
     };
+
+    public static Direction[] cardinalDirs = {
+            Direction.NORTH,
+            Direction.EAST,
+            Direction.WEST,
+            Direction.SOUTH,
+    };
+
     public static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL,
             RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
     public static RobotInfo[] knownEnemyNetGuns = {};

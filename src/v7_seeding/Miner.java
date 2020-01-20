@@ -57,7 +57,15 @@ public class Miner extends Unit {
                     }
                 }
                 if(rc.getCooldownTurns() < 1 && designSchoolLoc == null) {
-                    designSchoolLoc = tryBuildWithin(RobotType.DESIGN_SCHOOL, enemyHQLoc, 2);
+                    int toleranceDist = 2;
+                    for(Direction dir: cardinalDirs) {
+                        MapLocation loc = enemyHQLoc.add(dir);
+                        if(!rc.isLocationOccupied(loc)){
+                            toleranceDist = 1;
+                            break;
+                        }
+                    }
+                    designSchoolLoc = tryBuildWithin(RobotType.DESIGN_SCHOOL, enemyHQLoc, toleranceDist);
                     if(designSchoolLoc == null)
                         goTo(enemyHQLoc);
                 }
