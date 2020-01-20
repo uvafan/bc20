@@ -25,7 +25,7 @@ public class Rush extends Strategy {
                 numFriendlyDS++;
         }
         Utils.log("friendly DS: " + numFriendlyDS);
-        if(unitCounts[RobotType.MINER.ordinal()] >= 3) {
+        if(unitCounts[RobotType.MINER.ordinal()] >= 4) {
             soupPriorities[RobotType.MINER.ordinal()] = Integer.MAX_VALUE;
         }
         //if(unitCounts[RobotType.LANDSCAPER.ordinal()] >= 8) {

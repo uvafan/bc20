@@ -70,8 +70,21 @@ public class Miner extends Unit {
                         goTo(enemyHQLoc);
                 }
                 if(rc.getCooldownTurns() < 1 && designSchoolLoc != null) {
-                    // TODO improve this
-                    targetLoc = enemyHQLoc.add(designSchoolLoc.directionTo(enemyHQLoc));
+                    Direction dir = designSchoolLoc.directionTo(enemyHQLoc);
+                    Direction dirR = dir.rotateRight();
+                    Direction dirL = dir.rotateLeft();
+                    MapLocation candLoc = enemyHQLoc.add(dir);
+                    MapLocation candLocL = enemyHQLoc.add(dirL);
+                    MapLocation candLocR = enemyHQLoc.add(dirR);
+                    MapLocation[] cands = {candLoc, candLocL, candLocR};
+                    targetLoc = cands[0];
+                    for(int i=0; i<cands.length; i++){
+                        MapLocation cand = cands[i];
+                        if(cand.equals(here) || !rc.canSenseLocation(cand) || canReach(cand, here, true)) {
+                            targetLoc = cand;
+                            break;
+                        }
+                    }
                     rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
                     goTo(targetLoc);
                 }

@@ -11,10 +11,12 @@ public class DeliveryDrone extends Unit {
         if(strat instanceof Rush && round < 100) {
             rushing = true;
         }
-        if(hqLoc == null || hqLoc.distanceSquaredTo(center) > here.distanceSquaredTo(hqLoc))
-            targetLoc = center;
-        else
-            targetLoc = pickTargetFromEnemyHQs(true);
+        if(enemyHQLoc == null) {
+            if (hqLoc == null || hqLoc.distanceSquaredTo(center) > here.distanceSquaredTo(hqLoc))
+                targetLoc = center;
+            else
+                targetLoc = pickTargetFromEnemyHQs(true);
+        }
     }
 
     public void takeTurn() throws GameActionException {
