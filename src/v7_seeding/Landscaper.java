@@ -49,7 +49,7 @@ public class Landscaper extends Unit {
             if(closestEnemyBuilding != null) {
                 if(minDist <= 2) {
                     if(rc.getDirtCarrying() == 0) {
-                        if(hqLoc != null) {
+                        if(hqLoc != null && rc.canSenseLocation(hqLoc)) {
                             if (rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0) {
                                 tryDig(here.directionTo(hqLoc), false);
                             }
@@ -119,14 +119,14 @@ public class Landscaper extends Unit {
                             // find best place to build
                             MapLocation bestPlaceToBuildWall = here;
                             if(!(Utils.getRoundFlooded(rc.senseElevation(here) - 1) < round)) {
+                            	Utils.log("I'm an altruistic dirt placer");
                             int lowestElevation = 9999999;
                             for (Direction dir : directions) {
                                 MapLocation tileToCheck = hqLoc.add(dir);
                                 if (here.distanceSquaredTo(tileToCheck) < 4
                                         && rc.canDepositDirt(here.directionTo(tileToCheck))) {
                                     int elevation = rc.senseElevation(tileToCheck);
-                                    if (rc.senseElevation(tileToCheck) < lowestElevation && (round > 1000 ||
-                                            Utils.getRoundFlooded(elevation - 1) < round)) {
+                                    if (rc.senseElevation(tileToCheck) < lowestElevation) {
                                         lowestElevation = rc.senseElevation(tileToCheck);
                                         bestPlaceToBuildWall = tileToCheck;
                                     }
