@@ -34,8 +34,6 @@ public class Comms {
         UNIT_CREATED,
     }
 
-    static int SECRET_NUM = 155252936;
-
     public Comms(Bot b) {
         bot = b;
         rc = b.rc;
@@ -93,7 +91,7 @@ public class Comms {
                 bot.numSoupClusters++;
                 break;
             case UNIT_CREATED:
-                bot.unitCounts[msg[6]]++;
+                bot.unitCounts[msg[6]-MagicConstants.ORDINAL_SECRET_NUM]++;
         }
     }
     private int smear(int hashCode) {
@@ -101,17 +99,18 @@ public class Comms {
         return hashCode ^ (hashCode >>> 7) ^ (hashCode >>> 4);
       }
     private int generateHash(int[] msg) {
-    	int hash = msg[2]^msg[3]^msg[4]^msg[5]^msg[6];
-    	Utils.log("The generate round is: " + bot.round);
+    	int hash = msg[2]^msg[3]^msg[4]^msg[5]^msg[6]^bot.round;
+    	//Utils.log("The generate round is: " + bot.round);
     	return smear(hash);
     }
     private int verifyHash(int[] msg, int round) {
-    	int hash = msg[2]^msg[3]^msg[4]^msg[5]^msg[6];
+    	int hash = msg[2]^msg[3]^msg[4]^msg[5]^msg[6]^round;
     	return smear(hash);
     }
     private boolean verifyOurs(int[] msg, int round) {
     	if(msg[0]!= MagicConstants.FAST_SECRET_NUM+bot.us.ordinal())
     		return false;
+    	//Utils.log("Trying to veryify a hash from round: " + round);
     	return msg[1]==verifyHash(msg, round);
     }
 
@@ -133,7 +132,7 @@ public class Comms {
             return;
         int[] message = new int[7];
         message[5] = MessageType.UNIT_CREATED.ordinal();
-        message[6] = rt.ordinal();
+        message[6] = rt.ordinal()+MagicConstants.ORDINAL_SECRET_NUM;
         message[0] = MagicConstants.FAST_SECRET_NUM+bot.us.ordinal();
         message[1] = generateHash(message);
         rc.submitTransaction(message, 1);
@@ -150,11 +149,11 @@ public class Comms {
     }
 
     private int locationToMsg(MapLocation m) {
-        return SECRET_NUM * 11 + (m.x + m.y * 64);
+        return MagicConstants.LOCATION_SECRET_NUM * 11 + (m.x + m.y * 64);
     }
 
     private MapLocation msgToLocation(int msg) {
-        return new MapLocation((msg % SECRET_NUM) % 64, (msg % SECRET_NUM) / 64);
+        return new MapLocation((msg % MagicConstants.LOCATION_SECRET_NUM) % 64, (msg % MagicConstants.LOCATION_SECRET_NUM) / 64);
     }
 
 
