@@ -26,6 +26,11 @@ public class Bot {
     public static Direction lastExploreDir;
     public static Random rand;
     public static int[] unitCounts = {0,0,0,0,0,0,0,0,0,0};
+    public static RobotInfo[] nearbyRobots;
+    public static RobotInfo[] nearbyAllies;
+    public static int nearbyAlliesLen;
+    public static RobotInfo[] nearbyEnemies;
+    public static int nearbyEnemiesLen;
     Strategy strat;
 
     public static enum Symmetry {
