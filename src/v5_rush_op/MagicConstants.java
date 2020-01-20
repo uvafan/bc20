@@ -8,4 +8,5 @@ public class MagicConstants {
 	public static int BUG_PATIENCE = 20; //how many turns before we give up bugging
     public static int MAX_CLUSTER_DIST = RobotType.MINER.sensorRadiusSquared;
     public static int GIVE_UP_CLUSTER_DIST = 2;
+    public static int EXPLORE_BOREDOM = 10;
 }

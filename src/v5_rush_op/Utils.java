@@ -1,6 +1,6 @@
 package v5_rush_op;
 
-import battlecode.common.Clock;
+import battlecode.common.*;
 
 public class Utils {
 
@@ -14,6 +14,28 @@ public class Utils {
                 System.out.println(Clock.getBytecodesLeft() + " bytecodes left.");
             }
         }
+    }
+
+    public static MapLocation[] removeElement(MapLocation[] arr, int idx) {
+        int at = 0;
+        MapLocation[] ret = new MapLocation[arr.length-1];
+        for(int i=0; i<arr.length; i++){
+            if(i==idx)
+                continue;
+            ret[at++] = arr[i];
+        }
+        return ret;
+    }
+
+    public static MapLocation[] removeElement(MapLocation[] arr, MapLocation loc) {
+        int at = 0;
+        MapLocation[] ret = new MapLocation[arr.length-1];
+        for(int i=0; i<arr.length; i++){
+            if(arr[i].equals(loc))
+                continue;
+            ret[at++] = arr[i];
+        }
+        return ret;
     }
 
     public static int getRoundFlooded(int elevation) {

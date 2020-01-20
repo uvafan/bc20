@@ -10,6 +10,7 @@ public class Bot {
     public static Team enemy;
     public static Team us;
     public static MapLocation hqLoc;
+    public static MapLocation enemyHQLoc;
     public static MapLocation here;
     public static Comms comms;
     public static int mapHeight;
@@ -25,9 +26,9 @@ public class Bot {
     public static boolean[] invalidCluster;
     public static Direction lastExploreDir;
     public static Random rand;
+    public static MapLocation targetLoc;
     public static int[] unitCounts = {0,0,0,0,0,0,0,0,0,0};
     Strategy strat;
-
     public static enum Symmetry {
         VERTICAL,
         HORIZONTAL,
@@ -51,6 +52,7 @@ public class Bot {
     public static int turnCount = 0;
     public static int numMiners = 0;
     public static int round = 0;
+    public static MapLocation center;
 
     public Bot() {
         return;
@@ -64,20 +66,180 @@ public class Bot {
         comms = new Comms(this);
         mapHeight = rc.getMapHeight();
         mapWidth = rc.getMapWidth();
+        center = new MapLocation(mapWidth / 2, mapHeight / 2);
         round = rc.getRoundNum();
         refineries = new MapLocation[100];
         designSchools = new MapLocation[100];
         soupClusters = new MapLocation[500];
         invalidCluster = new boolean[500];
         numSoupClusters = 0;
-        rand = new Random(rc.getID());
-        strat = new Turtle(this);
+        strat = new Rush(this);
+        RobotInfo[] enemies = rc.senseNearbyRobots(4);
+        for(RobotInfo e: enemies) {
+            if (e.type == RobotType.HQ) {
+                if(e.team == enemy) {
+                    enemyHQLoc = e.location;
+                }
+                else {
+                    hqLoc = e.location;
+                }
+                break;
+            }
+        }
+        if(hqLoc != null) {
+            initializeEnemyHQLocs();
+        }
    }
 
     public void takeTurn() throws GameActionException {
         turnCount++;
-        if(turnCount>1)
-        	round++;
+        round = rc.getRoundNum();
+        if(round - 1 == comms.readRound)
+            comms.readMessages();
+    }
+
+    public boolean updateSymmetryAndOpponentHQs() throws GameActionException {
+        if(hqLoc != null && enemyHqLocPossibilities == null) {
+            initializeEnemyHQLocs();
+        }
+        else if(hqLoc == null){
+            return false;
+        }
+        RobotInfo[] enemies = rc.senseNearbyRobots(-1, enemy);
+        for(RobotInfo e: enemies) {
+            if (e.type == RobotType.HQ) {
+                enemyHQLoc = e.location;
+                return false;
+            }
+        }
+        boolean removed = false;
+        MapLocation toRemove = null;
+        Utils.log("looking for removal");
+        for(MapLocation loc: enemyHqLocPossibilities) {
+            if(rc.canSenseLocation(loc)) {
+                RobotInfo ri = rc.senseRobotAtLocation(loc);
+                if(ri == null || ri.type != RobotType.HQ) {
+                    toRemove = loc;
+                    removed = true;
+                    break;
+                }
+            }
+        }
+        if(removed) {
+            enemyHqLocPossibilities = Utils.removeElement(enemyHqLocPossibilities, toRemove);
+        }
+        if(Clock.getBytecodesLeft() > 2500)
+            removed |= doSymmetryDetection();
+        if(enemyHqLocPossibilities.length == 1) {
+            enemyHQLoc = enemyHqLocPossibilities[0];
+            return false;
+        }
+        return removed;
+    }
+
+    private MapLocation reflectX(MapLocation loc) {
+        return new MapLocation(mapWidth - 1 -loc.x, loc.y);
+    }
+
+    private MapLocation reflectY(MapLocation loc) {
+        return new MapLocation(loc.x, mapHeight - 1 -loc.y);
+    }
+
+    private MapLocation reflectR(MapLocation loc) {
+        return new MapLocation(mapWidth - 1 - loc.x, mapHeight - 1 - loc.y);
+    }
+
+    private MapLocation reflect(Symmetry s, MapLocation loc) {
+        switch(s){
+            case ROTATIONAL:return reflectR(loc);
+            case VERTICAL:return reflectX(loc);
+            case HORIZONTAL:return reflectY(loc);
+        }
+        return null;
+    }
+
+    private Symmetry getSymmetry(MapLocation locA, MapLocation locB) {
+        if(reflectR(locA).equals(locB))
+            return Symmetry.ROTATIONAL;
+        if(reflectX(locA).equals(locB))
+            return Symmetry.VERTICAL;
+        return Symmetry.HORIZONTAL;
+    }
+
+    private boolean checkSym(MapLocation locA, MapLocation locB) throws GameActionException {
+        Utils.log("checking sym of " + locA + " and " + locB);
+        return rc.senseElevation(locA) == rc.senseElevation(locB) && rc.senseSoup(locA) == rc.senseSoup(locB);
+    }
+
+    private boolean doSymmetryDetection() throws GameActionException {
+        //TODO improve
+        MapLocation[] toCheck = new MapLocation[17];
+        int idx = 1;
+        toCheck[0] = here;
+        for(Direction dir: directions) {
+            MapLocation check = here;
+            for(int i=0;i<2;i++) {
+                check = check.add(dir);
+                toCheck[idx++] = check;
+            }
+        }
+        MapLocation toRemove = null;
+        MapLocation toRemoveSecond = null;
+        for(MapLocation loc: enemyHqLocPossibilities) {
+            Symmetry s = getSymmetry(loc, hqLoc);
+            for(MapLocation check: toCheck) {
+                if(rc.canSenseLocation(check)) {
+                    MapLocation reflected = reflect(s, check);
+                    if(rc.canSenseLocation(reflected) && !checkSym(check, reflected)) {
+                        if(toRemove != null){
+                            toRemoveSecond = null;
+                            break;
+                        }
+                        else {
+                            Utils.log("Rip " + s + "sym!");
+                            toRemove = loc;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if(toRemove != null){
+            enemyHqLocPossibilities = Utils.removeElement(enemyHqLocPossibilities, toRemove);
+            if(toRemoveSecond != null)
+                enemyHqLocPossibilities = Utils.removeElement(enemyHqLocPossibilities, toRemoveSecond);
+            return true;
+        }
+        return false;
+    }
+
+    public MapLocation pickTargetFromEnemyHQs() throws GameActionException {
+        if(hqLoc != null && enemyHqLocPossibilities == null) {
+            initializeEnemyHQLocs();
+        }
+        else if(hqLoc == null){
+            return center;
+        }
+        MapLocation ret = enemyHqLocPossibilities[0];
+        int maxDist = hqLoc.distanceSquaredTo(ret);
+        for(int i=1; i<enemyHqLocPossibilities.length; i++) {
+            MapLocation loc = enemyHqLocPossibilities[i];
+            if(here.distanceSquaredTo(loc) > maxDist) {
+                maxDist = hqLoc.distanceSquaredTo(loc);
+                ret = loc;
+            }
+        }
+        return ret;
+    }
+
+    public void initializeEnemyHQLocs() throws GameActionException{
+        int x = hqLoc.x;
+        int y = hqLoc.y;
+        MapLocation a = reflectR(hqLoc);
+        MapLocation b = reflectX(hqLoc);
+        MapLocation c = reflectY(hqLoc);
+        Utils.log("poss: "+ a + b + c);
+        enemyHqLocPossibilities = new MapLocation[]{a,b,c};
     }
 
     static boolean nearbyRobot(RobotType target) throws GameActionException {
@@ -94,11 +256,33 @@ public class Bot {
         return directions[(int) (Math.random() * directions.length)];
     }
 
-    static boolean tryBuild(RobotType type, Direction dir) throws GameActionException {
-        if (rc.isReady() && rc.canBuildRobot(type, dir)) {
+    static boolean tryBuild(RobotType type, Direction dir, boolean tryOthers) throws GameActionException {
+        if(rc.getCooldownTurns() >= 1 || rc.getTeamSoup() - 1 < type.cost)
+            return false;
+        if (rc.canBuildRobot(type, dir)) {
             rc.buildRobot(type, dir);
+            comms.broadcastCreation(type, here.add(dir));
             return true;
-        } else return false;
+        }
+        if(tryOthers) {
+            Direction dirL = dir.rotateLeft();
+            Direction dirR = dir.rotateRight();
+            while(dirL != dir) {
+                if (rc.canBuildRobot(type,dirL)) {
+                    rc.buildRobot(type,dirL);
+                    comms.broadcastCreation(type, here.add(dir));
+                    return true;
+                }
+                if (rc.canBuildRobot(type,dirR)) {
+                    rc.buildRobot(type,dirR);
+                    comms.broadcastCreation(type, here.add(dir));
+                    return true;
+                }
+                dirL = dirL.rotateLeft();
+                dirR = dirR.rotateRight();
+            }
+        }
+        return false;
     }
 
 /*

@@ -6,55 +6,160 @@ public class Miner extends Unit {
 
     MapLocation targetMineLoc;
     MapLocation refineLoc;
+    boolean rushing = false;
+    RobotInfo[] enemyUnits;
+    boolean builtOffensiveNetGun;
+    boolean nearbyDrone;
+    boolean nearbyFulfillment;
+    int fulfillmentDist;
+    int builtFulfillmentRound;
+    MapLocation fulfillmentLoc;
+    MapLocation designSchoolLoc = null;
 
     public Miner(RobotController r) throws GameActionException {
         super(r);
+        if(round == 2 && strat instanceof Rush) {
+            rushing = true;
+        }
         refineLoc = null;
+        nearbyDrone = false;
+        nearbyFulfillment = false;
+        builtFulfillmentRound = -100;
+        targetLoc = center;
+        fulfillmentDist = 100;//inf basically;
     }
-
     public void takeTurn() throws GameActionException {
         super.takeTurn();
-        if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
-            boolean deposited = false;
-            for (Direction dir : directions)
-                if (tryDeposit(dir)) {
-                    Utils.log("I deposited soup! " + rc.getTeamSoup());
-                    deposited  = true;
-                    refineLoc = null;
-                    break;
-                }
-            if(!deposited) {
-                if(refineLoc == null)
-                    refineLoc = chooseRefineLoc();
-                goTo(refineLoc);
-                if (Utils.DEBUG && refineLoc != null) {
-                    rc.setIndicatorLine(here, refineLoc, 0, 255, 0);
-                }
-            }
-        }
-        else if(buildIfShould()){
-        }
-        else {
-            if(targetMineLoc == null || !(targetMineLoc.equals(here) && rc.senseSoup(here) > 0) && turnCount % 10 == 0)
-                updateTargetMineLoc();
-            if (targetMineLoc != null) {
-                if(here.equals(targetMineLoc)) {
-                    tryMine(Direction.CENTER);
-                    Utils.log("I mined soup! " + rc.getSoupCarrying());
-                }
-                else {
-                    goTo(targetMineLoc);
-                    if (Utils.DEBUG && targetMineLoc != null) {
-                        rc.setIndicatorLine(here, targetMineLoc, 255, 0, 0);
+        if(rushing) {
+            if (enemyHQLoc != null && here.distanceSquaredTo(enemyHQLoc) <= 8) {
+                if (!builtOffensiveNetGun) {
+                    enemyUnits = rc.senseNearbyRobots(rc.getCurrentSensorRadiusSquared(), enemy);
+                    fulfillmentDist = 100;
+                    for (RobotInfo i : enemyUnits) {
+                        if (i.type == RobotType.DELIVERY_DRONE) {
+                            nearbyDrone = true;
+                        }
+                        if (i.type == RobotType.FULFILLMENT_CENTER) {
+                            fulfillmentDist = Math.min(fulfillmentDist, here.distanceSquaredTo(i.location));
+                            nearbyFulfillment = true;
+                            fulfillmentLoc = i.location;
+                        }
                     }
+                    if (nearbyDrone || nearbyFulfillment && fulfillmentDist <= 2) {
+                        builtOffensiveNetGun = tryBuild(RobotType.NET_GUN, here.directionTo(fulfillmentLoc), true);
+                    }
+                    if (fulfillmentDist <= 8 && designSchoolLoc == null) {
+                        // TODO improve running away
+                        moveInDir(fulfillmentLoc.directionTo(here));
+                    }
+                }
+                if(rc.getCooldownTurns() < 1 && designSchoolLoc == null) {
+                    designSchoolLoc = tryBuildWithin(RobotType.DESIGN_SCHOOL, enemyHQLoc, 2);
+                    if(designSchoolLoc == null)
+                        goTo(enemyHQLoc);
+                }
+                if(rc.getCooldownTurns() < 1 && designSchoolLoc != null) {
+                    // TODO improve this
+                    targetLoc = enemyHQLoc.add(designSchoolLoc.directionTo(enemyHQLoc));
+                    rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
+                    goTo(targetLoc);
                 }
             }
             else {
-                explore();
-                Utils.log("exploring");
+                if(enemyHQLoc == null)
+                    if(updateSymmetryAndOpponentHQs())
+                        targetLoc = pickTargetFromEnemyHQs();
+                if(enemyHQLoc != null) {
+                    targetLoc = enemyHQLoc;
+                    rushToTarget();
+                }
+                else {
+                    rushToTarget();
+                }
+                if(Utils.DEBUG)
+                    rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
+            }
+        }
+        else {
+            if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
+                boolean deposited = false;
+                for (Direction dir : directions)
+                    if (tryDeposit(dir)) {
+                        Utils.log("I deposited soup! " + rc.getTeamSoup());
+                        deposited = true;
+                        refineLoc = null;
+                        break;
+                    }
+                if (!deposited) {
+                    if (refineLoc == null)
+                        refineLoc = chooseRefineLoc();
+                    goTo(refineLoc);
+                    if (Utils.DEBUG && refineLoc != null) {
+                        rc.setIndicatorLine(here, refineLoc, 0, 255, 0);
+                    }
+                }
+            } else if (buildIfShould()) {
+            } else {
+                updateTargetMineLoc();
+                if (targetMineLoc != null) {
+                    if (here.distanceSquaredTo(targetMineLoc) <= 2) {
+                        tryMine(here.directionTo(targetMineLoc));
+                        Utils.log("I mined soup! " + rc.getSoupCarrying());
+                    } else {
+                        goTo(targetMineLoc);
+                        if (Utils.DEBUG && targetMineLoc != null) {
+                            rc.setIndicatorLine(here, targetMineLoc, 255, 0, 0);
+                        }
+                    }
+                } else {
+                    explore();
+                    Utils.log("exploring");
+                }
             }
         }
         comms.readMessages();
+    }
+
+    private void rushToTarget() throws GameActionException {
+        if(round - builtFulfillmentRound < 25 || rc.getCooldownTurns() >= 1)
+            return;
+        if(targetLoc.equals(center) || rc.getTeamSoup() < RobotType.FULFILLMENT_CENTER.cost + RobotType.DELIVERY_DRONE.cost) {
+            if(targetLoc.equals(center)) {
+                if(!Nav.tryMoveDirect(targetLoc)) {
+                    targetLoc = pickTargetFromEnemyHQs();
+                }
+                else {
+                    return;
+                }
+            }
+            goTo(targetLoc);
+        }
+        else {
+            if(!Nav.tryMoveDirect(targetLoc)) {
+                if(tryBuild(RobotType.FULFILLMENT_CENTER, here.directionTo(targetLoc), true))
+                    builtFulfillmentRound = round;
+            }
+        }
+    }
+
+    private MapLocation tryBuildWithin(RobotType type, MapLocation loc, int dist) throws GameActionException {
+        Direction dirL = here.directionTo(loc);
+        Direction dirR = dirL.rotateRight();
+        for(int i=0;i<4;i++) {
+            MapLocation locL = here.add(dirL);
+            MapLocation locR = here.add(dirR);
+            if(rc.canBuildRobot(type, dirL) && locL.distanceSquaredTo(loc) <= dist) {
+                rc.buildRobot(type, dirL);
+                return locL;
+            }
+            if(rc.canBuildRobot(type, dirR) && locR.distanceSquaredTo(loc) <= dist) {
+                rc.buildRobot(type, dirR);
+                return locR;
+            }
+            dirL = dirL.rotateLeft();
+            dirR = dirR.rotateRight();
+        }
+        return null;
     }
 
     private MapLocation chooseRefineLoc() {
@@ -72,11 +177,13 @@ public class Miner extends Unit {
 
     private boolean buildIfShould() throws GameActionException {
         RobotType rt = strat.determineBuildingNeeded();
-        if(rt != null && tryBuild(rt, randomDirection())) {
+        if(rt != null && tryBuild(rt, hqLoc.directionTo(here), true)) {
             return true;
         }
-        if (!nearbyRobot(RobotType.REFINERY) && rc.senseNearbySoup().length > 2){
-            if(tryBuild(RobotType.REFINERY, randomDirection())) {
+        if(!rushing && strat instanceof Rush && round < 200)
+            return false;
+        if (!nearbyRobot(RobotType.REFINERY) && rc.senseNearbySoup().length > 2 ){
+            if(tryBuild(RobotType.REFINERY, hqLoc.directionTo(here), true)) {
                 Utils.log("created a refinery");
                 return true;
             }
@@ -86,7 +193,7 @@ public class Miner extends Unit {
 
     private void updateTargetMineLoc() throws GameActionException {
         if(targetMineLoc != null) {
-            if(rc.canSenseLocation(targetMineLoc) && !rc.isLocationOccupied(targetMineLoc) && rc.senseSoup(targetMineLoc) > 0)
+            if(rc.canSenseLocation(targetMineLoc) && rc.senseSoup(targetMineLoc) > 0)
                 return;
         }
         targetMineLoc = null;
@@ -98,7 +205,7 @@ public class Miner extends Unit {
             xsum += cand.x;
             ysum += cand.y;
             int dist = here.distanceSquaredTo(cand);
-            if(!rc.isLocationOccupied(cand) && !rc.senseFlooding(cand) && dist < minDist){
+            if(!rc.senseFlooding(cand) && dist < minDist){
                 targetMineLoc = cand;
                 minDist = dist;
             }

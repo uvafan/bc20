@@ -5,7 +5,6 @@ import battlecode.common.*;
 public class Unit extends Bot {
     public Unit(RobotController r) throws GameActionException {
         super(r);
-        comms.broadcastUnitCreated(type);
         findHQ();
     }
 
@@ -39,7 +38,7 @@ public class Unit extends Bot {
 
     // navigate towards a particular location
     static boolean goTo(MapLocation destination) throws GameActionException {
-        return Nav.goTo(destination,new SafetyPolicyAvoidAllUnits());
+        return Nav.goTo(destination, new SafetyPolicyAvoidAllUnits());
     }
 
     static boolean tryMove(Direction dir) throws GameActionException {
@@ -49,8 +48,8 @@ public class Unit extends Bot {
         } else return false;
     }
 
-    static boolean explore() throws GameActionException {
-        return moveInDir(randomDirection());
+    static void explore() throws GameActionException {
+        Nav.explore(new SafetyPolicyAvoidAllUnits());
     }
 
 }

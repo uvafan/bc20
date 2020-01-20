@@ -72,6 +72,16 @@ public class Comms {
                 bot.designSchools[bot.unitCounts[RobotType.DESIGN_SCHOOL.ordinal()]] = dsLoc;
                 bot.unitCounts[RobotType.DESIGN_SCHOOL.ordinal()]++;
                 break;
+            case OUR_NET_GUN_LOC:
+                Utils.log("adding out net gun loc");
+                MapLocation ngLoc = msgToLocation(msg[6]);
+                bot.unitCounts[RobotType.NET_GUN.ordinal()]++;
+                break;
+            case FULFILLMENT_CENTER_LOC:
+                Utils.log("adding fc");
+                MapLocation fcLoc = msgToLocation(msg[6]);
+                bot.unitCounts[RobotType.FULFILLMENT_CENTER.ordinal()]++;
+                break;
             case SOUP_CLUSTER_LOC:
                 Utils.log("adding soup cluster");
                 MapLocation scLoc = msgToLocation(msg[6]);
@@ -123,6 +133,16 @@ public class Comms {
         message[0] = MagicConstants.FAST_SECRET_NUM+bot.us.ordinal();
         message[1] = generateHash(message);
         rc.submitTransaction(message, 1);
+    }
+
+    public void broadcastCreation(RobotType rt, MapLocation loc) throws GameActionException {
+        switch(rt) {
+            case DESIGN_SCHOOL: broadcastLoc(MessageType.DESIGN_SCHOOL_LOC, loc); break;
+            case NET_GUN: broadcastLoc(MessageType.OUR_NET_GUN_LOC, loc); break;
+            case REFINERY: broadcastLoc(MessageType.REFINERY_LOC, loc); break;
+            case FULFILLMENT_CENTER: broadcastLoc(MessageType.FULFILLMENT_CENTER_LOC, loc); break;
+            default: broadcastUnitCreated(rt);
+        }
     }
 
     private int locationToMsg(MapLocation m) {

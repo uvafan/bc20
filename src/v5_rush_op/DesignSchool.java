@@ -1,30 +1,28 @@
 package v5_rush_op;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 public class DesignSchool extends Building {
 	
-	public static int landscapers;
+	public static boolean attacking = false;
 
     public DesignSchool(RobotController r) throws GameActionException {
         super(r);
-        comms.broadcastLoc(Comms.MessageType.DESIGN_SCHOOL_LOC, rc.getLocation());
-        landscapers = 0;
+        if(enemyHQLoc != null)
+            attacking = true;
     }
 
     public void takeTurn() throws GameActionException {
         super.takeTurn();
-        if(landscapers == 8)
-        	return;
-        for (Direction dir : directions)
-            if(tryBuild(RobotType.LANDSCAPER, dir)) {
-                System.out.println("made a landscaper");
-                landscapers++;
-            }
         comms.readMessages();
+    }
+
+    public Direction getBuildDirection() {
+        if(enemyHQLoc != null)
+            return here.directionTo(enemyHQLoc);
+        else if(hqLoc != null)
+            return here.directionTo(hqLoc);
+        return randomDirection();
     }
 
 }

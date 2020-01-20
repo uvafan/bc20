@@ -13,11 +13,13 @@ class SafetyPolicyAvoidAllUnits extends Bot implements NavSafetyPolicy {
 	public boolean isSafeToMoveTo(MapLocation loc) throws GameActionException {
 		switch(type) {
 		case DELIVERY_DRONE:
-			for (RobotInfo enemyNetGun:knownEnemyNetGuns) {
+			for (RobotInfo enemyNetGun: knownEnemyNetGuns) {
 				if(loc.distanceSquaredTo(enemyNetGun.location)<= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
 					return false;
 				}
 			}
+			if(enemyHQLoc != null && loc.distanceSquaredTo(enemyHQLoc) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)
+				return false;
 			break;
 		default:
 				if(rc.senseFlooding(loc)) //change this to if the tile will flood next turn
@@ -77,6 +79,34 @@ public class Nav extends Bot {
 		Direction dirLeft = toDest.rotateLeft();
 		Direction dirRight = toDest.rotateRight();
 		if (here.add(dirLeft).distanceSquaredTo(dest) < here.add(dirRight).distanceSquaredTo(dest)) {
+			dirs[0] = dirLeft;
+			dirs[1] = dirRight;
+		} else {
+			dirs[0] = dirRight;
+			dirs[1] = dirLeft;
+		}
+		for (Direction dir : dirs) {
+			if (canMove(dir)) {
+				move(dir);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean tryMoveDirect(MapLocation loc) throws GameActionException {
+		safety = new SafetyPolicyAvoidAllUnits();
+		Direction toDest = here.directionTo(loc);
+
+		if (canMove(toDest)) {
+			move(toDest);
+			return true;
+		}
+
+		Direction[] dirs = new Direction[2];
+		Direction dirLeft = toDest.rotateLeft();
+		Direction dirRight = toDest.rotateRight();
+		if (here.add(dirLeft).distanceSquaredTo(loc) < here.add(dirRight).distanceSquaredTo(loc)) {
 			dirs[0] = dirLeft;
 			dirs[1] = dirRight;
 		} else {
@@ -237,12 +267,16 @@ public class Nav extends Bot {
 		return true;
 	}
 	//exploring is fearless! if there are nearby enemies we should flee instead (also implement fleeing)
-	public static void explore() throws GameActionException{
+	public static void explore(NavSafetyPolicy theSafety) throws GameActionException{
+		safety = theSafety;
 		if(lastExploreDir == null) {
-			lastExploreDir = hqLoc.directionTo(here);
+		    if(hqLoc != null)
+				lastExploreDir = hqLoc.directionTo(here);
+		    else
+		    	lastExploreDir = randomDirection();
 			boredom = 0;
 		}
-		if(boredom >= 5) {
+		if(boredom >= MagicConstants.EXPLORE_BOREDOM) {
 			boredom = 0;
 			lastExploreDir = (new Direction[] {
 					lastExploreDir.rotateLeft(),

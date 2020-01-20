@@ -27,8 +27,12 @@ public class Building extends Bot {
     public void takeTurn() throws GameActionException {
         super.takeTurn();
         if(prodType != null && strat.shouldBuildUnit(prodType)) {
-            tryBuild(prodType, randomDirection());
+            tryBuild(prodType, getBuildDirection(), true);
         }
+    }
+
+    public Direction getBuildDirection() {
+        return randomDirection();
     }
 
     public void shootDrones() throws GameActionException {
