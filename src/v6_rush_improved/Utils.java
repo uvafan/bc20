@@ -1,11 +1,11 @@
-package v5_rush_op;
+package v6_rush_improved;
 
 import battlecode.common.*;
 
 public class Utils {
 
-    public static boolean DEBUG = false;
-    public static boolean DEBUG_BYTECODE = false;
+    public static boolean DEBUG = true;
+    public static boolean DEBUG_BYTECODE = true;
 
     public static void log(String s){
         if(DEBUG) {
@@ -36,6 +36,16 @@ public class Utils {
             ret[at++] = arr[i];
         }
         return ret;
+    }
+
+    public static boolean isBuilding(RobotType type){
+        switch(type) {
+            case HQ: return true;
+            case DESIGN_SCHOOL: return true;
+            case FULFILLMENT_CENTER: return true;
+            case REFINERY: return true;
+            default: return false;
+        }
     }
 
     public static int getRoundFlooded(int elevation) {
