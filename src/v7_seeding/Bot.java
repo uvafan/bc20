@@ -37,14 +37,14 @@ public class Bot {
     }
 
     public static Direction[] directions = {
-        Direction.NORTH,
-        Direction.NORTHEAST,
-        Direction.EAST,
-        Direction.SOUTHEAST,
-        Direction.SOUTH,
-        Direction.SOUTHWEST,
-        Direction.WEST,
-        Direction.NORTHWEST
+            Direction.NORTH,
+            Direction.NORTHEAST,
+            Direction.EAST,
+            Direction.SOUTHEAST,
+            Direction.SOUTH,
+            Direction.SOUTHWEST,
+            Direction.WEST,
+            Direction.NORTHWEST
     };
 
     public static Direction[] cardinalDirs = {
@@ -90,6 +90,7 @@ public class Bot {
         soupClusters = new MapLocation[500];
         invalidCluster = new boolean[500];
         numSoupClusters = 0;
+        rand = new Random();
         strat = new Rush(this);
         for(RobotInfo e: enemies) {
             if (e.type == RobotType.HQ) {
@@ -106,7 +107,25 @@ public class Bot {
         if(hqLoc != null) {
             initializeEnemyHQLocs();
         }
-   }
+    }
+
+    public boolean canReach(MapLocation locA, MapLocation locB, boolean checkOccupied) throws GameActionException {
+        return !rc.senseFlooding(locA)
+                && Math.abs(rc.senseElevation(locA) - rc.senseElevation(locB)) <= 3
+                && (!checkOccupied || !rc.isLocationOccupied(locA));
+    }
+
+    public boolean canReachAdj(MapLocation loc, boolean checkOccupied) throws GameActionException {
+        if(canReach(loc, here, checkOccupied))
+            return true;
+        for(Direction dir: directions) {
+            MapLocation to = loc.add(dir);
+            Utils.log("checking " + to);
+            if(rc.canSenseLocation(to) && canReach(to, here, checkOccupied))
+                return true;
+        }
+        return false;
+    }
 
     public void takeTurn() throws GameActionException {
         turnCount++;

@@ -11,4 +11,5 @@ public class MagicConstants {
     public static int MAX_CLUSTER_DIST = RobotType.MINER.sensorRadiusSquared;
     public static int GIVE_UP_CLUSTER_DIST = 2;
     public static int EXPLORE_BOREDOM = 10;
+    public static int REQUIRED_REFINERY_DIST = 50;
 }
