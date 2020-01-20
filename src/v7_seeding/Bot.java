@@ -90,6 +90,7 @@ public class Bot {
         soupClusters = new MapLocation[500];
         invalidCluster = new boolean[500];
         numSoupClusters = 0;
+        rand = new Random();
         strat = new Rush(this);
         for(RobotInfo e: enemies) {
             if (e.type == RobotType.HQ) {
@@ -108,8 +109,22 @@ public class Bot {
         }
     }
 
-    public boolean canReach(MapLocation locA, MapLocation locB) throws GameActionException {
-        return !rc.senseFlooding(locA) && Math.abs(rc.senseElevation(locA) - rc.senseElevation(locB)) <= 3;
+    public boolean canReach(MapLocation locA, MapLocation locB, boolean checkOccupied) throws GameActionException {
+        return !rc.senseFlooding(locA)
+                && Math.abs(rc.senseElevation(locA) - rc.senseElevation(locB)) <= 3
+                && (!checkOccupied || !rc.isLocationOccupied(locA));
+    }
+
+    public boolean canReachAdj(MapLocation loc, boolean checkOccupied) throws GameActionException {
+        if(canReach(loc, here, checkOccupied))
+            return true;
+        for(Direction dir: directions) {
+            MapLocation to = loc.add(dir);
+            Utils.log("checking " + to);
+            if(rc.canSenseLocation(to) && canReach(to, here, checkOccupied))
+                return true;
+        }
+        return false;
     }
 
     public void takeTurn() throws GameActionException {

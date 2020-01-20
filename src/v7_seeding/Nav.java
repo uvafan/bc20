@@ -56,7 +56,7 @@ public class Nav extends Bot {
 	private static int bugMovesSinceSeenObstacle = 0;
 	private static int bugMovesSinceMadeProgress = 0;
 	private static Direction lastRetreatDir;
-	private static int boredom;
+	private static int boredom = 0;
 	private static MapLocation exploreTarget;
 	private static boolean move(Direction dir) throws GameActionException {
 			rc.move(dir);
@@ -273,7 +273,7 @@ public class Nav extends Bot {
 		    //if(hqLoc != null)
 			//	lastExploreDir = hqLoc.directionTo(here);
 		    //else
-		    	lastExploreDir = randomDirection();
+			lastExploreDir = randomDirection();
 			boredom = 0;
 		}
 		if(boredom >= MagicConstants.EXPLORE_BOREDOM) {
@@ -285,6 +285,7 @@ public class Nav extends Bot {
 					lastExploreDir.rotateRight(),
 					lastExploreDir.rotateRight().rotateRight()})[rand.nextInt(5)];
 		}
+		boredom++;
 		if(!rc.onTheMap(here.add(lastExploreDir))) {
 			lastExploreDir = lastExploreDir.opposite();
 		}
@@ -292,11 +293,15 @@ public class Nav extends Bot {
 			move(lastExploreDir);
 			return;
 		}
-		Direction[] dirs = new Direction[2];
+		Direction[] dirs = new Direction[4];
 		Direction dirLeft = lastExploreDir.rotateLeft();
 		Direction dirRight = lastExploreDir.rotateRight();
-			dirs[0] = dirLeft;
-			dirs[1] = dirRight;
+		Direction dirLeftLeft = dirLeft.rotateLeft();
+		Direction dirRightRight = dirRight.rotateRight();
+		dirs[0] = dirLeft;
+		dirs[1] = dirRight;
+		dirs[2] = dirLeftLeft;
+		dirs[3] = dirRightRight;
 		for (Direction dir : dirs) {
 			if (canMove(dir)) {
 				move(dir);

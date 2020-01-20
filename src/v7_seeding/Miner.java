@@ -102,11 +102,15 @@ public class Miner extends Unit {
                         break;
                     }
                 if (!deposited) {
-                    if (refineLoc == null)
+                    Utils.log("trying to go back to deposit soup");
+                    if (refineLoc == null || refineLoc.equals(hqLoc) || turnCount % 20 == 0)
                         refineLoc = chooseRefineLoc();
-                    goTo(refineLoc);
-                    if (Utils.DEBUG && refineLoc != null) {
-                        rc.setIndicatorLine(here, refineLoc, 0, 255, 0);
+                    if(refineLoc == null)
+                        buildIfShould();
+                    else {
+                        goTo(refineLoc);
+                        if(Utils.DEBUG)
+                            rc.setIndicatorLine(here, refineLoc, 0, 255, 0);
                     }
                 }
             } else if (buildIfShould()) {
@@ -173,9 +177,9 @@ public class Miner extends Unit {
         return null;
     }
 
-    private MapLocation chooseRefineLoc() {
-        MapLocation bestLoc = hqLoc;
-        int minDist = here.distanceSquaredTo(bestLoc);
+    private MapLocation chooseRefineLoc() throws GameActionException {
+        MapLocation bestLoc = null;
+        int minDist = Integer.MAX_VALUE;
         for(int i=0; i<unitCounts[RobotType.REFINERY.ordinal()]; i++){
             int dist = here.distanceSquaredTo(refineries[i]);
             if(dist < minDist){
@@ -183,6 +187,8 @@ public class Miner extends Unit {
                 minDist = dist;
             }
         }
+        if(bestLoc == null && (!rc.canSenseLocation(hqLoc) || canReachAdj(hqLoc, true)))
+            bestLoc = hqLoc;
         return bestLoc;
     }
 
@@ -193,22 +199,14 @@ public class Miner extends Unit {
         }
         if(!rushing && strat instanceof Rush && round < 250)
             return false;
-        if (!nearbyRobot(RobotType.REFINERY) && rc.senseNearbySoup().length > 2 ){
+        MapLocation closestRefine = chooseRefineLoc();
+        if(closestRefine != null && here.distanceSquaredTo(closestRefine) < MagicConstants.REQUIRED_REFINERY_DIST)
+            return false;
+        if (rc.senseNearbySoup().length > 2 || refineLoc == null){
             if(tryBuild(RobotType.REFINERY, hqLoc.directionTo(here), true)) {
                 Utils.log("created a refinery");
                 return true;
             }
-        }
-        return false;
-    }
-
-    private boolean canReachToMine(MapLocation loc) throws GameActionException {
-        if(canReach(loc, here))
-            return true;
-        for(Direction dir: directions) {
-            MapLocation to = loc.add(dir);
-            if(canReach(to, here))
-                return true;
         }
         return false;
     }
@@ -227,7 +225,7 @@ public class Miner extends Unit {
             xsum += cand.x;
             ysum += cand.y;
             int dist = here.distanceSquaredTo(cand);
-            if(canReachToMine(cand) && dist < minDist){
+            if(canReachAdj(cand, false) && dist < minDist){
                 targetMineLoc = cand;
                 minDist = dist;
             }
