@@ -8,15 +8,13 @@ public class Rush extends Strategy {
         soupPriorities[RobotType.MINER.ordinal()] = 0;
         soupPriorities[RobotType.LANDSCAPER.ordinal()] = 0;
         soupPriorities[RobotType.DELIVERY_DRONE.ordinal()] = 0;
-        soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = 700;
+        soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = 450;
     }
 
     public void updatePriorities(int[] unitCounts) {
         Utils.log("miners: " + unitCounts[RobotType.MINER.ordinal()]);
         Utils.log("drones: " + unitCounts[RobotType.DELIVERY_DRONE.ordinal()]);
         RobotInfo[] enemies = rc.senseNearbyRobots(-1, bot.enemy);
-        if(enemies.length > 0)
-            soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = 0;
         if(unitCounts[RobotType.MINER.ordinal()] >= 3) {
             soupPriorities[RobotType.MINER.ordinal()] = Integer.MAX_VALUE;
         }

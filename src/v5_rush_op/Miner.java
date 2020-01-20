@@ -180,7 +180,7 @@ public class Miner extends Unit {
         if(rt != null && tryBuild(rt, hqLoc.directionTo(here), true)) {
             return true;
         }
-        if(!rushing && strat instanceof Rush && round < 200)
+        if(!rushing && strat instanceof Rush && round < 250)
             return false;
         if (!nearbyRobot(RobotType.REFINERY) && rc.senseNearbySoup().length > 2 ){
             if(tryBuild(RobotType.REFINERY, hqLoc.directionTo(here), true)) {
