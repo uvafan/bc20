@@ -202,6 +202,17 @@ public class Miner extends Unit {
         return false;
     }
 
+    private boolean canReachToMine(MapLocation loc) throws GameActionException {
+        if(canReach(loc, here))
+            return true;
+        for(Direction dir: directions) {
+            MapLocation to = loc.add(dir);
+            if(canReach(to, here))
+                return true;
+        }
+        return false;
+    }
+
     private void updateTargetMineLoc() throws GameActionException {
         if(targetMineLoc != null) {
             if(rc.canSenseLocation(targetMineLoc) && rc.senseSoup(targetMineLoc) > 0)
@@ -216,7 +227,7 @@ public class Miner extends Unit {
             xsum += cand.x;
             ysum += cand.y;
             int dist = here.distanceSquaredTo(cand);
-            if(!rc.senseFlooding(cand) && dist < minDist){
+            if(canReachToMine(cand) && dist < minDist){
                 targetMineLoc = cand;
                 minDist = dist;
             }

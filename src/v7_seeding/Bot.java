@@ -37,14 +37,14 @@ public class Bot {
     }
 
     public static Direction[] directions = {
-        Direction.NORTH,
-        Direction.NORTHEAST,
-        Direction.EAST,
-        Direction.SOUTHEAST,
-        Direction.SOUTH,
-        Direction.SOUTHWEST,
-        Direction.WEST,
-        Direction.NORTHWEST
+            Direction.NORTH,
+            Direction.NORTHEAST,
+            Direction.EAST,
+            Direction.SOUTHEAST,
+            Direction.SOUTH,
+            Direction.SOUTHWEST,
+            Direction.WEST,
+            Direction.NORTHWEST
     };
 
     public static Direction[] cardinalDirs = {
@@ -106,7 +106,11 @@ public class Bot {
         if(hqLoc != null) {
             initializeEnemyHQLocs();
         }
-   }
+    }
+
+    public boolean canReach(MapLocation locA, MapLocation locB) throws GameActionException {
+        return !rc.senseFlooding(locA) && Math.abs(rc.senseElevation(locA) - rc.senseElevation(locB)) <= 3;
+    }
 
     public void takeTurn() throws GameActionException {
         turnCount++;
