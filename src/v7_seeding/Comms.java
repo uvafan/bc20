@@ -99,12 +99,12 @@ public class Comms {
         return hashCode ^ (hashCode >>> 7) ^ (hashCode >>> 4);
       }
     private int generateHash(int[] msg) {
-    	int hash = msg[2]^msg[3]^msg[4]^msg[5]^msg[6]^bot.round;
+    	int hash = msg[2]^msg[3]^msg[4]^msg[5]^msg[6]^bot.round^MagicConstants.SLOW_SECRET_NUM;
     	//Utils.log("The generate round is: " + bot.round);
     	return smear(hash);
     }
     private int verifyHash(int[] msg, int round) {
-    	int hash = msg[2]^msg[3]^msg[4]^msg[5]^msg[6]^round;
+    	int hash = msg[2]^msg[3]^msg[4]^msg[5]^msg[6]^round^MagicConstants.SLOW_SECRET_NUM;
     	return smear(hash);
     }
     private boolean verifyOurs(int[] msg, int round) {
