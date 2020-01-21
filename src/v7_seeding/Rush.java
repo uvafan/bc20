@@ -37,8 +37,11 @@ public class Rush extends Strategy {
         if(!bot.rushing && numFriendlyDS > 0){
             soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = Integer.MAX_VALUE;
         }
-        if(bot.rushing && !bot.spotIsFreeAround(bot.enemyHQLoc)) {
-            soupPriorities[RobotType.LANDSCAPER.ordinal()] = Integer.MAX_VALUE;
+        if(bot.rushing) {
+            if(!bot.spotIsFreeAround(bot.enemyHQLoc))
+                soupPriorities[RobotType.LANDSCAPER.ordinal()] = Integer.MAX_VALUE;
+            else
+                soupPriorities[RobotType.LANDSCAPER.ordinal()] = 0;
         }
         if(unitCounts[RobotType.DESIGN_SCHOOL.ordinal()] >= 2) {
             soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = Integer.MAX_VALUE;

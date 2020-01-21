@@ -31,7 +31,7 @@ public class Miner extends Unit {
     public void takeTurn() throws GameActionException {
         super.takeTurn();
         if(rushing) {
-            if (enemyHQLoc != null && here.distanceSquaredTo(enemyHQLoc) <= 8) {
+            if (enemyHQLoc != null && (designSchoolLoc != null || here.distanceSquaredTo(enemyHQLoc) <= 8)) {
                 if (!builtOffensiveNetGun) {
                     enemyUnits = rc.senseNearbyRobots(rc.getCurrentSensorRadiusSquared(), enemy);
                     fulfillmentDist = 100;
@@ -66,7 +66,7 @@ public class Miner extends Unit {
                         }
                     }
                     designSchoolLoc = tryBuildWithin(RobotType.DESIGN_SCHOOL, enemyHQLoc, toleranceDist);
-                    if(designSchoolLoc == null)
+                    if(designSchoolLoc == null && here.distanceSquaredTo(enemyHQLoc) > 1)
                         goTo(enemyHQLoc);
                 }
                 if(rc.getCooldownTurns() < 1 && designSchoolLoc != null) {
@@ -85,7 +85,8 @@ public class Miner extends Unit {
                             break;
                         }
                     }
-                    rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
+                    if(Utils.DEBUG)
+                        rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
                     goTo(targetLoc);
                 }
             }

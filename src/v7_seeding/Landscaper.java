@@ -28,7 +28,8 @@ public class Landscaper extends Unit {
             }
             else {
                 if (rc.getDirtCarrying() == 0) {
-                    tryDig(here.directionTo(ourDesignSchool), false);
+                    if(here.distanceSquaredTo(ourDesignSchool) <= 2)
+                        tryDig(here.directionTo(ourDesignSchool), false);
                     tryDig(enemyHQLoc.directionTo(here), true);
                 } else if (rc.getCooldownTurns() < 1) {
                     if (rc.canDepositDirt(here.directionTo(enemyHQLoc))) {
