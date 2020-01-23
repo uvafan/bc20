@@ -23,7 +23,7 @@ public class Landscaper extends Unit {
                 }
             }
         }
-        else if (!(strat instanceof EcoLattice)) {
+        else if (strat instanceof Turtle) {
             turtling = true;
         }
     }
