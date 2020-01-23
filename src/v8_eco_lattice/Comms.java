@@ -153,9 +153,13 @@ public class Comms {
     }
 
     public int getCost(MessageType mt) {
+        if(rc.getTeamSoup() > 1000)
+            return 2;
         switch(mt) {
             case HQ_ATTACKED: return 2;
             case HQ_OK: return 2;
+            case HQ_LOC: return 2;
+            case ENEMY_HQ_LOC: return 2;
             default: return 1;
         }
     }
