@@ -51,12 +51,12 @@ public class EcoLattice extends Strategy {
             if(ri.type == RobotType.NET_GUN)
                 seesEnemyNetGun = true;
         }
-        Utils.log("friendly DS: " + numFriendlyDS);
         if(unitCounts[RobotType.MINER.ordinal()] >= 6 || numEnemies > 0) {
             soupPriorities[RobotType.MINER.ordinal()] = Integer.MAX_VALUE;
         }
-        if(numEnemies > 0) {
-            if(canSeeFriendlyHQ) {
+        Utils.log("seesEnemyNetGun: " + seesEnemyNetGun);
+        if(bot.hqAttacked) {
+            if(bot.hqLoc != null && bot.here.distanceSquaredTo(bot.hqLoc) <= MagicConstants.RUSH_DEFENSE_DIST) {
                 if ((!seesEnemyNetGun || unitCounts[RobotType.LANDSCAPER.ordinal()] > 0) && unitCounts[RobotType.FULFILLMENT_CENTER.ordinal()] == 0)
                     soupPriorities[RobotType.FULFILLMENT_CENTER.ordinal()] = 0;
                 else if (numFriendlyDS == 0 && unitCounts[RobotType.DESIGN_SCHOOL.ordinal()] == 0)
@@ -71,6 +71,8 @@ public class EcoLattice extends Strategy {
             else {
                 // nothing for now
             }
+            Utils.log("Drone priority: " + soupPriorities[RobotType.DELIVERY_DRONE.ordinal()]);
+            Utils.log("Landscaper priority: " + soupPriorities[RobotType.LANDSCAPER.ordinal()]);
         }
         else {
             if (unitCounts[RobotType.FULFILLMENT_CENTER.ordinal()] == 0)

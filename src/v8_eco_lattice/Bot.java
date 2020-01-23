@@ -6,6 +6,7 @@ import java.util.Random;
 
 public class Bot {
     public static RobotController rc;
+    public static boolean hqAttacked = false;
     public static boolean rushing = false;
     public static RobotType type;
     public static Team enemy;
@@ -151,14 +152,14 @@ public class Bot {
     public boolean spotIsFreeAround(MapLocation loc) throws GameActionException {
         for(Direction dir: directions) {
             MapLocation loc2 = loc.add(dir);
-            if(rc.canSenseLocation(loc2) && !rc.isLocationOccupied(loc2)) {
+            if(rc.canSenseLocation(loc2) && canReach(loc2, here, true)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean updateSymmetryAndOpponentHQs() throws GameActionException {
+    public boolean updateOpponentHQs() throws GameActionException {
         if(hqLoc != null && enemyHqLocPossibilities == null) {
             initializeEnemyHQLocs();
         }
@@ -166,7 +167,6 @@ public class Bot {
             Utils.log("rip");
             return false;
         }
-        Utils.log("I see " + enemies.length + " enemies.");
         for(RobotInfo e: enemies) {
             if (e.type == RobotType.HQ) {
                 Utils.log("found you!");
@@ -191,13 +191,18 @@ public class Bot {
         if(removed) {
             enemyHqLocPossibilities = Utils.removeElement(enemyHqLocPossibilities, toRemove);
         }
-        if(Clock.getBytecodesLeft() > 2500)
-            removed |= doSymmetryDetection();
         if(enemyHqLocPossibilities.length == 1) {
             enemyHQLoc = enemyHqLocPossibilities[0];
             comms.broadcastLoc(Comms.MessageType.ENEMY_HQ_LOC, enemyHQLoc);
             return false;
         }
+        return removed;
+    }
+
+    public boolean updateSymmetryAndOpponentHQs() throws GameActionException {
+        boolean removed = updateOpponentHQs();
+        if(enemyHqLocPossibilities.length > 1 && Clock.getBytecodesLeft() > 2500)
+            removed |= doSymmetryDetection();
         return removed;
     }
 
@@ -260,7 +265,7 @@ public class Bot {
                             break;
                         }
                         else {
-                            Utils.log("Rip " + s + "sym!");
+                            Utils.log("Rip " + s + " sym!");
                             toRemove = loc;
                             break;
                         }

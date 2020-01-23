@@ -13,8 +13,10 @@ public class MagicConstants {
 	public static int EXPLORE_BOREDOM = 25;
     public static int REQUIRED_REFINERY_DIST = 50;
 	public static int TOLERATED_WATER_DIST = 50;
+	public static int RUSH_DEFENSE_DIST = 100;
 	public static int LATTICE_HEIGHT = 8;
 	public static int CRUNCH_ROUND = 1500;
+	public static int MAX_WATER_LOCS = 20;
 	public static RobotType[] LATTICE_COMP_TYPES = new RobotType[]{
 			RobotType.NET_GUN,
 			RobotType.FULFILLMENT_CENTER,

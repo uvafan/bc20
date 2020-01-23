@@ -27,6 +27,7 @@ public class DeliveryDrone extends Unit {
 
     public void takeTurn() throws GameActionException {
         super.takeTurn();
+        defending = hqAttacked;
         if (rushing) {
             doRush();
         }
@@ -43,7 +44,8 @@ public class DeliveryDrone extends Unit {
         }
         broadcastNetGuns();
         comms.readMessages();
-        broadcastWater();
+        if(numWaterLocs <= MagicConstants.MAX_WATER_LOCS)
+            broadcastWater();
     }
 
     private void broadcastWater() throws GameActionException {
@@ -61,14 +63,15 @@ public class DeliveryDrone extends Unit {
                     break;
                 if(rc.senseFlooding(loc)) {
                     boolean shouldAdd = true;
-                    for(int j=0; j <numWaterLocs; i++) {
-                        if(!invalidWater[i] && waterLocs[i].distanceSquaredTo(loc) <= MagicConstants.TOLERATED_WATER_DIST) {
+                    for(int j=0; j <numWaterLocs; j++) {
+                        if(!invalidWater[j] && waterLocs[j].distanceSquaredTo(loc) <= MagicConstants.TOLERATED_WATER_DIST) {
                             shouldAdd = false;
                             break;
                         }
                     }
                     if(shouldAdd) {
                         comms.broadcastLoc(Comms.MessageType.WATER_LOC, loc);
+                        return;
                     }
                 }
             }
@@ -87,6 +90,25 @@ public class DeliveryDrone extends Unit {
                 }
                 if(shouldAdd) {
                     comms.broadcastLoc(Comms.MessageType.ENEMY_NET_GUN_LOC, e.location);
+                }
+            }
+        }
+        for(int i=0; i<numEnemyNetGuns; i++) {
+            // if(turnCount % 10 != i % 10)
+            //    continue;
+            if(invalidNetGun[i])
+                continue;
+            MapLocation ng = enemyNetGunLocs[i];
+            if(rc.canSenseLocation(ng)) {
+                if(!rc.isLocationOccupied(ng)) {
+                    invalidNetGun[i] = true;
+                    comms.broadcastLoc(Comms.MessageType.NET_GUN_REMOVED, ng);
+                    continue;
+                }
+                RobotInfo ri = rc.senseRobotAtLocation(ng);
+                if(ri.team != enemy || ri.type != RobotType.NET_GUN){
+                    invalidNetGun[i] = true;
+                    comms.broadcastLoc(Comms.MessageType.NET_GUN_REMOVED, ng);
                 }
             }
         }
@@ -116,7 +138,9 @@ public class DeliveryDrone extends Unit {
 
     private void doHarass() throws GameActionException {
         if(enemyHQLoc == null)
-            updateSymmetryAndOpponentHQs();
+            if(updateOpponentHQs()) {
+                pickTargetFromEnemyHQs(true);
+            }
         if (!rc.isCurrentlyHoldingUnit()) {
             findAndPickUpEnemyUnit();
         } else {
@@ -161,18 +185,18 @@ public class DeliveryDrone extends Unit {
         int closestEnemyID = -1;
         int minDist = Integer.MAX_VALUE;
         for(RobotInfo e: enemies) {
-            if(!Utils.isBuilding(e.type) && here.distanceSquaredTo(e.location) < minDist) {
+            if(!Utils.isBuilding(e.type) && e.type != RobotType.DELIVERY_DRONE && here.distanceSquaredTo(e.location) < minDist) {
                 minDist = here.distanceSquaredTo(e.location);
                 closestEnemyLoc = e.location;
                 closestEnemyID = e.getID();
             }
         }
         if(closestEnemyLoc == null) {
-            if(harassing || crunching) {
-                runToEnemyHQ();
-            }
-            else if (defending && hqLoc != null) {
+            if (defending && hqLoc != null) {
                 goTo(hqLoc);
+            }
+            else if(harassing || crunching) {
+                runToEnemyHQ();
             }
             else {
                 explore();
@@ -204,7 +228,7 @@ public class DeliveryDrone extends Unit {
     public void runToEnemyHQ() throws GameActionException {
         if(enemyHQLoc == null && rushing){
             if(updateSymmetryAndOpponentHQs())
-                targetLoc = pickTargetFromEnemyHQs(false);
+                targetLoc = pickTargetFromEnemyHQs(true);
         }
         if(enemyHQLoc != null) {
             Utils.log("know enemy hq loc");

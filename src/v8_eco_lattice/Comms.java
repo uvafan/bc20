@@ -34,6 +34,9 @@ public class Comms {
         UNIT_CREATED,
         WATER_LOC,
         ENEMY_HQ_LOC,
+        HQ_ATTACKED,
+        HQ_OK,
+        NET_GUN_REMOVED,
     }
 
     public Comms(Bot b) {
@@ -103,8 +106,28 @@ public class Comms {
                 break;
             case ENEMY_NET_GUN_LOC:
                 Utils.log("adding enemy net guns");
+                Utils.log("There are " + bot.numEnemyNetGuns + " net guns");
                 MapLocation engLoc = msgToLocation(msg[6]);
                 bot.enemyNetGunLocs[bot.numEnemyNetGuns++] = engLoc;
+                break;
+            case NET_GUN_REMOVED:
+                Utils.log("rip enemy net gun");
+                MapLocation rngLoc = msgToLocation(msg[6]);
+                for(int i=0; i<bot.numEnemyNetGuns; i++) {
+                    if(bot.enemyNetGunLocs[i].equals(rngLoc)) {
+                        bot.invalidNetGun[i] = true;
+                        break;
+                    }
+                }
+                break;
+            case HQ_ATTACKED:
+                Utils.log("hq attacked");
+                bot.hqAttacked = true;
+                break;
+            case HQ_OK:
+                Utils.log("hq ok");
+                bot.hqAttacked = false;
+                break;
             case UNIT_CREATED:
                 bot.unitCounts[msg[6]- MagicConstants.ORDINAL_SECRET_NUM]++;
         }
@@ -129,16 +152,25 @@ public class Comms {
     	return msg[1]==verifyHash(msg, round);
     }
 
+    public int getCost(MessageType mt) {
+        switch(mt) {
+            case HQ_ATTACKED: return 2;
+            case HQ_OK: return 2;
+            default: return 1;
+        }
+    }
+
     // Used for broadcasting all the location type messages
     public void broadcastLoc(MessageType mt, MapLocation loc) throws GameActionException {
         if(rc.getTeamSoup() == 0)
             return;
+        int cost = Math.min(getCost(mt), rc.getTeamSoup());
         int[] message = new int[7];
         message[5] = mt.ordinal();
         message[6] = locationToMsg(loc);
         message[0] = MagicConstants.FAST_SECRET_NUM+bot.us.ordinal();
         message[1] = generateHash(message);
-        rc.submitTransaction(message, 1);
+        rc.submitTransaction(message, cost);
         Utils.log("broadcasting purpose " + mt + " loc " + loc.x + " " + loc.y);
     }
 

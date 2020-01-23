@@ -1,11 +1,9 @@
 package v8_eco_lattice;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
+import battlecode.common.*;
 
 public class HQ extends Building {
+
     public HQ(RobotController r) throws GameActionException {
         super(r);
         comms.broadcastLoc(Comms.MessageType.HQ_LOC, rc.getLocation());
@@ -14,6 +12,21 @@ public class HQ extends Building {
     public void takeTurn() throws GameActionException {
         super.takeTurn();
         shootDrones();
+        boolean seesNonDroneEnemy = false;
+        for(RobotInfo e: enemies) {
+            if(e.type != RobotType.DELIVERY_DRONE) {
+                seesNonDroneEnemy = true;
+                break;
+            }
+        }
+        if(hqAttacked && !seesNonDroneEnemy) {
+           hqAttacked = false;
+           comms.broadcastLoc(Comms.MessageType.HQ_OK, here);
+        }
+        else if(!hqAttacked && seesNonDroneEnemy) {
+            hqAttacked = true;
+            comms.broadcastLoc(Comms.MessageType.HQ_ATTACKED, here);
+        }
         comms.readMessages();
     }
 

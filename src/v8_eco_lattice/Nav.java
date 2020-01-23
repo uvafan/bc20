@@ -29,11 +29,13 @@ class SafetyPolicyAvoidAllUnits extends Bot implements NavSafetyPolicy {
 					continue;
 				MapLocation eLoc = enemyNetGunLocs[i];
 				if(loc.distanceSquaredTo(eLoc)<= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+					if(Utils.DEBUG)
+						rc.setIndicatorLine(here, eLoc, 255, 0, 0);
 					return false;
 				}
 			}
 			for(RobotInfo e: enemies) {
-				if(e.type == RobotType.NET_GUN && loc.distanceSquaredTo(e.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+				if(e.type == RobotType.NET_GUN && e.cooldownTurns < 1 && loc.distanceSquaredTo(e.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
 					return false;
 				}
 			}
@@ -283,6 +285,7 @@ public class Nav extends Bot {
 	}
 	//exploring is fearless! if there are nearby enemies we should flee instead (also implement fleeing)
 	public static void explore(NavSafetyPolicy theSafety) throws GameActionException{
+		Utils.log("exploring!");
 		safety = theSafety;
 		if(lastExploreDir == null) {
 		    //if(hqLoc != null)

@@ -208,17 +208,17 @@ public class Miner extends Unit {
 
     private boolean buildIfShould() throws GameActionException {
         RobotType rt = strat.determineBuildingNeeded();
-        if(rt != null && tryBuild(rt, hqLoc.directionTo(here), true)) {
+        Direction buildDirection = strat instanceof Turtle ? hqLoc.directionTo(here) : here.directionTo(hqLoc);
+        if(rt != null && tryBuild(rt, buildDirection, true)) {
             return true;
         }
         if(!rushing && strat instanceof Rush && round < 250)
             return false;
         MapLocation closestRefine = chooseRefineLoc();
-        if(closestRefine != null && here.distanceSquaredTo(closestRefine) < MagicConstants.REQUIRED_REFINERY_DIST)
+        if(closestRefine != null && (hqAttacked || here.distanceSquaredTo(closestRefine) < MagicConstants.REQUIRED_REFINERY_DIST))
             return false;
         if (rc.senseNearbySoup().length > 2 || closestRefine == null){
             if(tryBuild(RobotType.REFINERY, hqLoc.directionTo(here), true)) {
-                Utils.log("created a refinery");
                 return true;
             }
         }

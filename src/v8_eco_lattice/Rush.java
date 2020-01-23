@@ -4,7 +4,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
-public class Rush extends Strategy {
+public class Rush extends Turtle {
     public Rush(Bot b) {
         super(b);
         soupPriorities[RobotType.MINER.ordinal()] = 0;

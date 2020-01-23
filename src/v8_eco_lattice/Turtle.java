@@ -1,5 +1,6 @@
 package v8_eco_lattice;
 
+import battlecode.common.GameActionException;
 import battlecode.common.RobotType;
 
 public class Turtle extends Strategy {
@@ -10,7 +11,7 @@ public class Turtle extends Strategy {
         soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = 0;
     }
 
-    public void updatePriorities(int[] unitCounts) {
+    public void updatePriorities(int[] unitCounts) throws GameActionException {
         Utils.log("miners: " + unitCounts[RobotType.MINER.ordinal()]);
         if(unitCounts[RobotType.MINER.ordinal()] >= 10) {
             soupPriorities[RobotType.MINER.ordinal()] = Integer.MAX_VALUE;

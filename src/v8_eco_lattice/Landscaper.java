@@ -6,6 +6,8 @@ public class Landscaper extends Unit {
 
     public static MapLocation ourDesignSchool = null;
     public static boolean turtling = false;
+    public static boolean defending = false;
+    public static boolean doneDefending = false;
     //public static int[] xDifferentials = {-1,0,0,1,-1,-1,1,1,-2,0,0}
     //public static int[] yDifferentials = {0,1,-1,0,1,-1,1,-1}
 
@@ -28,23 +30,19 @@ public class Landscaper extends Unit {
 
     public void takeTurn() throws GameActionException {
         super.takeTurn();
+        defending = hqAttacked && !doneDefending;
         if(rushing) {
             doRush();
         }
-        else {
-            MapLocation closestEnemyBuilding = null;
-            int minDist = Integer.MAX_VALUE;
-            for (RobotInfo e : enemies) {
-                if (Utils.isBuilding(e.type) && here.distanceSquaredTo(e.location) < minDist) {
-                    closestEnemyBuilding = e.location;
-                    minDist = here.distanceSquaredTo(e.location);
+        else if(rc.getCooldownTurns() < 1){
+            if(defending)
+                doDefense();
+            else {
+                RobotInfo buildingToBury = getBuildingToBury();
+                if (buildingToBury != null) {
+                    buryEnemy(buildingToBury);
                 }
-            }
-            if (closestEnemyBuilding != null) {
-            	//TODO: Check that its actually reachable lmao
-                buryEnemy(minDist, closestEnemyBuilding);
-            } else if (rc.getCooldownTurns() < 1) {
-                if(turtling)
+                else if (turtling)
                     doTurtle();
                 else
                     doLattice();
@@ -139,7 +137,80 @@ public class Landscaper extends Unit {
 		return false;
 	}
 
-	private void doTurtle() throws GameActionException {
+	private void doDefense() throws GameActionException {
+        RobotInfo buildingToBury = getBuildingToBury();
+        int minToBury = Integer.MAX_VALUE;
+        if(buildingToBury != null)
+            minToBury = Math.min(type.dirtLimit, buildingToBury.type.dirtLimit);
+        if(buildingToBury != null && here.distanceSquaredTo(buildingToBury.location) <= 2) {
+            if(rc.getDirtCarrying() < minToBury && (buildingToBury.dirtCarrying == 0 || rc.getDirtCarrying() == 0)) {
+                if(Utils.DEBUG)
+                    rc.setIndicatorLine(here, buildingToBury.location, 0, 0, 255);
+                if(hqLoc.distanceSquaredTo(here) <= 2)
+                    tryDig(here.directionTo(hqLoc), false);
+                if(rc.getCooldownTurns() < 1)
+                    tryDig(hqLoc.directionTo(here), true);
+            }
+            else if(rc.canDepositDirt(here.directionTo(buildingToBury.location))) {
+                if(Utils.DEBUG)
+                    rc.setIndicatorLine(here, buildingToBury.location, 0, 255, 0);
+                rc.depositDirt(here.directionTo(buildingToBury.location));
+            }
+        }
+        else {
+            if(buildingToBury != null && rc.getDirtCarrying() >= minToBury) {
+                if(Utils.DEBUG)
+                    rc.setIndicatorLine(here, buildingToBury.location, 255, 0, 0);
+                goTo(buildingToBury.location);
+            }
+            else if (hqLoc != null) {
+                if(!rc.canSenseLocation(hqLoc))
+                    goTo(hqLoc);
+                else if(here.distanceSquaredTo(hqLoc) > 2 && spotIsFreeAround(hqLoc)) {
+                    goTo(hqLoc);
+                }
+                else if(here.distanceSquaredTo(hqLoc) <= 2 && rc.getDirtCarrying() <= minToBury) {
+                    if(rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0) {
+                        if(rc.canDigDirt(here.directionTo(hqLoc)))
+                            rc.digDirt(here.directionTo(hqLoc));
+                    }
+                }
+                else if(buildingToBury != null) {
+                    if(Utils.DEBUG)
+                        rc.setIndicatorLine(here, buildingToBury.location, 255, 0, 0);
+                    goTo(buildingToBury.location);
+                }
+                else if (rc.canSenseLocation(hqLoc) && rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0) {
+                    goTo(hqLoc);
+                }
+                else {
+                    doneDefending = true;
+                }
+            }
+            else {
+                doneDefending = true;
+            }
+        }
+    }
+
+    private RobotInfo getBuildingToBury() {
+        RobotInfo ret = null;
+        int maxPriority = Integer.MIN_VALUE;
+        for(RobotInfo e: enemies) {
+            if(!Utils.isBuilding(e.type))
+                continue;
+            int dist = here.distanceSquaredTo(e.location);
+            int priority = (e.type == RobotType.NET_GUN ? 25 : 0) - dist;
+            priority += (dist <= 2 ? 100: 0);
+            if(priority > maxPriority) {
+                maxPriority = priority;
+                ret = e;
+            }
+        }
+        return ret;
+    }
+
+    private void doTurtle() throws GameActionException {
         if (hqLoc != null && hqLoc.distanceSquaredTo(here) < 4) {
             if (rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0 && rc.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit) {
                 tryDig(here.directionTo(hqLoc), false);
@@ -213,15 +284,15 @@ public class Landscaper extends Unit {
         }
     }
 
-    private void buryEnemy(int minDist, MapLocation closestEnemyBuilding) throws GameActionException {
-        if(minDist <= 2) {
+    private void buryEnemy(RobotInfo closestEnemyBuilding) throws GameActionException {
+        MapLocation targetLoc = closestEnemyBuilding.location;
+        if(here.distanceSquaredTo(closestEnemyBuilding.location) <= 2) {
             if(rc.getDirtCarrying() == 0) {
                 if(hqLoc != null && rc.canSenseLocation(hqLoc)) {
                     if (rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0 && here.distanceSquaredTo(hqLoc) == 2) {
                         tryDig(here.directionTo(hqLoc), false);
                     }
-                    if (rc.getCooldownTurns() < 1 && rc.getDirtCarrying() == 0) {//< RobotType.LANDSCAPER.dirtLimit) {
-                        //TODO : don't dig off enemy buildings
+                    if (rc.getCooldownTurns() < 1) {//< RobotType.LANDSCAPER.dirtLimit) {
                         tryDig(hqLoc.directionTo(here), true);
                     }
                 }
@@ -229,13 +300,19 @@ public class Landscaper extends Unit {
                     tryDig(randomDirection(), true);
                 }
             }
-            else if(rc.canDepositDirt(here.directionTo(closestEnemyBuilding))) {
-                rc.depositDirt(here.directionTo(closestEnemyBuilding));
+            else if(rc.canDepositDirt(here.directionTo(targetLoc))) {
+                if(closestEnemyBuilding.dirtCarrying + 1 == closestEnemyBuilding.type.dirtLimit) {
+                    // rip them
+                    if(closestEnemyBuilding.type == RobotType.NET_GUN) {
+                        comms.broadcastLoc(Comms.MessageType.NET_GUN_REMOVED, targetLoc);
+                    }
+                }
+                rc.depositDirt(here.directionTo(targetLoc));
             }
         }
         else if (hqLoc == null || here.distanceSquaredTo(hqLoc) > 2 || rc.senseRobotAtLocation(hqLoc).dirtCarrying == 0) {
-            if(spotIsFreeAround(closestEnemyBuilding))
-                goTo(closestEnemyBuilding);
+            if(spotIsFreeAround(targetLoc))
+                goTo(targetLoc);
         }
     }
 
@@ -280,8 +357,9 @@ public class Landscaper extends Unit {
     	}
     			return null;
     }
+
     static boolean tryDig(Direction dir, boolean tryOthers) throws GameActionException {
-        if(rc.canDigDirt(dir)){
+        if(rc.canDigDirt(dir) && shouldDigDirt(dir)){
             rc.digDirt(dir);
             return true;
         }
@@ -289,11 +367,11 @@ public class Landscaper extends Unit {
             Direction dirL = dir.rotateLeft();
             Direction dirR = dir.rotateRight();
             while(dirL != dir) {
-                if (rc.canDigDirt(dirL)) {
+                if (rc.canDigDirt(dirL) && shouldDigDirt(dirL)) {
                     rc.digDirt(dirL);
                     return true;
                 }
-                if (rc.canDigDirt(dirR)) {
+                if (rc.canDigDirt(dirR) && shouldDigDirt(dirR)) {
                     rc.digDirt(dirR);
                     return true;
                 }
@@ -302,6 +380,14 @@ public class Landscaper extends Unit {
             }
         }
         return false;
+    }
+
+    private static boolean shouldDigDirt(Direction dir) throws GameActionException {
+        MapLocation loc = here.add(dir);
+        if(!rc.isLocationOccupied(loc))
+            return true;
+        RobotInfo ri = rc.senseRobotAtLocation(loc);
+        return ri.team == us || !Utils.isBuilding(ri.type);
     }
 
 }
