@@ -71,7 +71,13 @@ public class Landscaper extends Unit {
             }
             if(bestDigLoc!=null) {
             	if(here.distanceSquaredTo(bestDigLoc) <=2 ) {
+            		if(digging==0) {
             		tryDig(here.directionTo(bestDigLoc),false);
+            		}else {
+            			if(rc.canDepositDirt(here.directionTo(bestDigLoc))) {
+                			rc.depositDirt(here.directionTo(bestDigLoc));
+                		}
+            		}
             	}
             	else {
             		goToOnLattice(bestDigLoc);
@@ -100,19 +106,19 @@ public class Landscaper extends Unit {
             }
             if(bestDirtLoc!=null) {
             	if(here.distanceSquaredTo(bestDirtLoc) <=2 ) {
+            		if(rc.senseElevation(bestDirtLoc) < MagicConstants.LATTICE_HEIGHT)
             		if(rc.canDepositDirt(here.directionTo(bestDirtLoc))) {
             			rc.depositDirt(here.directionTo(bestDirtLoc));
+            		}else {
+            			tryDig(here.directionTo(bestDirtLoc),false);
             		}
             	}
             	else {
             		goToOnLattice(bestDirtLoc);
             	}
             }
+            //else something with comms
     	}
-    	//if low on dirt, try to dig
-    	//		if max dirt, put in good spot
-    	//		move to spot to put dirt
-    	//move to spot to pick up dirt
     }
     private boolean shouldRenovate(MapLocation testTile) throws GameActionException {
 		if(!badLatticeLoc(testTile,true) && (rc.senseElevation(testTile) < MagicConstants.LATTICE_HEIGHT || rc.senseElevation(testTile) > MagicConstants.LATTICE_HEIGHT + 3) && !(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2)) {
