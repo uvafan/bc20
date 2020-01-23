@@ -35,6 +35,9 @@ public class Unit extends Bot {
             return Nav.goTo(destination, crunch);
         return Nav.goTo(destination, safe);
     }
+    static boolean goToOnLattice(MapLocation destination) throws GameActionException {
+        return Nav.goTo(destination, new SafetyPolicyAvoidAllUnitsAndLattice());
+    }
 
     static boolean tryMove(Direction dir) throws GameActionException {
         if (rc.isReady() && rc.canMove(dir) && !rc.senseFlooding(rc.getLocation().add(dir))) {
