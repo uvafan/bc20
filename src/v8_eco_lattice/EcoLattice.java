@@ -57,9 +57,9 @@ public class EcoLattice extends Strategy {
         Utils.log("seesEnemyNetGun: " + seesEnemyNetGun);
         if(bot.hqAttacked) {
             if(bot.hqLoc != null && bot.here.distanceSquaredTo(bot.hqLoc) <= MagicConstants.RUSH_DEFENSE_DIST) {
-                if ((!seesEnemyNetGun || unitCounts[RobotType.LANDSCAPER.ordinal()] > 0) && unitCounts[RobotType.FULFILLMENT_CENTER.ordinal()] == 0)
+                if ((!seesEnemyNetGun || unitCounts[RobotType.LANDSCAPER.ordinal()] > 3) && unitCounts[RobotType.FULFILLMENT_CENTER.ordinal()] == 0)
                     soupPriorities[RobotType.FULFILLMENT_CENTER.ordinal()] = 0;
-                else if (numFriendlyDS == 0 && unitCounts[RobotType.DESIGN_SCHOOL.ordinal()] == 0)
+                else if (numFriendlyDS == 0 && unitCounts[RobotType.DESIGN_SCHOOL.ordinal()] == 0 && (unitCounts[RobotType.DELIVERY_DRONE.ordinal()] > 0 || seesEnemyNetGun || bot.numEnemyNetGuns > 0))
                     soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = 0;
                 else if (seesEnemyNetGun)
                     soupPriorities[RobotType.LANDSCAPER.ordinal()] = 0;

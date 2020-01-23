@@ -55,7 +55,7 @@ public class DeliveryDrone extends Unit {
             if(Clock.getBytecodesLeft() < 1000)
                 break;
             MapLocation loc = here;
-            for(int i=1; i<3; i++) {
+            for(int i=1; i*i<=rc.getCurrentSensorRadiusSquared(); i++) {
                 if(Clock.getBytecodesLeft() < 1000)
                     break;
                 loc = loc.add(dir);
@@ -73,42 +73,6 @@ public class DeliveryDrone extends Unit {
                         comms.broadcastLoc(Comms.MessageType.WATER_LOC, loc);
                         return;
                     }
-                }
-            }
-        }
-    }
-
-    private void broadcastNetGuns() throws GameActionException {
-        for(RobotInfo e: enemies) {
-            if(e.type == RobotType.NET_GUN) {
-                boolean shouldAdd = true;
-                for(int i=0; i <numEnemyNetGuns; i++) {
-                    if(!invalidNetGun[i] && enemyNetGunLocs[i].equals(e.location)) {
-                        shouldAdd = false;
-                        break;
-                    }
-                }
-                if(shouldAdd) {
-                    comms.broadcastLoc(Comms.MessageType.ENEMY_NET_GUN_LOC, e.location);
-                }
-            }
-        }
-        for(int i=0; i<numEnemyNetGuns; i++) {
-            // if(turnCount % 10 != i % 10)
-            //    continue;
-            if(invalidNetGun[i])
-                continue;
-            MapLocation ng = enemyNetGunLocs[i];
-            if(rc.canSenseLocation(ng)) {
-                if(!rc.isLocationOccupied(ng)) {
-                    invalidNetGun[i] = true;
-                    comms.broadcastLoc(Comms.MessageType.NET_GUN_REMOVED, ng);
-                    continue;
-                }
-                RobotInfo ri = rc.senseRobotAtLocation(ng);
-                if(ri.team != enemy || ri.type != RobotType.NET_GUN){
-                    invalidNetGun[i] = true;
-                    comms.broadcastLoc(Comms.MessageType.NET_GUN_REMOVED, ng);
                 }
             }
         }

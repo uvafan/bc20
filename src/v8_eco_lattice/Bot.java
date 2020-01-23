@@ -159,6 +159,43 @@ public class Bot {
         return false;
     }
 
+    public void broadcastNetGuns() throws GameActionException {
+        for(RobotInfo e: enemies) {
+            if(e.type == RobotType.NET_GUN) {
+                boolean shouldAdd = true;
+                for(int i=0; i <numEnemyNetGuns; i++) {
+                    if(!invalidNetGun[i] && enemyNetGunLocs[i].equals(e.location)) {
+                        shouldAdd = false;
+                        break;
+                    }
+                }
+                if(shouldAdd) {
+                    comms.broadcastLoc(Comms.MessageType.ENEMY_NET_GUN_LOC, e.location);
+                }
+            }
+        }
+        for(int i=0; i<numEnemyNetGuns; i++) {
+            // if(turnCount % 10 != i % 10)
+            //    continue;
+            if(invalidNetGun[i])
+                continue;
+            MapLocation ng = enemyNetGunLocs[i];
+            if(rc.canSenseLocation(ng)) {
+                if(!rc.isLocationOccupied(ng)) {
+                    invalidNetGun[i] = true;
+                    comms.broadcastLoc(Comms.MessageType.NET_GUN_REMOVED, ng);
+                    continue;
+                }
+                RobotInfo ri = rc.senseRobotAtLocation(ng);
+                if(ri.team != enemy || ri.type != RobotType.NET_GUN){
+                    invalidNetGun[i] = true;
+                    comms.broadcastLoc(Comms.MessageType.NET_GUN_REMOVED, ng);
+                }
+            }
+        }
+    }
+
+
     public boolean updateOpponentHQs() throws GameActionException {
         if(hqLoc != null && enemyHqLocPossibilities == null) {
             initializeEnemyHQLocs();

@@ -28,6 +28,7 @@ public class HQ extends Building {
             comms.broadcastLoc(Comms.MessageType.HQ_ATTACKED, here);
         }
         comms.readMessages();
+        broadcastNetGuns();
     }
 
     public Direction getBuildDirection() {
