@@ -217,7 +217,7 @@ public class Landscaper extends Unit {
         if(minDist <= 2) {
             if(rc.getDirtCarrying() == 0) {
                 if(hqLoc != null && rc.canSenseLocation(hqLoc)) {
-                    if (rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0) {
+                    if (rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0 && here.distanceSquaredTo(hqLoc) == 2) {
                         tryDig(here.directionTo(hqLoc), false);
                     }
                     if (rc.getCooldownTurns() < 1 && rc.getDirtCarrying() == 0) {//< RobotType.LANDSCAPER.dirtLimit) {

@@ -28,6 +28,9 @@ public class Bot {
     public static MapLocation[] waterLocs;
     public static int numWaterLocs;
     public static boolean[] invalidWater;
+    public static MapLocation[] enemyNetGunLocs;
+    public static int numEnemyNetGuns;
+    public static boolean[] invalidNetGun;
     public static Direction lastExploreDir;
     public static Random rand;
     public static MapLocation targetLoc;
@@ -96,6 +99,9 @@ public class Bot {
         waterLocs = new MapLocation[100];
         invalidWater = new boolean[100];
         numWaterLocs = 0;
+        enemyNetGunLocs = new MapLocation[100];
+        invalidNetGun = new boolean[100];
+        numEnemyNetGuns = 0;
         rand = new Random();
         strat = new EcoLattice(this);
         for(RobotInfo e: enemies) {
@@ -189,6 +195,7 @@ public class Bot {
             removed |= doSymmetryDetection();
         if(enemyHqLocPossibilities.length == 1) {
             enemyHQLoc = enemyHqLocPossibilities[0];
+            comms.broadcastLoc(Comms.MessageType.ENEMY_HQ_LOC, enemyHQLoc);
             return false;
         }
         return removed;

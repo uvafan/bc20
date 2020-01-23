@@ -24,8 +24,11 @@ class SafetyPolicyAvoidAllUnits extends Bot implements NavSafetyPolicy {
 	public boolean isSafeToMoveTo(MapLocation loc) throws GameActionException {
 		switch(type) {
 		case DELIVERY_DRONE:
-			for (RobotInfo enemyNetGun: knownEnemyNetGuns) {
-				if(loc.distanceSquaredTo(enemyNetGun.location)<= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+			for (int i=0; i<numEnemyNetGuns; i++) {
+				if(invalidNetGun[i])
+					continue;
+				MapLocation eLoc = enemyNetGunLocs[i];
+				if(loc.distanceSquaredTo(eLoc)<= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
 					return false;
 				}
 			}

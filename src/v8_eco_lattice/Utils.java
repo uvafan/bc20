@@ -46,6 +46,7 @@ public class Utils {
             case DESIGN_SCHOOL: return true;
             case FULFILLMENT_CENTER: return true;
             case REFINERY: return true;
+            case NET_GUN: return true;
             default: return false;
         }
     }

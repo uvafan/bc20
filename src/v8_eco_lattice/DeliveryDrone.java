@@ -46,6 +46,52 @@ public class DeliveryDrone extends Unit {
         broadcastWater();
     }
 
+    private void broadcastWater() throws GameActionException {
+        if(Clock.getBytecodesLeft() < 1000)
+            return;
+        for(Direction dir: directions) {
+            if(Clock.getBytecodesLeft() < 1000)
+                break;
+            MapLocation loc = here;
+            for(int i=1; i<3; i++) {
+                if(Clock.getBytecodesLeft() < 1000)
+                    break;
+                loc = loc.add(dir);
+                if(!rc.canSenseLocation(loc))
+                    break;
+                if(rc.senseFlooding(loc)) {
+                    boolean shouldAdd = true;
+                    for(int j=0; j <numWaterLocs; i++) {
+                        if(!invalidWater[i] && waterLocs[i].distanceSquaredTo(loc) <= MagicConstants.TOLERATED_WATER_DIST) {
+                            shouldAdd = false;
+                            break;
+                        }
+                    }
+                    if(shouldAdd) {
+                        comms.broadcastLoc(Comms.MessageType.WATER_LOC, loc);
+                    }
+                }
+            }
+        }
+    }
+
+    private void broadcastNetGuns() throws GameActionException {
+        for(RobotInfo e: enemies) {
+            if(e.type == RobotType.NET_GUN) {
+                boolean shouldAdd = true;
+                for(int i=0; i <numEnemyNetGuns; i++) {
+                    if(!invalidNetGun[i] && enemyNetGunLocs[i].equals(e.location)) {
+                        shouldAdd = false;
+                        break;
+                    }
+                }
+                if(shouldAdd) {
+                    comms.broadcastLoc(Comms.MessageType.ENEMY_NET_GUN_LOC, e.location);
+                }
+            }
+        }
+    }
+
     private void doRush() throws GameActionException {
         if(!rc.isCurrentlyHoldingUnit()) {
             int minerID = -1;
@@ -69,6 +115,8 @@ public class DeliveryDrone extends Unit {
     }
 
     private void doHarass() throws GameActionException {
+        if(enemyHQLoc == null)
+            updateSymmetryAndOpponentHQs();
         if (!rc.isCurrentlyHoldingUnit()) {
             findAndPickUpEnemyUnit();
         } else {
@@ -76,9 +124,35 @@ public class DeliveryDrone extends Unit {
         }
     }
 
-    private void dropUnitInWater() {
+    private void dropUnitInWater() throws GameActionException {
         for(Direction dir: directions) {
-            
+            MapLocation loc = here.add(dir);
+            if(rc.canSenseLocation(loc) && rc.senseFlooding(loc)) {
+                rc.dropUnit(dir);
+                return;
+            }
+        }
+        MapLocation waterLoc = null;
+        int minDist = Integer.MAX_VALUE;
+        for(int i=0; i<numWaterLocs; i++) {
+            if(invalidWater[i])
+                continue;
+            int dist = waterLocs[i].distanceSquaredTo(here);
+            if(dist <= MagicConstants.GIVE_UP_WATER_DIST) {
+                invalidWater[i] = true;
+            }
+            else if(dist < minDist){
+                minDist = dist;
+                waterLoc = waterLocs[i];
+            }
+        }
+        if(waterLoc != null) {
+            if(Utils.DEBUG)
+                rc.setIndicatorLine(here, waterLoc, 0, 0, 255);
+            goTo(waterLoc);
+        }
+        else {
+            explore();
         }
     }
 
@@ -87,13 +161,13 @@ public class DeliveryDrone extends Unit {
         int closestEnemyID = -1;
         int minDist = Integer.MAX_VALUE;
         for(RobotInfo e: enemies) {
-            if(here.distanceSquaredTo(e.location) < minDist) {
+            if(!Utils.isBuilding(e.type) && here.distanceSquaredTo(e.location) < minDist) {
                 minDist = here.distanceSquaredTo(e.location);
                 closestEnemyLoc = e.location;
                 closestEnemyID = e.getID();
             }
         }
-        if(closestEnemy == null) {
+        if(closestEnemyLoc == null) {
             if(harassing || crunching) {
                 runToEnemyHQ();
             }
@@ -118,7 +192,7 @@ public class DeliveryDrone extends Unit {
         return round >= MagicConstants.CRUNCH_ROUND;
     }
 
-    public void doCrunch() {
+    public void doCrunch() throws GameActionException {
         if(!pickedUpFriendlyLandscaper) {
             doHarass();
         }
@@ -128,12 +202,14 @@ public class DeliveryDrone extends Unit {
     }
 
     public void runToEnemyHQ() throws GameActionException {
-        if(enemyHQLoc == null){
+        if(enemyHQLoc == null && rushing){
             if(updateSymmetryAndOpponentHQs())
                 targetLoc = pickTargetFromEnemyHQs(false);
         }
         if(enemyHQLoc != null) {
             Utils.log("know enemy hq loc");
+            if(Utils.DEBUG)
+                rc.setIndicatorLine(here, enemyHQLoc, 255, 0, 0);
             targetLoc = enemyHQLoc;
             if(rushing && here.distanceSquaredTo(targetLoc) <= 25){
                 Utils.log("trying to drop");

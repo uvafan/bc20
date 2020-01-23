@@ -29,7 +29,6 @@ public class EcoLattice extends Strategy {
                 Integer.MAX_VALUE,
         };
         soupPriorities[RobotType.MINER.ordinal()] = 0;
-        soupPriorities[RobotType.FULFILLMENT_CENTER.ordinal()] = 0;
     }
 
 
@@ -37,6 +36,7 @@ public class EcoLattice extends Strategy {
         resetPriorities();
         Utils.log("miners: " + unitCounts[RobotType.MINER.ordinal()]);
         Utils.log("drones: " + unitCounts[RobotType.DELIVERY_DRONE.ordinal()]);
+        Utils.log("fulfillment centers: " + unitCounts[RobotType.FULFILLMENT_CENTER.ordinal()]);
         int numEnemies = bot.enemies.length;
         int numFriendlyDS = 0;
         boolean canSeeFriendlyHQ = false;

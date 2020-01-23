@@ -9,9 +9,11 @@ public class MagicConstants {
 	public static int ORDINAL_SECRET_NUM = 234746;
 	public static int MAX_CLUSTER_DIST = RobotType.MINER.sensorRadiusSquared;
     public static int GIVE_UP_CLUSTER_DIST = 2;
-    public static int EXPLORE_BOREDOM = 25;
+	public static int GIVE_UP_WATER_DIST = 2;
+	public static int EXPLORE_BOREDOM = 25;
     public static int REQUIRED_REFINERY_DIST = 50;
-    public static int LATTICE_HEIGHT = 8;
+	public static int TOLERATED_WATER_DIST = 50;
+	public static int LATTICE_HEIGHT = 8;
 	public static int CRUNCH_ROUND = 1500;
 	public static RobotType[] LATTICE_COMP_TYPES = new RobotType[]{
 			RobotType.NET_GUN,
@@ -23,9 +25,9 @@ public class MagicConstants {
 	};
 	public static int[] LATTICE_ARMY_COMP = new int[]{
 			0, //Net Guns
-			0, //FCs
+			1, //FCs
 			1, //DS
-			0, //Drones
+			10, //Drones
 			10, //Vaps
 			10, //Landscapers
 	};

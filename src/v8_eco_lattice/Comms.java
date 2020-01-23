@@ -95,10 +95,16 @@ public class Comms {
             case ENEMY_HQ_LOC:
                 Utils.log("adding enemy hq loc");
                 bot.enemyHQLoc = msgToLocation(msg[6]);
+                break;
             case WATER_LOC:
                 Utils.log("adding water loc");
                 MapLocation wLoc = msgToLocation(msg[6]);
                 bot.waterLocs[bot.numWaterLocs++] = wLoc;
+                break;
+            case ENEMY_NET_GUN_LOC:
+                Utils.log("adding enemy net guns");
+                MapLocation engLoc = msgToLocation(msg[6]);
+                bot.enemyNetGunLocs[bot.numEnemyNetGuns++] = engLoc;
             case UNIT_CREATED:
                 bot.unitCounts[msg[6]- MagicConstants.ORDINAL_SECRET_NUM]++;
         }
