@@ -10,6 +10,31 @@ public class MagicConstants {
 	public static int BUG_PATIENCE = 20; //how many turns before we give up bugging
     public static int MAX_CLUSTER_DIST = RobotType.MINER.sensorRadiusSquared;
     public static int GIVE_UP_CLUSTER_DIST = 2;
-    public static int EXPLORE_BOREDOM = 10;
+    public static int EXPLORE_BOREDOM = 25;
     public static int REQUIRED_REFINERY_DIST = 50;
+	public static int CRUNCH_ROUND = 1500;
+	public static RobotType[] LATTICE_COMP_TYPES = new RobotType[]{
+			RobotType.NET_GUN,
+			RobotType.FULFILLMENT_CENTER,
+			RobotType.DESIGN_SCHOOL,
+			RobotType.DELIVERY_DRONE,
+			RobotType.VAPORATOR,
+			RobotType.LANDSCAPER,
+	};
+	public static int[] LATTICE_ARMY_COMP = new int[]{
+			0, //Net Guns
+			1, //FCs
+			1, //DS
+			10, //Drones
+			10, //Vaps
+			10, //Landscapers
+	};
+	public static RobotType[] RUSH_DEFENSE_COMP_TYPES = new RobotType[]{
+			RobotType.DELIVERY_DRONE,
+			RobotType.LANDSCAPER,
+	};
+	public static int[] RUSH_DEFENSE_ARMY_COMP = new int[]{
+			1, //Drones
+			1, //Landscapers
+	};
 }

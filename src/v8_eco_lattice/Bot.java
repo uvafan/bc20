@@ -91,7 +91,7 @@ public class Bot {
         invalidCluster = new boolean[500];
         numSoupClusters = 0;
         rand = new Random();
-        strat = new Rush(this);
+        strat = new EcoLattice(this);
         for(RobotInfo e: enemies) {
             if (e.type == RobotType.HQ) {
                 enemyHQLoc = e.location;

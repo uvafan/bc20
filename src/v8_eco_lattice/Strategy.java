@@ -60,4 +60,28 @@ public class Strategy {
         return;
     }
 
+
+    public void updateBasedOnDesiredComp(int[] unitCounts, int[] desiredComp, RobotType[] types) {
+        RobotType bestType = null;
+        double bestRatio = Double.MAX_VALUE;
+        int highestNum = -1;
+        for(int i=0; i < desiredComp.length; i++) {
+            RobotType type = types[i];
+            int count = unitCounts[type.ordinal()];
+            int comp = desiredComp[type.ordinal()];
+            double ratio = count / comp;
+            if(ratio < bestRatio || (ratio == bestRatio && comp > highestNum)) {
+                bestRatio = ratio;
+                bestType = type;
+                highestNum = comp;
+            }
+        }
+        for(RobotType type: types) {
+            if(type == bestType)
+                soupPriorities[type.ordinal()] = 0;
+            else
+                soupPriorities[type.ordinal()] = bestType.cost + type.cost + 2;
+        }
+    }
+
 }
