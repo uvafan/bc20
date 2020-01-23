@@ -7,7 +7,8 @@ public class DeliveryDrone extends Unit {
     public static MapLocation targetLoc;
     public static boolean defending = false;
     public static boolean harassing = false;
-    public static boolean pickedUpFriendlyLandscaper = false;
+    public static boolean landscaperDropper = false;
+    public static boolean droppedOff = false;
 
     public DeliveryDrone(RobotController r) throws GameActionException {
         super(r);
@@ -16,6 +17,8 @@ public class DeliveryDrone extends Unit {
         }
         else {
             harassing = true;
+            if (round >= MagicConstants.PICK_UP_LANDSCAPER_ROUND)
+                landscaperDropper = true;
         }
         if(enemyHQLoc == null) {
             if (rushing && (hqLoc == null || hqLoc.distanceSquaredTo(center) > here.distanceSquaredTo(hqLoc)))
@@ -38,7 +41,6 @@ public class DeliveryDrone extends Unit {
                 doCrunch();
             }
             else {
-                // harass
                 doHarass();
             }
         }
@@ -105,10 +107,40 @@ public class DeliveryDrone extends Unit {
             if(updateOpponentHQs()) {
                 pickTargetFromEnemyHQs(true);
             }
-        if (!rc.isCurrentlyHoldingUnit()) {
-            findAndPickUpEnemyUnit();
-        } else {
-            dropUnitInWater();
+        if(landscaperDropper && !droppedOff) {
+            if(!rc.isCurrentlyHoldingUnit()) {
+                RobotInfo closestLandscaper = null;
+                int minDist = Integer.MAX_VALUE;
+                for(RobotInfo f: friends) {
+                    if(f.type != RobotType.LANDSCAPER)
+                        continue;
+                    int dist = here.distanceSquaredTo(f.location);
+                    if(dist < minDist) {
+                        closestLandscaper = f;
+                        minDist = dist;
+                    }
+                }
+                if(minDist <= 2) {
+                    if(rc.canPickUpUnit(closestLandscaper.ID))
+                        rc.pickUpUnit(closestLandscaper.ID);
+                } else if (closestLandscaper != null) {
+                    goTo(closestLandscaper.location);
+                }
+                else {
+                    // TODO: go to nearest design school maybe
+                    explore();
+                }
+            }
+            else {
+                runToEnemyHQ();
+            }
+        }
+        else {
+            if (!rc.isCurrentlyHoldingUnit()) {
+                findAndPickUpEnemyUnit();
+            } else {
+                dropUnitInWater();
+            }
         }
     }
 
@@ -116,8 +148,8 @@ public class DeliveryDrone extends Unit {
         for(Direction dir: directions) {
             MapLocation loc = here.add(dir);
             if(rc.canSenseLocation(loc) && rc.senseFlooding(loc)) {
-                rc.dropUnit(dir);
-                return;
+                if(tryDrop(dir, false))
+                    return;
             }
         }
         MapLocation waterLoc = null;
@@ -159,6 +191,11 @@ public class DeliveryDrone extends Unit {
             if (defending && hqLoc != null) {
                 goTo(hqLoc);
             }
+            else if (crunching && here.distanceSquaredTo(enemyHQLoc) <= 16) {
+                defending = true;
+                crunching = false;
+                goTo(hqLoc);
+            }
             else if(harassing || crunching) {
                 runToEnemyHQ();
             }
@@ -181,11 +218,22 @@ public class DeliveryDrone extends Unit {
     }
 
     public void doCrunch() throws GameActionException {
-        if(!pickedUpFriendlyLandscaper) {
+        if(!landscaperDropper || !rc.isCurrentlyHoldingUnit()) {
             doHarass();
         }
         else {
-            //TODO this
+            if(enemyHQLoc != null && here.distanceSquaredTo(enemyHQLoc) <= 8) {
+                for(Direction dir: directions) {
+                    MapLocation loc = here.add(dir);
+                    if(loc.distanceSquaredTo(enemyHQLoc) <= 2 && rc.canDropUnit(dir)) {
+                        droppedOff = true;
+                        rc.dropUnit(dir);
+                    }
+                }
+            }
+            else if(enemyHQLoc != null) {
+                goTo(enemyHQLoc);
+            }
         }
     }
 
@@ -228,6 +276,9 @@ public class DeliveryDrone extends Unit {
                 }
             }
             return false;
+        }
+        else if(crunching || harassing) {
+            return true;
         }
         return false;
     }

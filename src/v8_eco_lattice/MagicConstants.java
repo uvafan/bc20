@@ -16,6 +16,7 @@ public class MagicConstants {
 	public static int RUSH_DEFENSE_DIST = 100;
 	public static int LATTICE_HEIGHT = 8;
 	public static int CRUNCH_ROUND = 1500;
+	public static int PICK_UP_LANDSCAPER_ROUND = 1250;
 	public static int MAX_WATER_LOCS = 20;
 	public static RobotType[] LATTICE_COMP_TYPES = new RobotType[]{
 			RobotType.NET_GUN,
