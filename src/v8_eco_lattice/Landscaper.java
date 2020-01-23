@@ -161,7 +161,12 @@ public class Landscaper extends Unit {
         int minToBury = Integer.MAX_VALUE;
         if(buildingToBury != null)
             minToBury = Math.min(type.dirtLimit, buildingToBury.type.dirtLimit);
-        if(buildingToBury != null && here.distanceSquaredTo(buildingToBury.location) <= 2) {
+        boolean hqHasDirt = false;
+        hqHasDirt = rc.canSenseLocation(hqLoc) && rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0;
+        if(hqHasDirt && spotIsFreeAround(hqLoc) && here.distanceSquaredTo(hqLoc) > 2) {
+            goTo(hqLoc);
+        }
+        else if(buildingToBury != null && here.distanceSquaredTo(buildingToBury.location) <= 2) {
             if(rc.getDirtCarrying() < minToBury && (buildingToBury.dirtCarrying == 0 || rc.getDirtCarrying() == 0)) {
                 if(Utils.DEBUG)
                     rc.setIndicatorLine(here, buildingToBury.location, 0, 0, 255);
