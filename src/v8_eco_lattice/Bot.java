@@ -348,7 +348,7 @@ public class Bot {
         return false;
     }
 
-/*
+
     static MapLocation[] getLocationsWithinSensorRad() {
         int sensorRad = rc.getCurrentSensorRadiusSquared();
         Utils.log("sensorRad: " + sensorRad);
@@ -392,6 +392,6 @@ public class Bot {
             }
         ret[idx] = null;
         return ret;
-    }*/
+    }
 
 }
