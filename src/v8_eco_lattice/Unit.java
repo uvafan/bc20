@@ -3,27 +3,20 @@ package v8_eco_lattice;
 import battlecode.common.*;
 
 public class Unit extends Bot {
+    public static boolean crunching = false;
+    public static NavSafetyPolicy safe;
+    public static NavSafetyPolicy crunch;
+
     public Unit(RobotController r) throws GameActionException {
         super(r);
-        findHQ();
+        safe = new SafetyPolicyAvoidAllUnits();
+        crunch = new SafetyPolicyCrunch();
     }
 
     @Override
     public void takeTurn() throws GameActionException {
         super.takeTurn();
         here = rc.getLocation();
-    }
-
-    static void findHQ() throws GameActionException {
-        if (hqLoc == null) {
-            // search surroundings for HQ
-            RobotInfo[] robots = rc.senseNearbyRobots();
-            for (RobotInfo robot : robots) {
-                if (robot.type == RobotType.HQ && robot.team == rc.getTeam()) {
-                    hqLoc = robot.location;
-                }
-            }
-        }
     }
 
     // tries to move in the general direction of dir
@@ -38,7 +31,9 @@ public class Unit extends Bot {
 
     // navigate towards a particular location
     static boolean goTo(MapLocation destination) throws GameActionException {
-        return Nav.goTo(destination, new SafetyPolicyAvoidAllUnits());
+        if(crunching)
+            return Nav.goTo(destination, crunch);
+        return Nav.goTo(destination, safe);
     }
 
     static boolean tryMove(Direction dir) throws GameActionException {
@@ -49,7 +44,7 @@ public class Unit extends Bot {
     }
 
     static void explore() throws GameActionException {
-        Nav.explore(new SafetyPolicyAvoidAllUnits());
+        Nav.explore(safe);
     }
 
 }

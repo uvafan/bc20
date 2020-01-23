@@ -25,6 +25,9 @@ public class Bot {
     public static MapLocation[] soupClusters;
     public static int numSoupClusters;
     public static boolean[] invalidCluster;
+    public static MapLocation[] waterLocs;
+    public static int numWaterLocs;
+    public static boolean[] invalidWater;
     public static Direction lastExploreDir;
     public static Random rand;
     public static MapLocation targetLoc;
@@ -87,9 +90,12 @@ public class Bot {
         }
         refineries = new MapLocation[100];
         designSchools = new MapLocation[100];
-        soupClusters = new MapLocation[500];
-        invalidCluster = new boolean[500];
+        soupClusters = new MapLocation[100];
+        invalidCluster = new boolean[100];
         numSoupClusters = 0;
+        waterLocs = new MapLocation[100];
+        invalidWater = new boolean[100];
+        numWaterLocs = 0;
         rand = new Random();
         strat = new EcoLattice(this);
         for(RobotInfo e: enemies) {
@@ -154,12 +160,12 @@ public class Bot {
             Utils.log("rip");
             return false;
         }
-        RobotInfo[] enemies = rc.senseNearbyRobots(-1, enemy);
         Utils.log("I see " + enemies.length + " enemies.");
         for(RobotInfo e: enemies) {
             if (e.type == RobotType.HQ) {
                 Utils.log("found you!");
                 enemyHQLoc = e.location;
+                comms.broadcastLoc(Comms.MessageType.ENEMY_HQ_LOC, enemyHQLoc);
                 return false;
             }
         }

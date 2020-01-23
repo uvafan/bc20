@@ -32,6 +32,8 @@ public class Comms {
         FULFILLMENT_CENTER_LOC,
         VAPORATOR_LOC,
         UNIT_CREATED,
+        WATER_LOC,
+        ENEMY_HQ_LOC,
     }
 
     public Comms(Bot b) {
@@ -90,6 +92,13 @@ public class Comms {
                 bot.soupClusters[bot.numSoupClusters] = scLoc;
                 bot.numSoupClusters++;
                 break;
+            case ENEMY_HQ_LOC:
+                Utils.log("adding enemy hq loc");
+                bot.enemyHQLoc = msgToLocation(msg[6]);
+            case WATER_LOC:
+                Utils.log("adding water loc");
+                MapLocation wLoc = msgToLocation(msg[6]);
+                bot.waterLocs[bot.numWaterLocs++] = wLoc;
             case UNIT_CREATED:
                 bot.unitCounts[msg[6]- MagicConstants.ORDINAL_SECRET_NUM]++;
         }

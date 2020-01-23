@@ -5,6 +5,17 @@ interface NavSafetyPolicy {
 	public boolean isSafeToMoveTo(MapLocation loc) throws GameActionException;
 }
 
+class SafetyPolicyCrunch extends Bot implements NavSafetyPolicy {
+
+	public SafetyPolicyCrunch() {
+	}
+
+	public boolean isSafeToMoveTo(MapLocation loc) {
+		return true;
+	}
+
+}
+
 class SafetyPolicyAvoidAllUnits extends Bot implements NavSafetyPolicy {
 
 	public SafetyPolicyAvoidAllUnits() {
@@ -18,14 +29,19 @@ class SafetyPolicyAvoidAllUnits extends Bot implements NavSafetyPolicy {
 					return false;
 				}
 			}
+			for(RobotInfo e: enemies) {
+				if(e.type == RobotType.NET_GUN && loc.distanceSquaredTo(e.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+					return false;
+				}
+			}
 			if(enemyHQLoc != null && loc.distanceSquaredTo(enemyHQLoc) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)
 				return false;
 			break;
 		default:
 				if(rc.senseFlooding(loc)) //change this to if the tile will flood next turn
 					return false;
-				for (RobotInfo enemyDrone: nearbyEnemyDrones) {
-					if(loc.distanceSquaredTo(enemyDrone.location) <=2)
+				for (RobotInfo e: enemies) {
+					if(e.type == RobotType.DELIVERY_DRONE && loc.distanceSquaredTo(e.location) <=2)
 						return false;
 				}
 				break;
