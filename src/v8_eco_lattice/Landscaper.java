@@ -6,6 +6,8 @@ public class Landscaper extends Unit {
 
     public static MapLocation ourDesignSchool = null;
     public static boolean turtling = false;
+    //public static int[] xDifferentials = {-1,0,0,1,-1,-1,1,1,-2,0,0}
+    //public static int[] yDifferentials = {0,1,-1,0,1,-1,1,-1}
 
     public Landscaper(RobotController r) throws GameActionException {
         super(r);
@@ -39,8 +41,9 @@ public class Landscaper extends Unit {
                 }
             }
             if (closestEnemyBuilding != null) {
+            	//TODO: Check that its actually reachable lmao
                 buryEnemy(minDist, closestEnemyBuilding);
-            } else if (rc.getCooldownTurns() > 1) {
+            } else if (rc.getCooldownTurns() < 1) {
                 if(turtling)
                     doTurtle();
                 else
@@ -50,11 +53,93 @@ public class Landscaper extends Unit {
         comms.readMessages();
     }
 
-    private void doLattice() {
-
+    private void doLattice() throws GameActionException {
+    	if(rc.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit) {
+    		MapLocation bestDigLoc = null;
+            int minDist = Integer.MAX_VALUE;
+            int i = 0;
+            MapLocation[] nearbyTiles = getLocationsWithinSensorRad();
+            while(true) {
+            	MapLocation testTile = nearbyTiles[i++];
+            	if(testTile == null)
+            		break;
+            	int dist = here.distanceSquaredTo(testTile);
+            	if(dist < minDist && shouldDig(testTile)) {
+            		bestDigLoc = testTile;
+            		minDist = dist;
+            	}
+            }
+            if(bestDigLoc!=null) {
+            	if(here.distanceSquaredTo(bestDigLoc) <=2 ) {
+            		tryDig(here.directionTo(bestDigLoc),false);
+            	}
+            	else {
+            	goTo(bestDigLoc);
+            	}
+            }
+            //else do something with comms
+    	}
+    	else {
+    		MapLocation bestDirtLoc = null;
+            int minDist = Integer.MAX_VALUE;
+            int i = 0;
+            MapLocation[] nearbyTiles = getLocationsWithinSensorRad();
+            while(true) {
+            	MapLocation testTile = nearbyTiles[i++];
+            	if(testTile == null)
+            		break;
+            	int dist = here.distanceSquaredTo(testTile);
+            	int distToHQ = hqLoc.distanceSquaredTo(testTile);
+            	if(dist <= 2) {
+            		distToHQ = 0;
+            	}
+            	if(dist + distToHQ < minDist && shouldPut(testTile)) {
+            		bestDirtLoc = testTile;
+            		minDist = dist + distToHQ;
+            	}
+            }
+            if(bestDirtLoc!=null) {
+            	if(here.distanceSquaredTo(bestDirtLoc) <=2 ) {
+            		if(rc.canDepositDirt(here.directionTo(bestDirtLoc))) {
+            			rc.depositDirt(here.directionTo(bestDirtLoc));
+            		}
+            	}
+            	else {
+            		goTo(bestDirtLoc);
+            	}
+            }
+    	}
+    	//if low on dirt, try to dig
+    	//		if max dirt, put in good spot
+    	//		move to spot to put dirt
+    	//move to spot to pick up dirt
     }
+    private boolean shouldPut(MapLocation testTile) throws GameActionException {
+		if(!badLatticeLoc(testTile) && rc.senseElevation(testTile) < MagicConstants.LATTICE_HEIGHT && !(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2)) {
+			return true;
+		}				
+		return false;
+	}
 
-    private void doTurtle() throws GameActionException {
+	static boolean badLatticeLoc(MapLocation loc) throws GameActionException{
+    	if(loc.x < 0 || loc.x >= mapWidth || loc.y < 0 || loc.y >= mapHeight)
+    		return true;
+    	if(loc.distanceSquaredTo(hqLoc)<=8)
+    		return true;
+    	RobotInfo possiblyUs = rc.senseRobotAtLocation(loc);
+    	if(possiblyUs != null && possiblyUs.team == us) {
+    		return true;
+    	}
+    	return false;
+    }
+    public boolean shouldDig(MapLocation testTile) throws GameActionException {
+		if(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2 && !badLatticeLoc(testTile)) {
+			return true;
+		}
+		return false;
+	}
+
+	private void doTurtle() throws GameActionException {
         if (hqLoc != null && hqLoc.distanceSquaredTo(here) < 4) {
             if (rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0 && rc.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit) {
                 tryDig(here.directionTo(hqLoc), false);

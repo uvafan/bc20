@@ -68,17 +68,24 @@ public class Strategy {
         for(int i=0; i < desiredComp.length; i++) {
             RobotType type = types[i];
             int count = unitCounts[type.ordinal()];
-            int comp = desiredComp[type.ordinal()];
-            double ratio = count / comp;
+            int comp = desiredComp[i];
+            if(comp==0)
+            	continue;
+            double ratio = (1.0 * count) / comp;
+            Utils.log("I think we have " + count + " " + type + " ratio is " + ratio);
             if(ratio < bestRatio || (ratio == bestRatio && comp > highestNum)) {
                 bestRatio = ratio;
                 bestType = type;
                 highestNum = comp;
             }
         }
-        for(RobotType type: types) {
+        Utils.log("best type is "+ bestType);
+        for(int i=0; i < desiredComp.length; i++) {
+        	RobotType type = types[i];
             if(type == bestType)
                 soupPriorities[type.ordinal()] = 0;
+            else if(desiredComp[i] == 0)
+            	soupPriorities[type.ordinal()] = Integer.MAX_VALUE;
             else
                 soupPriorities[type.ordinal()] = bestType.cost + type.cost + 2;
         }
