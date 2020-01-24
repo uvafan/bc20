@@ -36,10 +36,10 @@ public class Landscaper extends Unit {
             doRush();
         }
         else if(rc.getCooldownTurns() < 1){
-            if(defending)
+            RobotInfo buildingToBury = getBuildingToBury();
+            if(defending && (rc.canSenseLocation(hqLoc) || buildingToBury == null))
                 doDefense();
             else {
-                RobotInfo buildingToBury = getBuildingToBury();
                 if (buildingToBury != null) {
                     buryEnemy(buildingToBury);
                 }
@@ -163,84 +163,139 @@ public class Landscaper extends Unit {
 		return false;
 	}
 
-	private boolean canLeaveHQ() throws GameActionException {
-        int enemyDiff = 0;
+	private int landscaperDiff(MapLocation loc) throws GameActionException{
+        int diff = 0;
         for(Direction dir: directions) {
-            MapLocation loc = hqLoc.add(dir);
-            if(rc.canSenseLocation(loc)) {
-                RobotInfo ri = rc.senseRobotAtLocation(loc);
+            MapLocation loc2 = loc.add(dir);
+            if(rc.canSenseLocation(loc2)) {
+                RobotInfo ri = rc.senseRobotAtLocation(loc2);
                 if(ri != null && ri.type == RobotType.LANDSCAPER) {
                     if(ri.team == enemy)
-                        enemyDiff++;
+                        diff--;
                     else
-                        enemyDiff--;
+                        diff++;
                 }
             }
         }
-        return enemyDiff < -2;
+        return diff;
+    }
+
+	private boolean canLeaveHQ() throws GameActionException {
+        return landscaperDiff(hqLoc) > 2;
     }
 
 	private void doDefense() throws GameActionException {
         Utils.log("defending!");
-        RobotInfo buildingToBury = getBuildingToBury();
-        int minToBury = Integer.MAX_VALUE;
-        if(buildingToBury != null)
-            minToBury = Math.min(type.dirtLimit, buildingToBury.type.dirtLimit);
-        boolean hqHasDirt = rc.canSenseLocation(hqLoc) && rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0;
-        if(hqHasDirt && here.distanceSquaredTo(hqLoc) <= 2)
-            minToBury = type.dirtLimit;
-        if(hqHasDirt && spotIsFreeAround(hqLoc) && here.distanceSquaredTo(hqLoc) > 2) {
+        if(!rc.canSenseLocation(hqLoc)) {
             goTo(hqLoc);
+            return;
         }
-        else if(buildingToBury != null && here.distanceSquaredTo(buildingToBury.location) <= 2) {
-            if(rc.getDirtCarrying() < minToBury && (buildingToBury.dirtCarrying == 0 || rc.getDirtCarrying() == 0)) {
-                if(Utils.DEBUG)
-                    rc.setIndicatorLine(here, buildingToBury.location, 0, 0, 255);
-                if(hqLoc.distanceSquaredTo(here) <= 2)
-                    tryDig(here.directionTo(hqLoc), false);
-                if(rc.getCooldownTurns() < 1)
-                    tryDig(hqLoc.directionTo(here), true);
+        RobotInfo ret = null;
+        RobotInfo[] enemyBuildings = new RobotInfo[100];
+        int numEnemyBuildings = 0;
+        for(RobotInfo e: enemies) {
+            if(Utils.isBuilding(e.type)) {
+                enemyBuildings[numEnemyBuildings++] = e;
             }
-            else if(rc.canDepositDirt(here.directionTo(buildingToBury.location))) {
-                if(Utils.DEBUG)
-                    rc.setIndicatorLine(here, buildingToBury.location, 0, 255, 0);
-                rc.depositDirt(here.directionTo(buildingToBury.location));
+        }
+        int spotPriority = Integer.MIN_VALUE;
+        MapLocation spot = null;
+        int spotsFree = 0;
+        for(Direction dir: directions) {
+            MapLocation loc = hqLoc.add(dir);
+            if(!rc.canSenseLocation(loc) || (!loc.equals(here) && !canReach(loc, here, true))) {
+                continue;
+            }
+            spotsFree += loc.equals(here) ? 0 : 1;
+            int priority = -here.distanceSquaredTo(loc) * MagicConstants.SPOT_DIST_MULTIPLIER;
+            priority += (loc.equals(here) ? MagicConstants.STAY_HERE_BONUS: 0);
+            int minDist = MagicConstants.MAX_BUILDING_DIST;
+            for(int i=0; i<numEnemyBuildings; i++) {
+                RobotInfo ri = enemyBuildings[i];
+                minDist = Math.min(minDist, loc.distanceSquaredTo(ri.location));
+            }
+            priority += (minDist <= 2 ? MagicConstants.NEXT_TO_BUILDING_BONUS : (MagicConstants.MAX_BUILDING_DIST - minDist) / 2);
+            if(priority > spotPriority) {
+                spotPriority = priority;
+                spot = loc;
+            }
+        }
+        spotPriority += spotsFree * MagicConstants.SPOTS_FREE_MULTIPLIER;
+        int diff = landscaperDiff(hqLoc);
+        spotPriority -= diff * MagicConstants.LANDSCAPER_DIFF_MULTIPLIER;
+        int dirtOnHQ = rc.senseRobotAtLocation(hqLoc).dirtCarrying;
+        spotPriority += MagicConstants.HQ_DIRT_MULTIPLIER * 3;
+        int myDirt = rc.getDirtCarrying();
+        spotPriority -= myDirt * MagicConstants.MY_DIRT_MULTIPLIER;
+        int buildingPriority = Integer.MIN_VALUE;
+        int adjBuildingPriority = Integer.MIN_VALUE;
+        MapLocation building = null;
+        MapLocation adjBuilding = null;
+        for(int i=0; i<numEnemyBuildings; i++) {
+            RobotInfo e = enemyBuildings[i];
+            int dist = here.distanceSquaredTo(e.location);
+            int priority = -dist * MagicConstants.BUILDING_DIST_MULTIPLIER;
+            priority += e.dirtCarrying * MagicConstants.BUILDING_DIRT_MULTIPLIER;
+            priority += e.type == RobotType.NET_GUN ? MagicConstants.NET_GUN_BONUS : 0;
+            priority += dist <= 2 ? MagicConstants.BUILDING_ADJ_BONUS : 0;
+            int bDiff = landscaperDiff(e.location);
+            priority += bDiff * MagicConstants.BUILDING_DIFF_MULTIPLIER;
+            if (priority > buildingPriority) {
+                buildingPriority = priority;
+                building = e.location;
+            }
+            if(dist <= 2 && priority > adjBuildingPriority) {
+                adjBuildingPriority = priority;
+                adjBuilding = e.location;
+            }
+        }
+        if(spot != null)
+            Utils.log("spot is " + spot + " priority: " + spotPriority);
+        if(building != null)
+            Utils.log("building at " + building + " priority: " + buildingPriority);
+        if(spot == null && building == null) {
+            doneDefending = true;
+        }
+        else if(spotPriority > buildingPriority) {
+            rc.setIndicatorLine(here, spot, 255, 0, 0);
+            if(!here.equals(spot)) {
+                goTo(spot);
+            }
+            if(myDirt < 25 && dirtOnHQ > 0) {
+                tryDig(here.directionTo(hqLoc), false);
+            }
+            else if(adjBuilding != null && myDirt > 0) {
+                if(rc.canDepositDirt(here.directionTo(adjBuilding)))
+                    rc.depositDirt(here.directionTo(adjBuilding));
+            }
+            else if (myDirt < 25) {
+                tryDig(adjBuilding.directionTo(here), true);
+            }
+            else if (dirtOnHQ > 0){
+                Direction d = hqLoc.directionTo(here);
+                Direction[] dirs = {d, d.rotateLeft(), d.rotateRight(), d.rotateLeft().rotateLeft(), d.rotateRight().rotateRight()};
+                for(Direction dir: dirs) {
+                    if(rc.canDepositDirt(dir)) {
+                        rc.depositDirt(dir);
+                    }
+                }
             }
         }
         else {
-            if(buildingToBury != null && rc.getDirtCarrying() >= minToBury) {
-                if(Utils.DEBUG)
-                    rc.setIndicatorLine(here, buildingToBury.location, 255, 0, 0);
-                goTo(buildingToBury.location);
-            }
-            else if (hqLoc != null) {
-                if(!rc.canSenseLocation(hqLoc))
-                    goTo(hqLoc);
-                else if(here.distanceSquaredTo(hqLoc) > 2 && spotIsFreeAround(hqLoc) && hqHasDirt) {
-                    goTo(hqLoc);
+            rc.setIndicatorLine(here, building, 255, 0, 0);
+            if(here.distanceSquaredTo(building) <= 2) {
+                if(myDirt == 0) {
+                    tryDig(building.directionTo(here), false);
                 }
-                else if(here.distanceSquaredTo(hqLoc) <= 2 && rc.getDirtCarrying() < minToBury && (hqHasDirt || !canLeaveHQ())) {
-                    if(rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0) {
-                        if(rc.canDigDirt(here.directionTo(hqLoc)))
-                            rc.digDirt(here.directionTo(hqLoc));
-                    }
-                }
-                else if(buildingToBury != null) {
-                    if(Utils.DEBUG)
-                        rc.setIndicatorLine(here, buildingToBury.location, 255, 0, 0);
-                    goTo(buildingToBury.location);
-                }
-                else if (rc.canSenseLocation(hqLoc) && rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0) {
-                    goTo(hqLoc);
-                }
-                else {
-                    doneDefending = true;
+                else if(rc.canDepositDirt(here.directionTo(building))) {
+                    rc.depositDirt(here.directionTo(building));
                 }
             }
             else {
-                doneDefending = true;
+                goTo(building);
             }
         }
+        //
     }
 
     private RobotInfo getBuildingToBury() {
@@ -441,3 +496,64 @@ public class Landscaper extends Unit {
     }
 
 }
+
+/* old defense
+        RobotInfo buildingToBury = getBuildingToBury();
+        int minToBury = Integer.MAX_VALUE;
+        if(buildingToBury != null)
+        minToBury = Math.min(type.dirtLimit, buildingToBury.type.dirtLimit);
+        boolean hqHasDirt = rc.canSenseLocation(hqLoc) && rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0;
+        if(hqHasDirt && here.distanceSquaredTo(hqLoc) <= 2)
+        minToBury = type.dirtLimit;
+        if(hqHasDirt && spotIsFreeAround(hqLoc) && here.distanceSquaredTo(hqLoc) > 2) {
+        goTo(hqLoc);
+        }
+        else if(buildingToBury != null && here.distanceSquaredTo(buildingToBury.location) <= 2) {
+        if(rc.getDirtCarrying() < minToBury && (buildingToBury.dirtCarrying == 0 || rc.getDirtCarrying() == 0)) {
+        if(Utils.DEBUG)
+        rc.setIndicatorLine(here, buildingToBury.location, 0, 0, 255);
+        if(hqLoc.distanceSquaredTo(here) <= 2)
+        tryDig(here.directionTo(hqLoc), false);
+        if(rc.getCooldownTurns() < 1)
+        tryDig(hqLoc.directionTo(here), true);
+        }
+        else if(rc.canDepositDirt(here.directionTo(buildingToBury.location))) {
+        if(Utils.DEBUG)
+        rc.setIndicatorLine(here, buildingToBury.location, 0, 255, 0);
+        rc.depositDirt(here.directionTo(buildingToBury.location));
+        }
+        }
+        else {
+        if(buildingToBury != null && rc.getDirtCarrying() >= minToBury) {
+        if(Utils.DEBUG)
+        rc.setIndicatorLine(here, buildingToBury.location, 255, 0, 0);
+        goTo(buildingToBury.location);
+        }
+        else if (hqLoc != null) {
+        if(!rc.canSenseLocation(hqLoc))
+        goTo(hqLoc);
+        else if(here.distanceSquaredTo(hqLoc) > 2 && spotIsFreeAround(hqLoc) && hqHasDirt) {
+        goTo(hqLoc);
+        }
+        else if(here.distanceSquaredTo(hqLoc) <= 2 && rc.getDirtCarrying() < minToBury && (hqHasDirt || !canLeaveHQ())) {
+        if(rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0) {
+        if(rc.canDigDirt(here.directionTo(hqLoc)))
+        rc.digDirt(here.directionTo(hqLoc));
+        }
+        }
+        else if(buildingToBury != null) {
+        if(Utils.DEBUG)
+        rc.setIndicatorLine(here, buildingToBury.location, 255, 0, 0);
+        goTo(buildingToBury.location);
+        }
+        else if (rc.canSenseLocation(hqLoc) && rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0) {
+        goTo(hqLoc);
+        }
+        else {
+        doneDefending = true;
+        }
+        }
+        else {
+        doneDefending = true;
+        }
+        }*/

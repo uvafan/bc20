@@ -19,6 +19,12 @@ public class MagicConstants {
 	public static int PICK_UP_LANDSCAPER_ROUND = 1150;
 	public static int TURNS_FOR_VAP_TO_PAY = 250;
 	public static int MAX_WATER_LOCS = 20;
+	//public static int[] WALL_Y_OFFSETS = {-2,-1,0,1,2,2,2,2,2,1,0,-1,-2,-2,-2,-2};
+	// public static int[] WALL_X_OFFSETS = {-2,-2,-2,-2,-2,-1,0,1,2,2,2,2,2,1,0,-1};
+	public static int[] WALL_X_OFFSETS = {-3,-2,-1,0,1,2,3,3,3,3,3,3,3,2,1,0,-1,-2,-3,-3,-3,-3,-3,-3};
+	public static int[] WALL_Y_OFFSETS = {3,3,3,3,3,3,3,2,1,0,-1,-2,-3,-3,-3,-3,-3,-3,-3,-2,-1,0,1,2};
+
+	// build order
 	public static RobotType[] LATTICE_COMP_TYPES = new RobotType[]{
 			RobotType.NET_GUN,
 			RobotType.FULFILLMENT_CENTER,
@@ -43,9 +49,20 @@ public class MagicConstants {
 			1, //Drones
 			1, //Landscapers
 	};
-	//public static int[] WALL_Y_OFFSETS = {-2,-1,0,1,2,2,2,2,2,1,0,-1,-2,-2,-2,-2};
-	// public static int[] WALL_X_OFFSETS = {-2,-2,-2,-2,-2,-1,0,1,2,2,2,2,2,1,0,-1};
-	public static int[] WALL_X_OFFSETS = {-3,-2,-1,0,1,2,3,3,3,3,3,3,3,2,1,0,-1,-2,-3,-3,-3,-3,-3,-3};
-	public static int[] WALL_Y_OFFSETS = {3,3,3,3,3,3,3,2,1,0,-1,-2,-3,-3,-3,-3,-3,-3,-3,-2,-1,0,1,2};
 	public static int BUILD_MINER_NUM = 6;
+
+	// rush defense prioritization
+	public static int SPOTS_FREE_MULTIPLIER = 50;
+	public static int SPOT_DIST_MULTIPLIER = 1;
+    public static int MAX_BUILDING_DIST = 20;
+    public static int NEXT_TO_BUILDING_BONUS = 1000;
+    public static int STAY_HERE_BONUS = 50;
+    public static int LANDSCAPER_DIFF_MULTIPLIER = 50;
+    public static int HQ_DIRT_MULTIPLIER = 2;
+	public static int MY_DIRT_MULTIPLIER = 0;
+	public static int NET_GUN_BONUS = 100;
+	public static int BUILDING_DIRT_MULTIPLIER = 2;
+	public static int BUILDING_DIST_MULTIPLIER = 1;
+	public static int BUILDING_ADJ_BONUS = 50;
+	public static int BUILDING_DIFF_MULTIPLIER = 10;
 }

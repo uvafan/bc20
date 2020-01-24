@@ -6,6 +6,7 @@ import java.util.Random;
 
 public class Bot {
     public static RobotController rc;
+    public static MapLocation enemyHQLocGuessed = null;
     public static boolean hqAttacked = false;
     public static boolean rushing = false;
     public static RobotType type;
@@ -364,6 +365,7 @@ public class Bot {
             }
         }
         Utils.log("picked " + ret);
+        enemyHQLocGuessed = ret;
         return ret;
     }
 
