@@ -9,6 +9,7 @@ public class DeliveryDrone extends Unit {
     public static boolean harassing = false;
     public static boolean landscaperDropper = false;
     public static boolean droppedOff = false;
+    public static boolean pickedUpFriend = false;
 
     public DeliveryDrone(RobotController r) throws GameActionException {
         super(r);
@@ -40,7 +41,10 @@ public class DeliveryDrone extends Unit {
             if(crunching) {
                 doCrunch();
             }
-            else {
+            else if (!defending && isWallComplete) {
+                helpOutFriends();
+            }
+            if(rc.getCooldownTurns() < 1 && harassing) {
                 doHarass();
             }
         }
@@ -48,6 +52,58 @@ public class DeliveryDrone extends Unit {
         comms.readMessages();
         if(numWaterLocs <= MagicConstants.MAX_WATER_LOCS)
             broadcastWater();
+    }
+
+    private void helpOutFriends() throws GameActionException {
+        if(pickedUpFriend) {
+            int minDist = Integer.MAX_VALUE;
+            MapLocation wallLoc = null;
+            for(int i=0; i < MagicConstants.WALL_X_OFFSETS.length; i++) {
+                int dx = MagicConstants.WALL_X_OFFSETS[i];
+                int dy = MagicConstants.WALL_Y_OFFSETS[i];
+                MapLocation check = new MapLocation(hqLoc.x + dx, hqLoc.y + dy);
+                if(rc.canSenseLocation(check) && !rc.isLocationOccupied(check)) {
+                    int dist = here.distanceSquaredTo(check);
+                    if(dist < minDist) {
+                        minDist = dist;
+                        wallLoc = check;
+                    }
+                }
+            }
+            if(wallLoc != null) {
+                rc.setIndicatorLine(here, wallLoc, 0,  0, 255);
+                if(minDist <= 2) {
+                    if(tryDrop(here.directionTo(wallLoc), false))
+                        pickedUpFriend = false;
+                }
+                else {
+                    goTo(wallLoc);
+                }
+            }
+        }
+        else {
+            RobotInfo closestFriend = null;
+            int minDist = Integer.MAX_VALUE;
+            for (RobotInfo ri : friends) {
+                if (ri.type == RobotType.MINER || ri.type == RobotType.LANDSCAPER) {
+                    if (ri.location.distanceSquaredTo(hqLoc) < 9 && here.distanceSquaredTo(ri.location) < minDist) {
+                        minDist = here.distanceSquaredTo(ri.location);
+                        closestFriend = ri;
+                    }
+                }
+            }
+            if(closestFriend != null) {
+                if(minDist <= 2) {
+                    if(rc.canPickUpUnit(closestFriend.ID)) {
+                        rc.pickUpUnit(closestFriend.ID);
+                        pickedUpFriend = true;
+                    }
+                }
+                else {
+                    goTo(closestFriend.location);
+                }
+            }
+        }
     }
 
     private void broadcastWater() throws GameActionException {

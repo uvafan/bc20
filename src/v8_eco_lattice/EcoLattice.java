@@ -51,8 +51,11 @@ public class EcoLattice extends Strategy {
             if(ri.type == RobotType.NET_GUN)
                 seesEnemyNetGun = true;
         }
-        if(unitCounts[RobotType.MINER.ordinal()] >= 6 || numEnemies > 0) {
+        if(unitCounts[RobotType.MINER.ordinal()] >= MagicConstants.BUILD_MINER_NUM-1 || numEnemies > 0) {
             soupPriorities[RobotType.MINER.ordinal()] = Integer.MAX_VALUE;
+        }
+        if(unitCounts[RobotType.MINER.ordinal()] == MagicConstants.BUILD_MINER_NUM-1 && numEnemies == 0) {
+            soupPriorities[RobotType.MINER.ordinal()] = 0;
         }
         Utils.log("seesEnemyNetGun: " + seesEnemyNetGun);
         if(bot.hqAttacked) {

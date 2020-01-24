@@ -37,6 +37,7 @@ public class Comms {
         HQ_ATTACKED,
         HQ_OK,
         NET_GUN_REMOVED,
+        WALL_COMPLETE,
     }
 
     public Comms(Bot b) {
@@ -50,7 +51,7 @@ public class Comms {
     }
 
     public void readMessages(int upUntil) throws GameActionException {
-        while(Clock.getBytecodesLeft() > 300 && readRound <= upUntil) {
+        while(Clock.getBytecodesLeft() > 1000 && readRound <= upUntil) {
             Transaction[] transactions = rc.getBlock(readRound);
             for(Transaction t: transactions) {
                 int[] msg = t.getMessage();
@@ -128,6 +129,10 @@ public class Comms {
                 Utils.log("hq ok");
                 bot.hqAttacked = false;
                 break;
+            case WALL_COMPLETE:
+                Utils.log("wall complete");
+                bot.isWallComplete = true;
+                break;
             case UNIT_CREATED:
                 bot.unitCounts[msg[6]- MagicConstants.ORDINAL_SECRET_NUM]++;
         }
@@ -157,9 +162,9 @@ public class Comms {
             return 2;
         switch(mt) {
             case HQ_ATTACKED: return 2;
-            case HQ_OK: return 2;
-            case HQ_LOC: return 2;
-            case ENEMY_HQ_LOC: return 2;
+            case HQ_OK: return 3;
+            case HQ_LOC: return 3;
+            case WALL_COMPLETE: return 3;
             default: return 1;
         }
     }

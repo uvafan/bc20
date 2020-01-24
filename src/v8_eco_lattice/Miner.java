@@ -15,6 +15,7 @@ public class Miner extends Unit {
     MapLocation fulfillmentLoc;
     MapLocation designSchoolLoc = null;
     MapLocation droneLoc = null;
+    boolean buildMiner = false;
 
     public Miner(RobotController r) throws GameActionException {
         super(r);
@@ -26,87 +27,38 @@ public class Miner extends Unit {
         nearbyFulfillment = false;
         builtFulfillmentRound = -100;
         targetLoc = center;
-        fulfillmentDist = 100;//inf basically;
+        fulfillmentDist = 100; //inf basically;
+        if(strat instanceof EcoLattice) {
+            comms.readMessages();
+            Utils.log("I think there are " + unitCounts[RobotType.MINER.ordinal()] + " miners.");
+            buildMiner = unitCounts[RobotType.MINER.ordinal()] == MagicConstants.BUILD_MINER_NUM;
+            if(buildMiner) {
+                Utils.log("I'm a build miner!");
+            }
+        }
     }
+
     public void takeTurn() throws GameActionException {
         super.takeTurn();
         if(rushing) {
-            if (enemyHQLoc != null && (designSchoolLoc != null || here.distanceSquaredTo(enemyHQLoc) <= 8)) {
-                if (!builtOffensiveNetGun) {
-                    enemyUnits = rc.senseNearbyRobots(rc.getCurrentSensorRadiusSquared(), enemy);
-                    fulfillmentDist = 100;
-                    nearbyFulfillment = false;
-                    nearbyDrone = false;
-                    for (RobotInfo i : enemyUnits) {
-                        if (i.type == RobotType.DELIVERY_DRONE) {
-                            nearbyDrone = true;
-                            droneLoc = i.location;
-                        }
-                        if (i.type == RobotType.FULFILLMENT_CENTER) {
-                            fulfillmentDist = Math.min(fulfillmentDist, here.distanceSquaredTo(i.location));
-                            nearbyFulfillment = true;
-                            fulfillmentLoc = i.location;
-                        }
-                    }
-                    if (nearbyDrone || nearbyFulfillment) {
-                        builtOffensiveNetGun = tryBuild(RobotType.NET_GUN, here.directionTo(fulfillmentLoc), true);
-                    }
-                    if (nearbyDrone && rc.getCooldownTurns() < 1 && here.distanceSquaredTo(droneLoc) <= 2 && designSchoolLoc == null) {
-                        // TODO improve running away
-                        moveInDir(droneLoc.directionTo(here));
-                    }
-                }
-                if(rc.getCooldownTurns() < 1 && designSchoolLoc == null) {
-                    int toleranceDist = 2;
-                    for(Direction dir: cardinalDirs) {
-                        MapLocation loc = enemyHQLoc.add(dir);
-                        if(rc.canSenseLocation(loc) && here.distanceSquaredTo(loc) <= here.distanceSquaredTo(enemyHQLoc) && !rc.isLocationOccupied(loc)){
-                            toleranceDist = 1;
-                            break;
-                        }
-                    }
-                    designSchoolLoc = tryBuildWithin(RobotType.DESIGN_SCHOOL, enemyHQLoc, toleranceDist);
-                    if(designSchoolLoc == null && here.distanceSquaredTo(enemyHQLoc) > 1)
-                        goTo(enemyHQLoc);
-                }
-                if(rc.getCooldownTurns() < 1 && designSchoolLoc != null) {
-                    Direction dir = designSchoolLoc.directionTo(enemyHQLoc);
-                    Direction dirR = dir.rotateRight();
-                    Direction dirL = dir.rotateLeft();
-                    MapLocation candLoc = enemyHQLoc.add(dir);
-                    MapLocation candLocL = enemyHQLoc.add(dirL);
-                    MapLocation candLocR = enemyHQLoc.add(dirR);
-                    MapLocation[] cands = {candLoc, candLocL, candLocR};
-                    targetLoc = cands[0];
-                    for(int i=0; i<cands.length; i++){
-                        MapLocation cand = cands[i];
-                        if(cand.equals(here) || !rc.canSenseLocation(cand) || canReach(cand, here, true)) {
-                            targetLoc = cand;
-                            break;
-                        }
-                    }
-                    if(Utils.DEBUG)
-                        rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
-                    goTo(targetLoc);
-                }
-            }
-            else {
-                if(enemyHQLoc == null)
-                    if(updateSymmetryAndOpponentHQs())
-                        targetLoc = pickTargetFromEnemyHQs(false);
-                if(enemyHQLoc != null) {
-                    targetLoc = enemyHQLoc;
-                    rushToTarget();
-                }
-                else {
-                    rushToTarget();
-                }
-                if(Utils.DEBUG)
-                    rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
-            }
+            doRush();
         }
-        else {
-            if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
+        else if (rc.getCooldownTurns() < 1){
+            if(buildMiner) {
+                if(!buildIfShould()) {
+                    if(!isWallComplete) {
+                        Direction dir = randomDirection();
+                        if (rc.canMove(dir) && here.add(dir).distanceSquaredTo(hqLoc) <= 8) {
+                            tryMove(dir);
+                        }
+                    }
+                    else {
+                        buildMiner = false;
+                        explore();
+                    }
+                }
+            }
+            else if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
                 boolean deposited = false;
                 for (Direction dir : directions)
                     if (tryDeposit(dir)) {
@@ -149,6 +101,83 @@ public class Miner extends Unit {
         comms.readMessages();
     }
 
+    private void doRush() throws GameActionException{
+        if (enemyHQLoc != null && (designSchoolLoc != null || here.distanceSquaredTo(enemyHQLoc) <= 8)) {
+            if (!builtOffensiveNetGun) {
+                enemyUnits = rc.senseNearbyRobots(rc.getCurrentSensorRadiusSquared(), enemy);
+                fulfillmentDist = 100;
+                nearbyFulfillment = false;
+                nearbyDrone = false;
+                for (RobotInfo i : enemyUnits) {
+                    if (i.type == RobotType.DELIVERY_DRONE) {
+                        nearbyDrone = true;
+                        droneLoc = i.location;
+                    }
+                    if (i.type == RobotType.FULFILLMENT_CENTER) {
+                        fulfillmentDist = Math.min(fulfillmentDist, here.distanceSquaredTo(i.location));
+                        nearbyFulfillment = true;
+                        fulfillmentLoc = i.location;
+                    }
+                }
+                if (nearbyDrone || nearbyFulfillment) {
+                    builtOffensiveNetGun = tryBuild(RobotType.NET_GUN, here.directionTo(fulfillmentLoc), true);
+                }
+                if (nearbyDrone && rc.getCooldownTurns() < 1 && here.distanceSquaredTo(droneLoc) <= 2 && designSchoolLoc == null) {
+                    // TODO improve running away
+                    moveInDir(droneLoc.directionTo(here));
+                }
+            }
+            if(rc.getCooldownTurns() < 1 && designSchoolLoc == null) {
+                int toleranceDist = 2;
+                for(Direction dir: cardinalDirs) {
+                    MapLocation loc = enemyHQLoc.add(dir);
+                    if(rc.canSenseLocation(loc) && here.distanceSquaredTo(loc) <= here.distanceSquaredTo(enemyHQLoc) && !rc.isLocationOccupied(loc)){
+                        toleranceDist = 1;
+                        break;
+                    }
+                }
+                designSchoolLoc = tryBuildWithin(RobotType.DESIGN_SCHOOL, enemyHQLoc, toleranceDist);
+                if(designSchoolLoc == null && here.distanceSquaredTo(enemyHQLoc) > 1)
+                    goTo(enemyHQLoc);
+            }
+            if(rc.getCooldownTurns() < 1 && designSchoolLoc != null) {
+                Direction dir = designSchoolLoc.directionTo(enemyHQLoc);
+                Direction dirR = dir.rotateRight();
+                Direction dirL = dir.rotateLeft();
+                MapLocation candLoc = enemyHQLoc.add(dir);
+                MapLocation candLocL = enemyHQLoc.add(dirL);
+                MapLocation candLocR = enemyHQLoc.add(dirR);
+                MapLocation[] cands = {candLoc, candLocL, candLocR};
+                targetLoc = cands[0];
+                for(int i=0; i<cands.length; i++){
+                    MapLocation cand = cands[i];
+                    if(cand.equals(here) || !rc.canSenseLocation(cand) || canReach(cand, here, true)) {
+                        targetLoc = cand;
+                        break;
+                    }
+                }
+                if(Utils.DEBUG)
+                    rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
+                goTo(targetLoc);
+            }
+        }
+        else {
+            if(enemyHQLoc == null)
+                if(updateSymmetryAndOpponentHQs())
+                    targetLoc = pickTargetFromEnemyHQs(false);
+            if(enemyHQLoc != null) {
+                targetLoc = enemyHQLoc;
+                rushToTarget();
+            }
+            else {
+                rushToTarget();
+            }
+            if(Utils.DEBUG)
+                rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
+        }
+    }
+    
+    
     private void rushToTarget() throws GameActionException {
         if(round - builtFulfillmentRound < 25 || rc.getCooldownTurns() >= 1)
             return;
@@ -208,8 +237,9 @@ public class Miner extends Unit {
 
     private boolean buildIfShould() throws GameActionException {
         RobotType rt = strat.determineBuildingNeeded();
-        Direction buildDirection = strat instanceof Turtle ? hqLoc.directionTo(here) : here.directionTo(hqLoc);
-        if(rt != null && tryBuild(rt, buildDirection, true)) {
+        Direction buildDirection = getBuildDirection();
+        boolean tryOthers = !(strat instanceof EcoLattice);
+        if(rt != null && buildDirection != null && tryBuild(rt, buildDirection, tryOthers)) {
             return true;
         }
         if(!rushing && strat instanceof Rush && round < 250)
@@ -223,6 +253,33 @@ public class Miner extends Unit {
             }
         }
         return false;
+    }
+
+    private Direction getBuildDirection() throws GameActionException {
+        if(strat instanceof Turtle) {
+            return hqLoc.directionTo(here);
+        }
+        else if(strat instanceof Rush) {
+            return here.directionTo(hqLoc);
+        }
+        else if(strat instanceof EcoLattice) {
+            Direction buildDir = null;
+            int minDist = Integer.MAX_VALUE;
+            for(Direction dir: directions) {
+                MapLocation loc = here.add(dir);
+                if(rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir)) {
+                    if(loc.distanceSquaredTo(hqLoc) > 8 &&
+                            !(isOnLatticeIntersection(loc) && rc.senseElevation(loc) >= MagicConstants.LATTICE_HEIGHT))
+                        continue;
+                    int dist = hqLoc.distanceSquaredTo(loc);
+                    if(dist < minDist) {
+                        buildDir = dir;
+                    }
+                }
+            }
+            return buildDir;
+        }
+        return randomDirection();
     }
 
     private void updateTargetMineLoc() throws GameActionException {
