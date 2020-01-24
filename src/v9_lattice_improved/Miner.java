@@ -235,7 +235,7 @@ public class Miner extends Unit {
                 minDist = dist;
             }
         }
-        if(bestLoc == null && (!rc.canSenseLocation(hqLoc) || canReachAdj(hqLoc, true)))
+        if(bestLoc == null && (!rc.canSenseLocation(hqLoc) || canReachAdj(hqLoc, true, MagicConstants.MINER_ELEVATION_TOLERANCE)))
             bestLoc = hqLoc;
         return bestLoc;
     }
@@ -290,8 +290,9 @@ public class Miner extends Unit {
     }
 
     private void updateTargetMineLoc() throws GameActionException {
+        int elevationTolerance = rc.canSenseLocation(hqLoc) ? MagicConstants.MINER_ELEVATION_TOLERANCE: 3;
         if(targetMineLoc != null) {
-            if(rc.canSenseLocation(targetMineLoc) && rc.senseSoup(targetMineLoc) > 0)
+            if(rc.canSenseLocation(targetMineLoc) && rc.senseSoup(targetMineLoc) > 0 && canReachAdj(targetMineLoc, false, elevationTolerance))
                 return;
         }
         targetMineLoc = null;
@@ -303,7 +304,7 @@ public class Miner extends Unit {
             xsum += cand.x;
             ysum += cand.y;
             int dist = here.distanceSquaredTo(cand);
-            if(canReachAdj(cand, false) && dist < minDist){
+            if(canReachAdj(cand, false, elevationTolerance) && dist < minDist){
                 targetMineLoc = cand;
                 minDist = dist;
             }

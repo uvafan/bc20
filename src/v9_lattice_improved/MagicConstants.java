@@ -65,4 +65,7 @@ public class MagicConstants {
 	public static int BUILDING_DIST_MULTIPLIER = 1;
 	public static int BUILDING_ADJ_BONUS = 50;
 	public static int BUILDING_DIFF_MULTIPLIER = 10;
+
+	// mining
+	public static int MINER_ELEVATION_TOLERANCE = 10;
 }

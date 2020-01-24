@@ -130,28 +130,38 @@ public class Bot {
     }
 
     public boolean canReach(MapLocation locA, MapLocation locB, boolean checkOccupied) throws GameActionException {
+        return canReach(locA, locB, checkOccupied, 3);
+    }
+
+    public boolean canReach(MapLocation locA, MapLocation locB, boolean checkOccupied, int elevationTolerance) throws GameActionException {
         return !rc.senseFlooding(locA)
-                && Math.abs(rc.senseElevation(locA) - rc.senseElevation(locB)) <= 3
+                && Math.abs(rc.senseElevation(locA) - rc.senseElevation(locB)) <= elevationTolerance
                 && (!checkOccupied || !rc.isLocationOccupied(locA));
     }
 
     public boolean canReachAdj(MapLocation loc, boolean checkOccupied) throws GameActionException {
-        if (canReach(loc, here, checkOccupied))
+        return canReachAdj(loc, checkOccupied, 3);
+    }
+
+    public boolean canReachAdj(MapLocation loc, boolean checkOccupied, int elevationTolerance) throws GameActionException {
+        if (canReach(loc, here, checkOccupied, elevationTolerance))
             return true;
         for (Direction dir : directions) {
             MapLocation to = loc.add(dir);
             Utils.log("checking " + to);
-            if (rc.canSenseLocation(to) && canReach(to, here, checkOccupied))
+            if (rc.canSenseLocation(to) && canReach(to, here, checkOccupied, elevationTolerance))
                 return true;
         }
         return false;
     }
+
 
     public void takeTurn() throws GameActionException {
         turnCount++;
         round = rc.getRoundNum();
         enemies = rc.senseNearbyRobots(-1, enemy);
         friends = rc.senseNearbyRobots(-1, us);
+        // comms.resendImportantMessages();
         if (comms.isCaughtUp())
             comms.readMessages();
     }

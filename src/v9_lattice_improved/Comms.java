@@ -140,19 +140,23 @@ public class Comms {
                 bot.unitCounts[msg[6]- MagicConstants.ORDINAL_SECRET_NUM]++;
         }
     }
+
     private int smear(int hashCode) {
         hashCode ^= (hashCode >>> 20) ^ (hashCode >>> 12);
         return hashCode ^ (hashCode >>> 7) ^ (hashCode >>> 4);
-      }
+    }
+
     private int generateHash(int[] msg) {
     	int hash = msg[2]^msg[3]^msg[4]^msg[5]^msg[6]^bot.round^ MagicConstants.SLOW_SECRET_NUM;
     	//Utils.log("The generate round is: " + bot.round);
     	return smear(hash);
     }
+
     private int verifyHash(int[] msg, int round) {
     	int hash = msg[2]^msg[3]^msg[4]^msg[5]^msg[6]^round^ MagicConstants.SLOW_SECRET_NUM;
     	return smear(hash);
     }
+
     private boolean verifyOurs(int[] msg, int round) {
     	if(msg[0]!= MagicConstants.FAST_SECRET_NUM+bot.us.ordinal())
     		return false;
