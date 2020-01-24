@@ -226,7 +226,9 @@ public class Bot {
         for (MapLocation loc : enemyHqLocPossibilities) {
             if (rc.canSenseLocation(loc)) {
                 RobotInfo ri = rc.senseRobotAtLocation(loc);
-                if (ri == null || ri.type != RobotType.HQ) {
+                Utils.log("team " + ri.team + " enemy " + enemy);
+                if (ri == null || ri.type != RobotType.HQ || ri.team != enemy) {
+                    Utils.log("removing " + loc);
                     toRemove = loc;
                     removed = true;
                     break;
@@ -355,6 +357,7 @@ public class Bot {
                 }
             }
         }
+        Utils.log("picked " + ret);
         return ret;
     }
 

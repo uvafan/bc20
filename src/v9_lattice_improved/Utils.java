@@ -32,9 +32,12 @@ public class Utils {
     public static MapLocation[] removeElement(MapLocation[] arr, MapLocation loc) {
         int at = 0;
         MapLocation[] ret = new MapLocation[arr.length-1];
+        boolean removed = false;
         for(int i=0; i<arr.length; i++){
-            if(arr[i].equals(loc))
+            if(!removed && arr[i].equals(loc)) {
+                removed = true;
                 continue;
+            }
             ret[at++] = arr[i];
         }
         return ret;

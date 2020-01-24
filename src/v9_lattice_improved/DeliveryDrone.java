@@ -161,7 +161,7 @@ public class DeliveryDrone extends Unit {
     private void doHarass() throws GameActionException {
         if(enemyHQLoc == null)
             if(updateOpponentHQs()) {
-                pickTargetFromEnemyHQs(true);
+                targetLoc = pickTargetFromEnemyHQs(true);
             }
         if(landscaperDropper && !droppedOff) {
             if(!rc.isCurrentlyHoldingUnit()) {
@@ -245,6 +245,8 @@ public class DeliveryDrone extends Unit {
         }
         if(closestEnemyLoc == null) {
             if (defending && hqLoc != null) {
+                if(Utils.DEBUG)
+                    rc.setIndicatorLine(here, hqLoc, 0, 0, 255);
                 goTo(hqLoc);
             }
             else if (crunching && here.distanceSquaredTo(enemyHQLoc) <= 16) {
@@ -315,6 +317,8 @@ public class DeliveryDrone extends Unit {
             if(here.equals(targetLoc)) {
                 targetLoc = pickTargetFromEnemyHQs(false);
             }
+            if(Utils.DEBUG)
+                rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
             goTo(targetLoc);
         }
     }

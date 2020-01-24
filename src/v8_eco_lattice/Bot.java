@@ -355,6 +355,7 @@ public class Bot {
                 }
             }
         }
+        Utils.log("picked " + ret);
         return ret;
     }
 
