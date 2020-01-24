@@ -60,13 +60,19 @@ public class Miner extends Unit {
             }
             else if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
                 boolean deposited = false;
-                for (Direction dir : directions)
+                for (Direction dir : directions) {
+                    MapLocation refining = here.add(dir);
+                    if(!rc.canSenseLocation(refining) ||
+                        rc.senseRobotAtLocation(refining) == null ||
+                        rc.senseRobotAtLocation(refining).team == enemy)
+                        continue;
                     if (tryDeposit(dir)) {
                         Utils.log("I deposited soup! " + rc.getTeamSoup());
                         deposited = true;
                         refineLoc = null;
                         break;
                     }
+                }
                 if (!deposited) {
                     Utils.log("trying to go back to deposit soup");
                     if (refineLoc == null || refineLoc.equals(hqLoc) || turnCount % 20 == 0)
