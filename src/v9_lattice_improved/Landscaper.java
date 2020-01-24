@@ -53,6 +53,7 @@ public class Landscaper extends Unit {
     }
 
     private void doLattice() throws GameActionException {
+        Utils.log("latticing!");
     	int digging = rc.getDirtCarrying();
     	if(digging == 0 || digging == RobotType.LANDSCAPER.dirtLimit) {
     		MapLocation bestDigLoc = null;
@@ -162,13 +163,32 @@ public class Landscaper extends Unit {
 		return false;
 	}
 
+	private boolean canLeaveHQ() throws GameActionException {
+        int enemyDiff = 0;
+        for(Direction dir: directions) {
+            MapLocation loc = hqLoc.add(dir);
+            if(rc.canSenseLocation(loc)) {
+                RobotInfo ri = rc.senseRobotAtLocation(loc);
+                if(ri != null && ri.type == RobotType.LANDSCAPER) {
+                    if(ri.team == enemy)
+                        enemyDiff++;
+                    else
+                        enemyDiff--;
+                }
+            }
+        }
+        return enemyDiff < -2;
+    }
+
 	private void doDefense() throws GameActionException {
+        Utils.log("defending!");
         RobotInfo buildingToBury = getBuildingToBury();
         int minToBury = Integer.MAX_VALUE;
         if(buildingToBury != null)
             minToBury = Math.min(type.dirtLimit, buildingToBury.type.dirtLimit);
-        boolean hqHasDirt = false;
-        hqHasDirt = rc.canSenseLocation(hqLoc) && rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0;
+        boolean hqHasDirt = rc.canSenseLocation(hqLoc) && rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0;
+        if(hqHasDirt && here.distanceSquaredTo(hqLoc) <= 2)
+            minToBury = type.dirtLimit;
         if(hqHasDirt && spotIsFreeAround(hqLoc) && here.distanceSquaredTo(hqLoc) > 2) {
             goTo(hqLoc);
         }
@@ -196,10 +216,10 @@ public class Landscaper extends Unit {
             else if (hqLoc != null) {
                 if(!rc.canSenseLocation(hqLoc))
                     goTo(hqLoc);
-                else if(here.distanceSquaredTo(hqLoc) > 2 && spotIsFreeAround(hqLoc)) {
+                else if(here.distanceSquaredTo(hqLoc) > 2 && spotIsFreeAround(hqLoc) && hqHasDirt) {
                     goTo(hqLoc);
                 }
-                else if(here.distanceSquaredTo(hqLoc) <= 2 && rc.getDirtCarrying() <= minToBury) {
+                else if(here.distanceSquaredTo(hqLoc) <= 2 && rc.getDirtCarrying() < minToBury && (hqHasDirt || !canLeaveHQ())) {
                     if(rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0) {
                         if(rc.canDigDirt(here.directionTo(hqLoc)))
                             rc.digDirt(here.directionTo(hqLoc));
@@ -231,7 +251,7 @@ public class Landscaper extends Unit {
                 continue;
             int dist = here.distanceSquaredTo(e.location);
             int priority = (e.type == RobotType.NET_GUN ? 25 : 0) - dist;
-            priority += (dist <= 2 ? 100: 0);
+            priority += ((dist <= 2 && here.distanceSquaredTo(hqLoc) <= 2) ? 100: 0);
             if(priority > maxPriority) {
                 maxPriority = priority;
                 ret = e;

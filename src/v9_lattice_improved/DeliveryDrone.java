@@ -31,7 +31,7 @@ public class DeliveryDrone extends Unit {
 
     public void takeTurn() throws GameActionException {
         super.takeTurn();
-        defending = hqAttacked;
+        defending = hqAttacked || (defending && round >= MagicConstants.CRUNCH_ROUND);
         if (rushing) {
             doRush();
         }
@@ -50,7 +50,7 @@ public class DeliveryDrone extends Unit {
         }
         broadcastNetGuns();
         comms.readMessages();
-        if(numWaterLocs <= MagicConstants.MAX_WATER_LOCS)
+        if(numWaterLocs <= MagicConstants.MAX_WATER_LOCS && comms.isCaughtUp())
             broadcastWater();
     }
 
@@ -194,7 +194,11 @@ public class DeliveryDrone extends Unit {
         else {
             if (!rc.isCurrentlyHoldingUnit()) {
                 findAndPickUpEnemyUnit();
-            } else {
+            }
+            else if (crunching) {
+                rc.disintegrate();
+            }
+            else {
                 dropUnitInWater();
             }
         }
@@ -244,17 +248,20 @@ public class DeliveryDrone extends Unit {
             }
         }
         if(closestEnemyLoc == null) {
+            Utils.log("dont see an enemy to pick up");
             if (defending && hqLoc != null) {
                 if(Utils.DEBUG)
                     rc.setIndicatorLine(here, hqLoc, 0, 0, 255);
                 goTo(hqLoc);
             }
             else if (crunching && here.distanceSquaredTo(enemyHQLoc) <= 16) {
+                Utils.log("gonna go defend");
                 defending = true;
                 crunching = false;
                 goTo(hqLoc);
             }
             else if(harassing || crunching) {
+                Utils.log("harassing or crunching");
                 runToEnemyHQ();
             }
             else {
@@ -290,6 +297,8 @@ public class DeliveryDrone extends Unit {
                 }
             }
             else if(enemyHQLoc != null) {
+                if(Utils.DEBUG)
+                    rc.setIndicatorLine(here, enemyHQLoc, 255, 0, 0);
                 goTo(enemyHQLoc);
             }
         }

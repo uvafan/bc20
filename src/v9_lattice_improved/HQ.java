@@ -4,29 +4,43 @@ import battlecode.common.*;
 
 public class HQ extends Building {
 
+    int seesDroneEnemyRound;
+    boolean seesNonDroneEnemy = false;
+    boolean seesOpponentHQ = false;
+
     public HQ(RobotController r) throws GameActionException {
         super(r);
+        seesDroneEnemyRound = -100;
         comms.broadcastLoc(Comms.MessageType.HQ_LOC, here);
+    }
+
+    private boolean isUnderAttack() {
+        return (!seesOpponentHQ) && (seesNonDroneEnemy || round - seesDroneEnemyRound < 7);
     }
 
     public void takeTurn() throws GameActionException {
         super.takeTurn();
         shootDrones();
-        boolean seesNonDroneEnemy = false;
-        boolean seesOpponentHQ = false;
+        seesNonDroneEnemy = false;
+        seesOpponentHQ = false;
         for(RobotInfo e: enemies) {
             if(e.type != RobotType.DELIVERY_DRONE && e.type != RobotType.HQ) {
                 seesNonDroneEnemy = true;
             }
-            if(e.type == RobotType.HQ) {
+            else if(e.type == RobotType.DELIVERY_DRONE) {
+                if(seesDroneEnemyRound == -100) {
+                    seesDroneEnemyRound = round;
+                }
+            }
+            else if(e.type == RobotType.HQ) {
                 seesOpponentHQ = true;
             }
         }
-        if(hqAttacked && !seesNonDroneEnemy) {
+        if(hqAttacked && !isUnderAttack()) {
            hqAttacked = false;
            comms.broadcastLoc(Comms.MessageType.HQ_OK, here);
         }
-        else if(!hqAttacked && seesNonDroneEnemy && !seesOpponentHQ) {
+        else if(!hqAttacked && isUnderAttack()) {
             hqAttacked = true;
             comms.broadcastLoc(Comms.MessageType.HQ_ATTACKED, here);
         }

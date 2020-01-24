@@ -151,18 +151,24 @@ public class Bot {
         round = rc.getRoundNum();
         enemies = rc.senseNearbyRobots(-1, enemy);
         friends = rc.senseNearbyRobots(-1, us);
-        if (round - 1 == comms.readRound)
+        if (comms.isCaughtUp())
             comms.readMessages();
     }
 
     public boolean spotIsFreeAround(MapLocation loc) throws GameActionException {
+        return spotsFreeAroundInfo(loc)[0] > 0;
+    }
+
+    public int[] spotsFreeAroundInfo(MapLocation loc) throws GameActionException {
+        int[] ret = {0,Integer.MAX_VALUE};
         for (Direction dir : directions) {
             MapLocation loc2 = loc.add(dir);
             if (rc.canSenseLocation(loc2) && canReach(loc2, here, true)) {
-                return true;
+                ret[0] ++;
+                ret[1] = Math.min(ret[1], here.distanceSquaredTo(loc2));
             }
         }
-        return false;
+        return ret;
     }
 
     public void broadcastNetGuns() throws GameActionException {
@@ -226,7 +232,7 @@ public class Bot {
         for (MapLocation loc : enemyHqLocPossibilities) {
             if (rc.canSenseLocation(loc)) {
                 RobotInfo ri = rc.senseRobotAtLocation(loc);
-                Utils.log("team " + ri.team + " enemy " + enemy);
+                //Utils.log("team " + ri.team + " enemy " + enemy);
                 if (ri == null || ri.type != RobotType.HQ || ri.team != enemy) {
                     Utils.log("removing " + loc);
                     toRemove = loc;

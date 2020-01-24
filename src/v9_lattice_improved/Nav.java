@@ -46,6 +46,8 @@ class SafetyPolicyAvoidAllUnits extends Bot implements NavSafetyPolicy {
 				if(invalidNetGun[i])
 					continue;
 				MapLocation eLoc = enemyNetGunLocs[i];
+				if(rc.canSenseLocation(eLoc))
+					continue;
 				if(loc.distanceSquaredTo(eLoc)<= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
 					if(Utils.DEBUG)
 						rc.setIndicatorLine(here, eLoc, 255, 0, 0);
@@ -53,11 +55,18 @@ class SafetyPolicyAvoidAllUnits extends Bot implements NavSafetyPolicy {
 				}
 			}
 			for(RobotInfo e: enemies) {
-				if(e.type == RobotType.NET_GUN && e.cooldownTurns < 1 && loc.distanceSquaredTo(e.location) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
-					return false;
+				if(e.type == RobotType.NET_GUN) {
+				    int dist = loc.distanceSquaredTo(e.location);
+				    if(dist <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED) {
+						if (e.cooldownTurns <= 3)
+							return false;
+						int acceptableDist = (int)(GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED - (e.cooldownTurns - 3) * 2);
+						if (dist <= acceptableDist)
+							return false;
+					}
 				}
 			}
-			if(enemyHQLoc != null && loc.distanceSquaredTo(enemyHQLoc) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)
+			if(round < MagicConstants.CRUNCH_ROUND && enemyHQLoc != null && loc.distanceSquaredTo(enemyHQLoc) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)
 				return false;
 			break;
 		default:
@@ -287,7 +296,6 @@ public class Nav extends Bot {
 			bugTurn();
 		}
 	}
-
 
 	public static boolean goTo(MapLocation theDest, NavSafetyPolicy theSafety) throws GameActionException {
 		if (!theDest.equals(dest)) {
