@@ -1,6 +1,6 @@
 '''
 ## Alex - Hephaestus, a system for mass testing the high ground!
-In order to use Alephaestus you need python. To run Hephaestus simply navigate to the battlecodeScaffold2020 root directory (be able to see the python file) 
+In order to use Alephaestus you need python. To run Hephaestus simply navigate to the battlecodeScaffold2020 root directory (be able to see the python file)
 and run the following command.
 python Alephaestus.py <pkg of team a> <pkg of team b>
 flags:
@@ -27,14 +27,15 @@ def getMapNames():
 
 def runMatches(teamA, teamB, stats, maps, flipTeams=False):
 	for mapName in maps:
-		command = ['gradlew.bat', 'run', '-PteamA='+teamA, '-PteamB='+teamB, '-Pmaps='+mapName]
-		#print(command)
+		command = ['./gradlew', 'run', '-PteamA='+teamA, '-PteamB='+teamB, '-Pmaps='+mapName]
+		print(command)
 		result = subprocess.check_output(command, shell=True).decode("utf-8")
+		print(result)
 		winningTeam = result[result.find(') wins')-1]
 		if (flipTeams):
 			winningTeam  = ('A','B')[winningTeam == 'A']
 		stats[winningTeam]+=1
-		
+
 		print ('Team ' + winningTeam + ' won on '+mapName)
 
 if __name__ == '__main__':
@@ -64,13 +65,13 @@ if __name__ == '__main__':
 		mapNames = getMapNames()
 	print("running on maps: ", mapNames, "both ways" if doBothDirs else "only one way")
 	gameStats = {'A': 0, 'B': 0} #index zero for team A index one for Team B
-	
+
 	#Play all the maps
 	runMatches(teamA, teamB, gameStats, mapNames)
 	if doBothDirs:
 		#Play all maps with reverse spots
 		print("flipping sides... (but not names: %s is still called team A but plays as blue)"%teamA)
 		runMatches(teamB, teamA, gameStats, mapNames, True)
-	
+
 	#Print the final results
 	print('Team A won ' + str(gameStats['A']) +' games -- Team B won ' + str(gameStats['B']) )

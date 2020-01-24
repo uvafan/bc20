@@ -9,6 +9,7 @@ public class Landscaper extends Unit {
     public static boolean turtling = false;
     public static boolean defending = false;
     public static boolean doneDefending = false;
+    public static MapLocation target = null;
     //public static int[] xDifferentials = {-1,0,0,1,-1,-1,1,1,-2,0,0}
     //public static int[] yDifferentials = {0,1,-1,0,1,-1,1,-1}
 
@@ -53,6 +54,7 @@ public class Landscaper extends Unit {
     }
 
     private void doLattice() throws GameActionException {
+    	
     	int digging = rc.getDirtCarrying();
     	if(digging == 0 || digging == RobotType.LANDSCAPER.dirtLimit) {
     		MapLocation bestDigLoc = null;
@@ -71,6 +73,7 @@ public class Landscaper extends Unit {
             }
             if(bestDigLoc!=null) {
             	if(here.distanceSquaredTo(bestDigLoc) <=2 ) {
+            		target = null;
             		if(digging==0) {
             		tryDig(here.directionTo(bestDigLoc),false);
             		}else {
@@ -80,10 +83,20 @@ public class Landscaper extends Unit {
             		}
             	}
             	else {
-            		goToOnLattice(bestDigLoc);
+            		if(target == null) {
+            			target = bestDigLoc;
+            		}
+            		if(target != null) {
+                		Utils.log("I'm REALLY WANT TO GO TO: " + target.x + ", " + target.y);
+                		if(here.distanceSquaredTo(target) <= 2) {
+                			target = null;
+                		}
+                		else {
+                			goToOnLattice(target);
+                		}
+                	}
             	}
             }
-            //else do something with comms
     	}
     	else {
     		MapLocation bestDirtLoc = null;
@@ -106,22 +119,50 @@ public class Landscaper extends Unit {
             }
             if(bestDirtLoc!=null) {
             	if(here.distanceSquaredTo(bestDirtLoc) <=2 ) {
-            		if(rc.senseElevation(bestDirtLoc) < MagicConstants.LATTICE_HEIGHT)
-            		if(rc.canDepositDirt(here.directionTo(bestDirtLoc))) {
-            			rc.depositDirt(here.directionTo(bestDirtLoc));
+            		target = null;
+            		if(bestDirtLoc.distanceSquaredTo(hqLoc) <= 8) {
+            			if(rc.senseElevation(bestDirtLoc)> hqElevation) {
+            				tryDig(here.directionTo(bestDirtLoc),false);
+            			}
+            			else {
+            				if(rc.canDepositDirt(here.directionTo(bestDirtLoc))) {
+                				rc.depositDirt(here.directionTo(bestDirtLoc));
+                			}
+            			}
+            		}
+            		if(rc.senseElevation(bestDirtLoc) < MagicConstants.LATTICE_HEIGHT) {
+            			if(rc.canDepositDirt(here.directionTo(bestDirtLoc))) {
+            				rc.depositDirt(here.directionTo(bestDirtLoc));
+            			}
             		}else {
             			tryDig(here.directionTo(bestDirtLoc),false);
             		}
             	}
             	else {
-            		goToOnLattice(bestDirtLoc);
+            		if(target == null) {
+            			target = bestDirtLoc;
+            		}
+            		if(target != null) {
+                		Utils.log("I'm REALLY WANT TO GO TO: " + target.x + ", " + target.y);
+                		if(here.distanceSquaredTo(target) <= 2) {
+                			target = null;
+                		}
+                		else {
+                			goToOnLattice(target);
+                		}
+                	}
             	}
             }
-            //else something with comms
+    	}
+    	if(rc.getCooldownTurns() < 1) {
+    		if(enemyHQLoc != null) {
+    			goToOnLattice(enemyHQLoc);
+    		}
     	}
     }
     private boolean shouldRenovate(MapLocation testTile) throws GameActionException {
 		if(!badLatticeLoc(testTile,true) && (rc.senseElevation(testTile) < MagicConstants.LATTICE_HEIGHT || rc.senseElevation(testTile) > MagicConstants.LATTICE_HEIGHT + 3) && !(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2)) {
+			Utils.log("I should be renovating: " + testTile.x + ", " + testTile.y);
 			return true;
 		}				
 		return false;
@@ -155,7 +196,7 @@ public class Landscaper extends Unit {
 		}
 		else {
 			if(!badLatticeLoc(testTile,actuallyDigging)) {
-				if(rc.senseElevation(testTile) < MagicConstants.LATTICE_HEIGHT+3)
+				if(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2 || rc.senseElevation(testTile) < MagicConstants.LATTICE_HEIGHT+3)
 					return true;
 			}
 		}
