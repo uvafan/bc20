@@ -166,6 +166,8 @@ public class Bot {
     }
 
     public void broadcastNetGuns() throws GameActionException {
+        if(!comms.isCaughtUp() || round % 10 != rc.getID() % 10)
+            return;
         for (RobotInfo e : enemies) {
             if (e.type == RobotType.NET_GUN) {
                 boolean shouldAdd = true;
@@ -186,6 +188,7 @@ public class Bot {
             if (invalidNetGun[i])
                 continue;
             MapLocation ng = enemyNetGunLocs[i];
+            Utils.log("checking net gun loc " + ng);
             if (rc.canSenseLocation(ng)) {
                 if (!rc.isLocationOccupied(ng)) {
                     invalidNetGun[i] = true;

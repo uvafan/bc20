@@ -39,8 +39,14 @@ public class HQ extends Building {
             int dx = MagicConstants.WALL_X_OFFSETS[i];
             int dy = MagicConstants.WALL_Y_OFFSETS[i];
             MapLocation check = new MapLocation(here.x + dx, here.y + dy);
-            if(rc.canSenseLocation(check) && rc.senseElevation(check) < MagicConstants.LATTICE_HEIGHT)
-                return;
+            if(rc.canSenseLocation(check)) {
+                RobotInfo ri = rc.senseRobotAtLocation(check);
+                if(ri != null && Utils.isBuilding(ri.type) && ri.team == us) {
+                    continue;
+                }
+                if (rc.senseElevation(check) < MagicConstants.LATTICE_HEIGHT)
+                    return;
+            }
         }
         isWallComplete = true;
         comms.broadcastLoc(Comms.MessageType.WALL_COMPLETE, here);

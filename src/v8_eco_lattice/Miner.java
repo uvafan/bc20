@@ -176,8 +176,7 @@ public class Miner extends Unit {
                 rc.setIndicatorLine(here, targetLoc, 255, 0, 0);
         }
     }
-    
-    
+
     private void rushToTarget() throws GameActionException {
         if(round - builtFulfillmentRound < 25 || rc.getCooldownTurns() >= 1)
             return;
@@ -236,10 +235,12 @@ public class Miner extends Unit {
     }
 
     private boolean buildIfShould() throws GameActionException {
-        RobotType rt = strat.determineBuildingNeeded();
         Direction buildDirection = getBuildDirection();
+        if(buildDirection == null)
+            return false;
+        RobotType rt = strat.determineBuildingNeeded();
         boolean tryOthers = !(strat instanceof EcoLattice);
-        if(rt != null && buildDirection != null && tryBuild(rt, buildDirection, tryOthers)) {
+        if(rt != null && tryBuild(rt, buildDirection, tryOthers)) {
             return true;
         }
         if(!rushing && strat instanceof Rush && round < 250)
@@ -248,7 +249,7 @@ public class Miner extends Unit {
         if(closestRefine != null && (hqAttacked || here.distanceSquaredTo(closestRefine) < MagicConstants.REQUIRED_REFINERY_DIST))
             return false;
         if (rc.senseNearbySoup().length > 2 || closestRefine == null){
-            if(tryBuild(RobotType.REFINERY, hqLoc.directionTo(here), true)) {
+            if(tryBuild(RobotType.REFINERY, buildDirection, tryOthers)) {
                 return true;
             }
         }

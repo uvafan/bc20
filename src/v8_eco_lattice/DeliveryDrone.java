@@ -44,7 +44,7 @@ public class DeliveryDrone extends Unit {
             else if (!defending && isWallComplete) {
                 helpOutFriends();
             }
-            if(rc.getCooldownTurns() < 1 && harassing) {
+            if(rc.getCooldownTurns() < 1 && (harassing || defending)) {
                 doHarass();
             }
         }
@@ -270,7 +270,7 @@ public class DeliveryDrone extends Unit {
     }
 
     public boolean shouldCrunch() {
-        return round >= MagicConstants.CRUNCH_ROUND;
+        return round >= MagicConstants.CRUNCH_ROUND && !defending;
     }
 
     public void doCrunch() throws GameActionException {

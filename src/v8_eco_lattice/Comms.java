@@ -23,7 +23,6 @@ public class Comms {
 
     public static enum MessageType {
         HQ_LOC,
-        SYMMETRY_RULED_OUT,
         REFINERY_LOC,
         SOUP_CLUSTER_LOC,
         OUR_NET_GUN_LOC,
@@ -61,6 +60,10 @@ public class Comms {
             }
             readRound++;
         }
+    }
+
+    public boolean isCaughtUp() {
+        return bot.round - 2 < readRound;
     }
 
     private void processMessage(int[] msg) {

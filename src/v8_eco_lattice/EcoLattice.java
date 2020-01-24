@@ -82,10 +82,20 @@ public class EcoLattice extends Strategy {
                 soupPriorities[RobotType.FULFILLMENT_CENTER.ordinal()] = 0;
             else if (unitCounts[RobotType.DESIGN_SCHOOL.ordinal()] == 0)
                 soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = 0;
-            else
+            else {
+                int[] comp = MagicConstants.LATTICE_ARMY_COMP;
+                if(bot.round + MagicConstants.TURNS_FOR_VAP_TO_PAY >= MagicConstants.CRUNCH_ROUND) {
+                    for (int i = 0; i < MagicConstants.LATTICE_ARMY_COMP.length; i++) {
+                        if (MagicConstants.LATTICE_COMP_TYPES[i] == RobotType.VAPORATOR) {
+                            comp[i] = 0;
+                            break;
+                        }
+                    }
+                }
                 updateBasedOnDesiredComp(unitCounts,
-                    MagicConstants.LATTICE_ARMY_COMP,
-                    MagicConstants.LATTICE_COMP_TYPES);
+                        comp,
+                        MagicConstants.LATTICE_COMP_TYPES);
+            }
         }
     }
 }
