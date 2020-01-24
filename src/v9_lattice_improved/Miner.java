@@ -280,6 +280,7 @@ public class Miner extends Unit {
                         continue;
                     int dist = hqLoc.distanceSquaredTo(loc);
                     if(dist < minDist) {
+                        minDist = dist;
                         buildDir = dir;
                     }
                 }
