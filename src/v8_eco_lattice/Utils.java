@@ -47,6 +47,7 @@ public class Utils {
             case FULFILLMENT_CENTER: return true;
             case REFINERY: return true;
             case NET_GUN: return true;
+            case VAPORATOR: return true;
             default: return false;
         }
     }

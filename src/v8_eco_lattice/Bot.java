@@ -12,6 +12,8 @@ public class Bot {
     public static Team enemy;
     public static Team us;
     public static MapLocation hqLoc;
+    public static int hqElevation = 0;
+    public static boolean sensedHQElevation = false;
     public static MapLocation enemyHQLoc;
     public static MapLocation here;
     public static Comms comms;
@@ -116,6 +118,8 @@ public class Bot {
         for (RobotInfo e : friends) {
             if (e.type == RobotType.HQ) {
                 hqLoc = e.location;
+                hqElevation = rc.senseElevation(e.location);
+                sensedHQElevation = true;
                 break;
             }
         }

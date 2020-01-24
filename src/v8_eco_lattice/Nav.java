@@ -15,7 +15,23 @@ class SafetyPolicyCrunch extends Bot implements NavSafetyPolicy {
 	}
 
 }
-
+class SafetyPolicyAvoidAllUnitsAndLattice extends Bot implements NavSafetyPolicy{
+	public SafetyPolicyAvoidAllUnitsAndLattice() {
+	}
+	
+	public boolean isSafeToMoveTo(MapLocation loc) throws GameActionException {
+		if(rc.senseFlooding(loc)) //change this to if the tile will flood next turn
+			return false;
+		if(hqLoc.x%2 == loc.x%2 && hqLoc.y%2 == loc.y%2)
+			return false;
+		for (RobotInfo e: enemies) {
+			if(e.type == RobotType.DELIVERY_DRONE && loc.distanceSquaredTo(e.location) <=2)
+				return false;
+		}
+		return true;
+	}
+	
+}
 class SafetyPolicyAvoidAllUnits extends Bot implements NavSafetyPolicy {
 
 	public SafetyPolicyAvoidAllUnits() {
@@ -45,6 +61,8 @@ class SafetyPolicyAvoidAllUnits extends Bot implements NavSafetyPolicy {
 		default:
 				if(rc.senseFlooding(loc)) //change this to if the tile will flood next turn
 					return false;
+				//if(hqLoc.x%2 == loc.x%2 && hqLoc.y%2 == loc.y%2)
+				//	return false;
 				for (RobotInfo e: enemies) {
 					if(e.type == RobotType.DELIVERY_DRONE && loc.distanceSquaredTo(e.location) <=2)
 						return false;
