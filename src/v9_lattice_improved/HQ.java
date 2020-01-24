@@ -13,17 +13,20 @@ public class HQ extends Building {
         super.takeTurn();
         shootDrones();
         boolean seesNonDroneEnemy = false;
+        boolean seesOpponentHQ = false;
         for(RobotInfo e: enemies) {
-            if(e.type != RobotType.DELIVERY_DRONE) {
+            if(e.type != RobotType.DELIVERY_DRONE && e.type != RobotType.HQ) {
                 seesNonDroneEnemy = true;
-                break;
+            }
+            if(e.type == RobotType.HQ) {
+                seesOpponentHQ = true;
             }
         }
         if(hqAttacked && !seesNonDroneEnemy) {
            hqAttacked = false;
            comms.broadcastLoc(Comms.MessageType.HQ_OK, here);
         }
-        else if(!hqAttacked && seesNonDroneEnemy) {
+        else if(!hqAttacked && seesNonDroneEnemy && !seesOpponentHQ) {
             hqAttacked = true;
             comms.broadcastLoc(Comms.MessageType.HQ_ATTACKED, here);
         }
