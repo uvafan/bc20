@@ -53,21 +53,22 @@ public class Miner extends Unit {
                 }
             }
         }
+        if(!rushing && rc.getCooldownTurns() < 1)
+            dealWithEnemyDrones();
         if(rushing) {
             doRush();
         }
         else if (rc.getCooldownTurns() < 1){
             if(buildMiner) {
                 if(!buildIfShould()) {
-                    if(!isWallComplete) {
+                    if(!isWallComplete && here.distanceSquaredTo(hqLoc) < 8) {
                         Direction dir = randomDirection();
-                        if (rc.canMove(dir) && here.add(dir).distanceSquaredTo(hqLoc) <= 8) {
+                        if (rc.canMove(dir) && here.add(dir).distanceSquaredTo(hqLoc) < 8) {
                             tryMove(dir);
                         }
                     }
                     else {
-                        buildMiner = false;
-                        explore();
+                        goTo(hqLoc);
                     }
                 }
             }
@@ -253,21 +254,13 @@ public class Miner extends Unit {
         return bestLoc;
     }
 
-    private boolean buildIfShould() throws GameActionException {
-        Direction buildDirection = getBuildDirection();
-        if(buildDirection == null)
-            return false;
-        RobotType rt = strat.determineBuildingNeeded();
-        boolean tryOthers = !(strat instanceof EcoLattice);
-        if(rt != null && tryBuild(rt, buildDirection, tryOthers)) {
-            return true;
-        }
+    private boolean buildRefineryIfShould(Direction buildDirection, boolean tryOthers) throws GameActionException {
         if(!rushing && strat instanceof Rush && round < 250)
             return false;
         MapLocation closestRefine = chooseRefineLoc();
         if(closestRefine != null && (hqAttacked || here.distanceSquaredTo(closestRefine) < MagicConstants.REQUIRED_REFINERY_DIST))
             return false;
-        if (rc.senseNearbySoup().length > 2 || closestRefine == null){
+        if ((rc.senseNearbySoup().length > 3 && rc.getTeamSoup() >= 300) || closestRefine == null){
             if(tryBuild(RobotType.REFINERY, buildDirection, tryOthers)) {
                 return true;
             }
@@ -275,40 +268,16 @@ public class Miner extends Unit {
         return false;
     }
 
-    private boolean shouldBuildInLoc(MapLocation loc) throws GameActionException {
-        if(loc.distanceSquaredTo(hqLoc) <= 8) {
-            return (loc.x + loc.y) % 2 == (hqLoc.x + hqLoc.y) % 2;
+    private boolean buildIfShould() throws GameActionException {
+        Direction buildDirection = getBuildDirection();
+        if(buildDirection == null)
+            return false;
+        boolean tryOthers = !(strat instanceof EcoLattice);
+        RobotType rt = strat.determineBuildingNeeded();
+        if(rt != null && tryBuild(rt, buildDirection, tryOthers)) {
+            return true;
         }
-        else {
-            return isOnLatticeIntersection(loc) && rc.senseElevation(loc) >= MagicConstants.LATTICE_HEIGHT;
-        }
-    }
-
-    private Direction getBuildDirection() throws GameActionException {
-        if(strat instanceof Turtle) {
-            return hqLoc.directionTo(here);
-        }
-        else if(strat instanceof Rush) {
-            return here.directionTo(hqLoc);
-        }
-        else if(strat instanceof EcoLattice) {
-            Direction buildDir = null;
-            int minDist = Integer.MAX_VALUE;
-            for(Direction dir: directions) {
-                MapLocation loc = here.add(dir);
-                if(rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir)) {
-                    if(shouldBuildInLoc(loc)) {
-                        int dist = hqLoc.distanceSquaredTo(loc);
-                        if (dist < minDist) {
-                            minDist = dist;
-                            buildDir = dir;
-                        }
-                    }
-                }
-            }
-            return buildDir;
-        }
-        return randomDirection();
+        return buildRefineryIfShould(buildDirection, tryOthers);
     }
 
     private void updateTargetMineLoc() throws GameActionException {

@@ -19,6 +19,14 @@ public class MagicConstants {
 	public static int RUSH_DEFENSE_DIST = 100;
 	public static int MAX_WATER_LOCS = 20;
 
+	// net guns and dealing with drones
+	public static int MIN_NET_GUN_CLOSENESS = 8;
+	public static int MIN_NET_GUN_DIST_FROM_HQ = 9;
+	public static final int MAX_DIST_TO_FLEE = 18;
+	public static final int MAX_DIST_TO_BUILD_NET_GUN = 25;
+	public static final boolean FLEE_BEFORE_BUILD = false;
+	public static int DIST_SOUP_MULTIPLIER = 10;
+
 	// crunching
 	public static int CRUNCH_ROUND = 1500;
 	public static int PICK_UP_LANDSCAPER_ROUND = 1150;
@@ -58,7 +66,7 @@ public class MagicConstants {
 			1, //Drones
 			1, //Landscapers
 	};
-	public static int BUILD_MINER_NUM = 6;
+	public static int BUILD_MINER_NUM = 5;
 	public static int TURNS_FOR_VAP_TO_PAY = 250;
 
 	// rush defense prioritization

@@ -18,6 +18,10 @@ public class Utils {
         }
     }
 
+    public static int manhattan(MapLocation a, MapLocation b) {
+        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    }
+
     public static MapLocation[] removeElement(MapLocation[] arr, int idx) {
         int at = 0;
         MapLocation[] ret = new MapLocation[arr.length-1];

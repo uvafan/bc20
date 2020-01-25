@@ -59,6 +59,18 @@ public class Bot {
             Direction.NORTHWEST
     };
 
+    public static Direction[] directionsPlusCenter = {
+            Direction.NORTH,
+            Direction.NORTHEAST,
+            Direction.EAST,
+            Direction.SOUTHEAST,
+            Direction.SOUTH,
+            Direction.SOUTHWEST,
+            Direction.WEST,
+            Direction.NORTHWEST,
+            Direction.CENTER
+    };
+
     public static Direction[] cardinalDirs = {
             Direction.NORTH,
             Direction.EAST,
@@ -402,6 +414,19 @@ public class Bot {
 
     static Direction randomDirection() {
         return directions[(int) (Math.random() * directions.length)];
+    }
+
+    public static boolean safeFromDrones(MapLocation check) throws GameActionException {
+        for(Direction d: directions) {
+            MapLocation loc = check.add(d);
+            if(!rc.canSenseLocation(loc))
+                continue;
+            RobotInfo ri = rc.senseRobotAtLocation(loc);
+            if(ri != null && ri.team == enemy && ri.type == RobotType.DELIVERY_DRONE) {
+               return false;
+            }
+        }
+        return true;
     }
 
     static boolean tryBuild(RobotType type, Direction dir, boolean tryOthers) throws GameActionException {

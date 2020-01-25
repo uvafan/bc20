@@ -8,7 +8,7 @@ public class DesignSchool extends Building {
 	
     public DesignSchool(RobotController r) throws GameActionException {
         super(r);
-        if(enemyHQLoc != null)
+        if(enemyHQLoc != null && strat instanceof Rush)
             rushing = true;
     }
 
@@ -18,7 +18,7 @@ public class DesignSchool extends Building {
     }
 
     public Direction getBuildDirection() {
-        if(enemyHQLoc != null)
+        if(rushing)
             return here.directionTo(enemyHQLoc);
         else if(hqLoc != null)
             return here.directionTo(hqLoc);
