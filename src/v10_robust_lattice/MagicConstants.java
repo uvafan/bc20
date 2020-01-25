@@ -21,7 +21,7 @@ public class MagicConstants {
 
 	// net guns and dealing with drones
 	public static int MIN_NET_GUN_CLOSENESS = 8;
-	public static int MIN_NET_GUN_DIST_FROM_HQ = 9;
+	public static int MIN_NET_GUN_DIST_FROM_HQ = 8;
 	public static final int MAX_DIST_TO_FLEE = 18;
 	public static final int MAX_DIST_TO_BUILD_NET_GUN = 25;
 	public static final boolean FLEE_BEFORE_BUILD = false;

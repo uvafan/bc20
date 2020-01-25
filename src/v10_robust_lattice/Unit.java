@@ -108,8 +108,9 @@ public class Unit extends Bot {
                     if(dist < MagicConstants.MIN_NET_GUN_DIST_FROM_HQ)
                         continue;
                     int score = -Utils.manhattan(loc, closestEnemyDrone) - Utils.manhattan(loc, hqLoc);
-                    if(shouldBuildInLoc(loc))
-                        score += 10;
+                    if(!shouldBuildInLoc(loc)) {
+                        continue;
+                    }
                     if (score > maxScore) {
                         maxScore = score;
                         bestDir = dir;
