@@ -248,7 +248,7 @@ public class Miner extends Unit {
                 minDist = dist;
             }
         }
-        if(bestLoc == null && (!rc.canSenseLocation(hqLoc) || canReachAdj(hqLoc, true, MagicConstants.MINER_ELEVATION_TOLERANCE)))
+        if(bestLoc == null && !isWallComplete && (!rc.canSenseLocation(hqLoc) || canReachAdj(hqLoc, true, MagicConstants.MINER_ELEVATION_TOLERANCE)))
             bestLoc = hqLoc;
         return bestLoc;
     }

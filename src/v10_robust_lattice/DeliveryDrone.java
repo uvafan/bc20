@@ -54,25 +54,31 @@ public class DeliveryDrone extends Unit {
             broadcastWater();
     }
 
-    private void helpOutFriends() throws GameActionException {
-        if(pickedUpFriend) {
-            int minDist = Integer.MAX_VALUE;
-            MapLocation wallLoc = null;
-            for(int i = 0; i < MagicConstants.WALL_X_OFFSETS.length; i++) {
-                int dx = MagicConstants.WALL_X_OFFSETS[i];
-                int dy = MagicConstants.WALL_Y_OFFSETS[i];
-                MapLocation check = new MapLocation(hqLoc.x + dx, hqLoc.y + dy);
-                if(rc.canSenseLocation(check) && !rc.isLocationOccupied(check)) {
-                    int dist = here.distanceSquaredTo(check);
-                    if(dist < minDist) {
-                        minDist = dist;
-                        wallLoc = check;
-                    }
+    public MapLocation getDropOffLoc() throws GameActionException {
+        int minDist = Integer.MAX_VALUE;
+        MapLocation ret = null;
+        for(int i = 0; i < MagicConstants.WALL_X_OFFSETS.length; i++) {
+            int dx = MagicConstants.WALL_X_OFFSETS[i];
+            int dy = MagicConstants.WALL_Y_OFFSETS[i];
+            MapLocation check = new MapLocation(hqLoc.x + dx, hqLoc.y + dy);
+            if(rc.canSenseLocation(check) && !rc.isLocationOccupied(check)) {
+                int dist = here.distanceSquaredTo(check);
+                if(dist < minDist) {
+                    minDist = dist;
+                    ret = check;
                 }
             }
+        }
+        return ret;
+    }
+
+    private void helpOutFriends() throws GameActionException {
+        MapLocation wallLoc = getDropOffLoc();
+        if(pickedUpFriend) {
+            int dist = here.distanceSquaredTo(wallLoc);
             if(wallLoc != null) {
                 rc.setIndicatorLine(here, wallLoc, 0,  0, 255);
-                if(minDist <= 2) {
+                if(dist <= 2) {
                     if(tryDrop(here.directionTo(wallLoc), false))
                         pickedUpFriend = false;
                 }
@@ -81,11 +87,11 @@ public class DeliveryDrone extends Unit {
                 }
             }
         }
-        else {
+        else if (wallLoc != null){
             RobotInfo closestFriend = null;
             int minDist = Integer.MAX_VALUE;
             for (RobotInfo ri : friends) {
-                if ((ri.type == RobotType.MINER && isWallComplete) || ri.type == RobotType.LANDSCAPER) {
+                if ((ri.type == RobotType.MINER && (isWallComplete || round > MagicConstants.HELP_MINER_UP_ROUND)) || ri.type == RobotType.LANDSCAPER) {
                     if (ri.location.distanceSquaredTo(hqLoc) < 9 && here.distanceSquaredTo(ri.location) < minDist) {
                         minDist = here.distanceSquaredTo(ri.location);
                         closestFriend = ri;
