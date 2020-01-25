@@ -30,6 +30,8 @@ public class MagicConstants {
 	public static int[] WALL_Y_OFFSETS = {3,3,3,3,3,3,3,2,1,0,-1,-2,-3,-3,-3,-3,-3,-3,-3,-2,-1,0,1,2};
 	public static final int HELP_MINER_UP_ROUND = 400;
 	public static int LATTICE_HEIGHT = 8;
+	public static int LATTICE_TOLERANCE = 50;
+	public static int WATER_TOLERANCE = 100;
 
 	// build order
 	public static RobotType[] LATTICE_COMP_TYPES = new RobotType[]{
