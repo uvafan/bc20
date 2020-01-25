@@ -58,10 +58,12 @@ public class DeliveryDrone extends Unit {
         int minDist = Integer.MAX_VALUE;
         MapLocation ret = null;
         for(int i = 0; i < MagicConstants.WALL_X_OFFSETS.length; i++) {
+            if(Clock.getBytecodesLeft() < 1000)
+                break;
             int dx = MagicConstants.WALL_X_OFFSETS[i];
             int dy = MagicConstants.WALL_Y_OFFSETS[i];
             MapLocation check = new MapLocation(hqLoc.x + dx, hqLoc.y + dy);
-            if(rc.canSenseLocation(check) && !rc.isLocationOccupied(check)) {
+            if(rc.canSenseLocation(check) && !rc.isLocationOccupied(check) && safeFromDrones(check)) {
                 int dist = here.distanceSquaredTo(check);
                 if(dist < minDist) {
                     minDist = dist;
@@ -85,6 +87,9 @@ public class DeliveryDrone extends Unit {
                 else {
                     goTo(wallLoc);
                 }
+            }
+            else {
+                tryDrop(here.directionTo(hqLoc), true);
             }
         }
         else if (wallLoc != null){

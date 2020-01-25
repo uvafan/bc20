@@ -34,6 +34,9 @@ public class Landscaper extends Unit {
     public void takeTurn() throws GameActionException {
         super.takeTurn();
         defending = hqAttacked && !doneDefending;
+        if(!rushing && rc.getCooldownTurns() < 1) {
+            dealWithEnemyDrones();
+        }
         if(rushing) {
             doRush();
         }
@@ -55,7 +58,7 @@ public class Landscaper extends Unit {
     }
 
     private void doLattice() throws GameActionException {
-    	
+
     	int digging = rc.getDirtCarrying();
     	if(digging == 0 || digging == RobotType.LANDSCAPER.dirtLimit) {
     		MapLocation bestDigLoc = null;
