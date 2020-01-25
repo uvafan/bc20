@@ -113,26 +113,29 @@ public class Landscaper extends Unit {
             		break;
             	int dist = here.distanceSquaredTo(testTile);
             	int distToHQ = hqLoc.distanceSquaredTo(testTile);
-            	int mainWallMod = 100;
+            	int dontNavMod = 100;
+            	int mainWallMod = 1000;
             	int maybeWall = testTile.distanceSquaredTo(hqLoc);
-            	switch(maybeWall) {
-            	case 9:
-            	case 10:
-            	case 13:
-            	case 18:
+            	if(maybeWall <= 18) {
             		mainWallMod = 0;
+            	}
+            	switch(maybeWall) {
+            	case 16:
+            	case 17:
+            		mainWallMod = 1000;
             		break;
             	default:
             	}
             	if(dist <= 2) {
-            		distToHQ = 0;
+            		dontNavMod = 0;
             	}
-            	if(dist + distToHQ + mainWallMod < minDist && shouldRenovate(testTile)) {
+            	if(dist + distToHQ + mainWallMod + dontNavMod < minDist && shouldRenovate(testTile)) {
             		bestDirtLoc = testTile;
-            		minDist = dist + distToHQ + mainWallMod;
+            		minDist = dist + distToHQ + mainWallMod + dontNavMod;
             	}
             }
             if(bestDirtLoc!=null) {
+            	Utils.log(bestDirtLoc.x + ", " + bestDirtLoc.y + ": " + minDist);
             	if(here.distanceSquaredTo(bestDirtLoc) <=2 ) {
             		target = null;
             		if(bestDirtLoc.distanceSquaredTo(hqLoc) <= 8) {
