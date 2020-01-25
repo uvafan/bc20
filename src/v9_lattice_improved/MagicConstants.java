@@ -8,7 +8,7 @@ public class MagicConstants {
 	public static int LOCATION_SECRET_NUM = 227306;
 	public static int ORDINAL_SECRET_NUM = 234746;
 	public static int MAX_CLUSTER_DIST = RobotType.MINER.sensorRadiusSquared;
-    public static int GIVE_UP_CLUSTER_DIST = 2;
+    public static int GIVE_UP_CLUSTER_DIST = 8;
 	public static int GIVE_UP_WATER_DIST = 2;
 	public static int EXPLORE_BOREDOM = 25;
     public static int REQUIRED_REFINERY_DIST = 50;
