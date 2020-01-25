@@ -41,7 +41,7 @@ public class DeliveryDrone extends Unit {
             if(crunching) {
                 doCrunch();
             }
-            else if (!defending && isWallComplete) {
+            else if (!defending) {
                 helpOutFriends();
             }
             if(rc.getCooldownTurns() < 1 && (harassing || defending)) {
@@ -85,7 +85,7 @@ public class DeliveryDrone extends Unit {
             RobotInfo closestFriend = null;
             int minDist = Integer.MAX_VALUE;
             for (RobotInfo ri : friends) {
-                if (ri.type == RobotType.MINER || ri.type == RobotType.LANDSCAPER) {
+                if ((ri.type == RobotType.MINER && isWallComplete) || ri.type == RobotType.LANDSCAPER) {
                     if (ri.location.distanceSquaredTo(hqLoc) < 9 && here.distanceSquaredTo(ri.location) < minDist) {
                         minDist = here.distanceSquaredTo(ri.location);
                         closestFriend = ri;

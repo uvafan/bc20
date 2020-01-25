@@ -40,6 +40,19 @@ public class Miner extends Unit {
 
     public void takeTurn() throws GameActionException {
         super.takeTurn();
+        if(!caughtUp) {
+            comms.readMessages();
+            if(comms.isCaughtUp()) {
+                caughtUp = true;
+                if(strat instanceof EcoLattice) {
+                    Utils.log("I think there are " + unitCounts[RobotType.MINER.ordinal()] + " miners.");
+                    buildMiner = unitCounts[RobotType.MINER.ordinal()] == MagicConstants.BUILD_MINER_NUM;
+                    if(buildMiner) {
+                        Utils.log("I'm a build miner!");
+                    }
+                }
+            }
+        }
         if(rushing) {
             doRush();
         }
@@ -262,6 +275,15 @@ public class Miner extends Unit {
         return false;
     }
 
+    private boolean shouldBuildInLoc(MapLocation loc) throws GameActionException {
+        if(loc.distanceSquaredTo(hqLoc) <= 8) {
+            return (loc.x + loc.y) % 2 == (hqLoc.x + hqLoc.y) % 2;
+        }
+        else {
+            return isOnLatticeIntersection(loc) && rc.senseElevation(loc) >= MagicConstants.LATTICE_HEIGHT;
+        }
+    }
+
     private Direction getBuildDirection() throws GameActionException {
         if(strat instanceof Turtle) {
             return hqLoc.directionTo(here);
@@ -275,13 +297,12 @@ public class Miner extends Unit {
             for(Direction dir: directions) {
                 MapLocation loc = here.add(dir);
                 if(rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir)) {
-                    if(loc.distanceSquaredTo(hqLoc) > 8 &&
-                            !(isOnLatticeIntersection(loc) && rc.senseElevation(loc) >= MagicConstants.LATTICE_HEIGHT))
-                        continue;
-                    int dist = hqLoc.distanceSquaredTo(loc);
-                    if(dist < minDist) {
-                        minDist = dist;
-                        buildDir = dir;
+                    if(shouldBuildInLoc(loc)) {
+                        int dist = hqLoc.distanceSquaredTo(loc);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            buildDir = dir;
+                        }
                     }
                 }
             }

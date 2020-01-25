@@ -39,6 +39,7 @@ public class Bot {
     public static Random rand;
     public static MapLocation targetLoc;
     public static int[] unitCounts = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    public static boolean caughtUp = false;
     Strategy strat;
 
     public static enum Symmetry {
