@@ -113,15 +113,29 @@ public class Landscaper extends Unit {
             		break;
             	int dist = here.distanceSquaredTo(testTile);
             	int distToHQ = hqLoc.distanceSquaredTo(testTile);
-            	if(dist <= 2) {
-            		distToHQ = 0;
+            	int dontNavMod = 100;
+            	int mainWallMod = 1000;
+            	int maybeWall = testTile.distanceSquaredTo(hqLoc);
+            	if(maybeWall <= 18) {
+            		mainWallMod = 0;
             	}
-            	if(dist + distToHQ < minDist && shouldRenovate(testTile)) {
+            	switch(maybeWall) {
+            	case 16:
+            	case 17:
+            		mainWallMod = 1000;
+            		break;
+            	default:
+            	}
+            	if(dist <= 2) {
+            		dontNavMod = 0;
+            	}
+            	if(dist + distToHQ + mainWallMod + dontNavMod < minDist && shouldRenovate(testTile)) {
             		bestDirtLoc = testTile;
-            		minDist = dist + distToHQ;
+            		minDist = dist + distToHQ + mainWallMod + dontNavMod;
             	}
             }
             if(bestDirtLoc!=null) {
+            	Utils.log(bestDirtLoc.x + ", " + bestDirtLoc.y + ": " + minDist);
             	if(here.distanceSquaredTo(bestDirtLoc) <=2 ) {
             		target = null;
             		if(bestDirtLoc.distanceSquaredTo(hqLoc) <= 8) {
@@ -165,25 +179,46 @@ public class Landscaper extends Unit {
     	}
     }
     private boolean shouldRenovate(MapLocation testTile) throws GameActionException {
-		if(!badLatticeLoc(testTile,true) && (rc.senseElevation(testTile) < MagicConstants.LATTICE_HEIGHT || rc.senseElevation(testTile) > MagicConstants.LATTICE_HEIGHT + 3) && !(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2)) {
-			Utils.log("I should be renovating: " + testTile.x + ", " + testTile.y);
-			return true;
-		}
-		return false;
+    	//Utils.log("I'm trying to sense: " + testTile.x + ", " + testTile.y);
+    	if(!badLatticeLoc(testTile,true, true)) {
+    		int elev = rc.senseElevation(testTile);
+    		if ((elev < MagicConstants.LATTICE_HEIGHT && (elev > MagicConstants.LATTICE_HEIGHT - MagicConstants.LATTICE_TOLERANCE || testTile.distanceSquaredTo(hqLoc) <= 8 && elev > 0-MagicConstants.WATER_TOLERANCE)|| (elev > MagicConstants.LATTICE_HEIGHT + 3 && elev < MagicConstants.LATTICE_HEIGHT + 3 + MagicConstants.LATTICE_TOLERANCE)) && (!(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2) || hqLoc.distanceSquaredTo(testTile) <= 8)) {
+    			Utils.log("I should be renovating: " + testTile.x + ", " + testTile.y);
+    			return true;
+    		}
+    	}
+    	return false;
 	}
 
-	static boolean badLatticeLoc(MapLocation loc, boolean amDigging) throws GameActionException{
+	static boolean badLatticeLoc(MapLocation loc, boolean amDigging, boolean renovating) throws GameActionException{
     	if(loc.x < 0 || loc.x >= mapWidth || loc.y < 0 || loc.y >= mapHeight)
     		return true;
     	RobotInfo possiblyUs = rc.senseRobotAtLocation(loc);
-    	if(possiblyUs != null && possiblyUs.team == us && Utils.isBuilding(possiblyUs.type)) {
+    	if(possiblyUs != null && possiblyUs.team == us && Utils.isBuilding(possiblyUs.type) && (!amDigging || possiblyUs.dirtCarrying == 0)) {
     		return true;
     	}
     	if(loc.distanceSquaredTo(hqLoc)<=8) {
     		if(sensedHQElevation) {
-        		if(rc.senseElevation(loc) > hqElevation && amDigging || rc.senseElevation(loc) < hqElevation && !amDigging) {
-        			return false;
-        		}
+    			if(renovating) {
+    				if(rc.senseElevation(loc)>hqElevation+3) {
+    					return false;
+    				}
+    				if(rc.senseElevation(loc) < hqElevation || rc.senseFlooding(loc) && rc.senseElevation(loc) > 0-MagicConstants.WATER_TOLERANCE ) {
+    					return false;
+    				}
+    			}
+    			else {
+    			if(amDigging) {
+    				if(rc.senseElevation(loc)>hqElevation+3) {
+    					return false;
+    				}
+    			}
+    			else {
+    				if(rc.senseElevation(loc) < hqElevation || rc.senseFlooding(loc) && rc.senseElevation(loc) > 0-MagicConstants.WATER_TOLERANCE ) {
+    					return false;
+    				}
+    			}
+    			}
         	}
     		return true;
     	}
@@ -192,14 +227,14 @@ public class Landscaper extends Unit {
 	}
 	public boolean shouldDig(MapLocation testTile, boolean actuallyDigging) throws GameActionException {
 		if(actuallyDigging) {
-			if(!badLatticeLoc(testTile,actuallyDigging)) {
+			if(!badLatticeLoc(testTile,actuallyDigging, false)) {
 				if(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2 || rc.senseElevation(testTile) > MagicConstants.LATTICE_HEIGHT) {
 					return true;
 				}
 			}
 		}
 		else {
-			if(!badLatticeLoc(testTile,actuallyDigging)) {
+			if(!badLatticeLoc(testTile,actuallyDigging, false)) {
 				if(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2 || rc.senseElevation(testTile) < MagicConstants.LATTICE_HEIGHT+3)
 					return true;
 			}
