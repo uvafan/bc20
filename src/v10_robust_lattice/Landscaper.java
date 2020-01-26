@@ -70,12 +70,15 @@ public class Landscaper extends Unit {
             	if(testTile == null)
             		break;
             	int dist = here.distanceSquaredTo(testTile);
+            	Utils.log("Testing tile: " + testTile.x + ", " + testTile.y);
+            	Utils.log(""+dist);
             	if(dist < minDist && shouldDig(testTile, digging==0)) {
             		bestDigLoc = testTile;
             		minDist = dist;
             	}
             }
             if(bestDigLoc!=null) {
+            	Utils.log("Give me a dead tile at: " + bestDigLoc.x + ", " + bestDigLoc.y);
             	if(here.distanceSquaredTo(bestDigLoc) <=2 ) {
             		target = null;
             		if(digging==0) {
@@ -120,7 +123,6 @@ public class Landscaper extends Unit {
             	if(dist <= 2) {
             		dontNavMod = 0;
             	}
-            	if(testTile.x ==4 )
             	Utils.log(testTile.x + ", " + testTile.y + ": " + (dist + distToHQ + mainWallMod + dontNavMod) + ", " + shouldRenovate(testTile));
             	if(dist + distToHQ + mainWallMod + dontNavMod < minDist && shouldRenovate(testTile)) {
             		bestDirtLoc = testTile;
@@ -156,17 +158,20 @@ public class Landscaper extends Unit {
             	}
             }
     	}
-		if(target != null) {
-    		Utils.log("I'm REALLY WANT TO GO TO: " + target.x + ", " + target.y);
-    		if(here.distanceSquaredTo(target) <= 2) {
-    			target = null;
+    	if(rc.getCooldownTurns()<1) {
+    		if(target != null) {
+    			Utils.log("I'm REALLY WANT TO GO TO: " + target.x + ", " + target.y);
+    			Utils.log("I'm currenty at: " + here.x + ", " + here.y);
+    			if(here.distanceSquaredTo(target) <= 2) {
+    				target = null;
+    			}
+    			else {
+    				Utils.log("Well, hope I can get there");
+    				goToOnLattice(target);
+    			}
     		}
-    		else {
-    			goToOnLattice(target);
-    		}
-    	}
-    	if(rc.getCooldownTurns() < 1) {
-    		if(enemyHQLoc != null) {
+    		else if (enemyHQLoc != null) {
+    			Utils.log("BRING DOWN THAT WALL");
     			goToOnLattice(enemyHQLoc);
     		}
     	}

@@ -40,6 +40,8 @@ public class Bot {
     public static MapLocation targetLoc;
     public static int[] unitCounts = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     public static boolean caughtUp = false;
+    public static int[] nearbyXOffsets = {0, 1, 0, -1, 0, 1, 1, -1, -1, 0, 2, 0, -2, -1, 1, 2, 2, 1, -1, -2, -2, -2, 2, 2, -2, 0, 3, 0, -3, -1, 1, 3, 3, 1, -1, -3, -3, -2, 2, 3, 3, 2, -2, -3, -3, 0, 4, 0, -4, -1, 1, 4, 4, 1, -1, -4, -4, -3, 3, 3, -3, -2, 2, 4, 4, 2, -2, -4, -4};
+    public static int[] nearbyYOffsets = {0, 0, -1, 0, 1, 1, -1, -1, 1, 2, 0, -2, 0, 2, 2, 1, -1, -2, -2, -1, 1, 2, 2, -2, -2, 3, 0, -3, 0, 3, 3, 1, -1, -3, -3, -1, 1, 3, 3, 2, -2, -3, -3, -2, 2, 4, 0, -4, 0, 4, 4, 1, -1, -4, -4, -1, 1, 3, 3, -3, -3, 4, 4, 2, -2, -4, -4, -2, 2};
     Strategy strat;
 
     public static enum Symmetry {
@@ -488,7 +490,7 @@ public class Bot {
                     continue;
                 int newi = j;
                 int newj = i;
-                Utils.log("i: " + i + "j: " + j);
+                //Utils.log("i: " + i + "j: " + j);
                 ret[idx] = here.translate(newi, newj);
                 idx++;
                 if (i > 0 && j > 0) {
