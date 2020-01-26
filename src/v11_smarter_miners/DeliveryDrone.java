@@ -80,8 +80,8 @@ public class DeliveryDrone extends Unit {
     private void helpOutFriends() throws GameActionException {
         MapLocation wallLoc = getDropOffLoc();
         if(pickedUpFriend) {
-            int dist = here.distanceSquaredTo(wallLoc);
             if(wallLoc != null) {
+                int dist = here.distanceSquaredTo(wallLoc);
                 rc.setIndicatorLine(here, wallLoc, 0,  0, 255);
                 if(dist <= 2) {
                     if(tryDrop(here.directionTo(wallLoc), false))
