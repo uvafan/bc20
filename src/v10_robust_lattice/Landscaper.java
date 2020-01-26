@@ -11,8 +11,6 @@ public class Landscaper extends Unit {
     public static boolean doneDefending = false;
 
     public static MapLocation target = null;
-    //public static int[] xDifferentials = {-1,0,0,1,-1,-1,1,1,-2,0,0}
-    //public static int[] yDifferentials = {0,1,-1,0,1,-1,1,-1}
 
     public Landscaper(RobotController r) throws GameActionException {
         super(r);
@@ -61,21 +59,22 @@ public class Landscaper extends Unit {
     	Utils.log("I'm a lattice landscaper!");
     	int digging = rc.getDirtCarrying();
     	if(digging == 0 || digging == RobotType.LANDSCAPER.dirtLimit) {
+    		Utils.log("Case 1");
     		MapLocation bestDigLoc = null;
-            int minDist = Integer.MAX_VALUE;
             int i = 0;
-            MapLocation[] nearbyTiles = getLocationsWithinSensorRad(16);
-            while(true) {
-            	MapLocation testTile = nearbyTiles[i++];
-            	if(testTile == null)
-            		break;
+            while(i < nearbyXOffsets.length) {
+            	MapLocation testTile = here.translate(nearbyXOffsets[i], nearbyYOffsets[i]);
             	int dist = here.distanceSquaredTo(testTile);
-            	Utils.log("Testing tile: " + testTile.x + ", " + testTile.y);
-            	Utils.log(""+dist);
-            	if(dist < minDist && shouldDig(testTile, digging==0)) {
-            		bestDigLoc = testTile;
-            		minDist = dist;
+            	if(dist > rc.getCurrentSensorRadiusSquared()) {
+            		break;
             	}
+            	//Utils.log("Testing tile: " + testTile.x + ", " + testTile.y);
+            	//Utils.log(""+dist);
+            	if(shouldDig(testTile, digging==0)) {
+            		bestDigLoc = testTile;
+            		break;
+            	}
+            	i++;
             }
             if(bestDigLoc!=null) {
             	Utils.log("Give me a dead tile at: " + bestDigLoc.x + ", " + bestDigLoc.y);
@@ -97,17 +96,18 @@ public class Landscaper extends Unit {
             }
     	}
     	else {
+    		Utils.log("Case 2");
     		MapLocation bestDirtLoc = null;
             int minDist = Integer.MAX_VALUE;
             int i = 0;
-            MapLocation[] nearbyTiles = getLocationsWithinSensorRad(16);
-            while(true) {
-            	MapLocation testTile = nearbyTiles[i++];
-            	if(testTile == null)
-            		break;
+            while(i < nearbyXOffsets.length) {
+            	MapLocation testTile = here.translate(nearbyXOffsets[i], nearbyYOffsets[i]);
             	int dist = here.distanceSquaredTo(testTile);
+            	if(dist > rc.getCurrentSensorRadiusSquared()) {
+            		break;
+            	}
             	int distToHQ = hqLoc.distanceSquaredTo(testTile);
-            	int dontNavMod = 100;
+            	int dontNavMod = dist <= 2 ? 0 : 100;
             	int mainWallMod = 1000;
             	int maybeWall = testTile.distanceSquaredTo(hqLoc);
             	if(maybeWall <= 18) {
@@ -120,14 +120,12 @@ public class Landscaper extends Unit {
             		break;
             	default:
             	}
-            	if(dist <= 2) {
-            		dontNavMod = 0;
-            	}
-            	Utils.log(testTile.x + ", " + testTile.y + ": " + (dist + distToHQ + mainWallMod + dontNavMod) + ", " + shouldRenovate(testTile));
+            	//Utils.log(testTile.x + ", " + testTile.y + ": " + (dist + distToHQ + mainWallMod + dontNavMod) + ", " + shouldRenovate(testTile));
             	if(dist + distToHQ + mainWallMod + dontNavMod < minDist && shouldRenovate(testTile)) {
             		bestDirtLoc = testTile;
             		minDist = dist + distToHQ + mainWallMod + dontNavMod;
             	}
+            	i++;
             }
             if(bestDirtLoc!=null) {
             	Utils.log(bestDirtLoc.x + ", " + bestDirtLoc.y + ": " + minDist);
@@ -159,6 +157,13 @@ public class Landscaper extends Unit {
             }
     	}
     	if(rc.getCooldownTurns()<1) {
+    		Utils.log("Case 3");
+    		if(enemyHQLoc != null) {
+    			Utils.log("Darn");
+    		}
+    		else {
+    			Utils.log("Yay");
+    		}
     		if(target != null) {
     			Utils.log("I'm REALLY WANT TO GO TO: " + target.x + ", " + target.y);
     			Utils.log("I'm currenty at: " + here.x + ", " + here.y);
@@ -206,16 +211,16 @@ public class Landscaper extends Unit {
     				}
     			}
     			else {
-    			if(amDigging) {
-    				if(rc.senseElevation(loc)>hqElevation+3) {
-    					return false;
+    				if(amDigging) {
+    					if(rc.senseElevation(loc)>hqElevation+3) {
+    						return false;
+    					}
     				}
-    			}
-    			else {
-    				if(rc.senseElevation(loc) < hqElevation || rc.senseFlooding(loc) && rc.senseElevation(loc) > 0-MagicConstants.WATER_TOLERANCE ) {
-    					return false;
+    				else {
+    					if(rc.senseElevation(loc) < hqElevation || rc.senseFlooding(loc) && rc.senseElevation(loc) > 0-MagicConstants.WATER_TOLERANCE ) {
+    						return false;
+    					}
     				}
-    			}
     			}
         	}
     		return true;
