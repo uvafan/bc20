@@ -47,31 +47,39 @@ public class Unit extends Bot {
         }
     }
 
-    public Direction getBuildDirection() throws GameActionException {
+    public Direction[] getBuildDirections() throws GameActionException {
         if(strat instanceof Turtle) {
-            return hqLoc.directionTo(here);
+            return new Direction[]{hqLoc.directionTo(here), hqLoc.directionTo(here)};
         }
         else if(strat instanceof Rush) {
-            return here.directionTo(hqLoc);
+            return new Direction[]{here.directionTo(hqLoc), here.directionTo(hqLoc)};
         }
         else if(strat instanceof EcoLattice) {
-            Direction buildDir = null;
-            int minDist = Integer.MAX_VALUE;
+            Direction[] buildDirs = new Direction[]{null, null};
+            int minDist0 = Integer.MAX_VALUE;
+            int minDist1 = Integer.MAX_VALUE;
             for(Direction dir: directions) {
                 MapLocation loc = here.add(dir);
                 if(rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir)) {
                     if(shouldBuildInLoc(loc, RobotType.DESIGN_SCHOOL)) {
                         int dist = hqLoc.distanceSquaredTo(loc);
-                        if (dist < minDist) {
-                            minDist = dist;
-                            buildDir = dir;
+                        if (dist < minDist0) {
+                            minDist0 = dist;
+                            buildDirs[0] = dir;
+                        }
+                    }
+                    if(shouldBuildInLoc(loc, RobotType.REFINERY)) {
+                        int dist = hqLoc.distanceSquaredTo(loc);
+                        if (dist < minDist1) {
+                            minDist1 = dist;
+                            buildDirs[1] = dir;
                         }
                     }
                 }
             }
-            return buildDir;
+            return buildDirs;
         }
-        return randomDirection();
+        return new Direction[]{here.directionTo(hqLoc), here.directionTo(hqLoc)};
     }
 
     public boolean shouldBuildInLoc(MapLocation loc, RobotType type) throws GameActionException {
@@ -80,6 +88,9 @@ public class Unit extends Bot {
         }
         if(loc.distanceSquaredTo(hqLoc) < 8) {
             return (loc.x + loc.y) % 2 == (hqLoc.x + hqLoc.y) % 2;
+        }
+        else if(type == RobotType.REFINERY) {
+            return isOnLatticeIntersection(loc);
         }
         else {
             return isOnLatticeIntersection(loc) && rc.senseElevation(loc) >= MagicConstants.LATTICE_HEIGHT;
@@ -188,9 +199,15 @@ public class Unit extends Bot {
             return Nav.goTo(destination, crunch);
         return Nav.goTo(destination, safe);
     }
+
     static boolean goToOnLattice(MapLocation destination) throws GameActionException {
         return Nav.goTo(destination, new SafetyPolicyAvoidAllUnitsAndLattice());
     }
+
+    static boolean goToOnLattice(MapLocation destination, boolean inside) throws GameActionException {
+        return Nav.goTo(destination, new SafetyPolicyAvoidAllUnitsAndLattice(false));
+    }
+
 
     static boolean tryMove(Direction dir) throws GameActionException {
         if (rc.isReady() && rc.canMove(dir) && !rc.senseFlooding(rc.getLocation().add(dir))) {

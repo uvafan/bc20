@@ -16,12 +16,14 @@ public class Miner extends Unit {
     MapLocation designSchoolLoc = null;
     MapLocation droneLoc = null;
     boolean buildMiner = false;
+    int birthRound;
 
     public Miner(RobotController r) throws GameActionException {
         super(r);
         if(round == 2 && strat instanceof Rush) {
             rushing = true;
         }
+        birthRound = round;
         refineLoc = null;
         nearbyDrone = false;
         nearbyFulfillment = false;
@@ -31,7 +33,7 @@ public class Miner extends Unit {
         if(strat instanceof EcoLattice) {
             comms.readMessages();
             Utils.log("I think there are " + unitCounts[RobotType.MINER.ordinal()] + " miners.");
-            buildMiner = unitCounts[RobotType.MINER.ordinal()] == MagicConstants.BUILD_MINER_NUM;
+            buildMiner = MagicConstants.NUM_MINERS - unitCounts[RobotType.MINER.ordinal()] < MagicConstants.BUILD_MINERS;
             if(buildMiner) {
                 Utils.log("I'm a build miner!");
             }
@@ -41,12 +43,12 @@ public class Miner extends Unit {
     public void takeTurn() throws GameActionException {
         super.takeTurn();
         if(!caughtUp) {
-            comms.readMessages();
-            if(comms.isCaughtUp()) {
+            comms.readMessages(birthRound);
+            if(comms.readRound - 1 == birthRound) {
                 caughtUp = true;
                 if(strat instanceof EcoLattice) {
                     Utils.log("I think there are " + unitCounts[RobotType.MINER.ordinal()] + " miners.");
-                    buildMiner = unitCounts[RobotType.MINER.ordinal()] == MagicConstants.BUILD_MINER_NUM;
+                    buildMiner = MagicConstants.NUM_MINERS - unitCounts[RobotType.MINER.ordinal()] < MagicConstants.BUILD_MINERS;
                     if(buildMiner) {
                         Utils.log("I'm a build miner!");
                     }
@@ -61,16 +63,20 @@ public class Miner extends Unit {
         else if (rc.getCooldownTurns() < 1){
             if(buildMiner) {
                 if(!buildIfShould()) {
-                    if(!isWallComplete && here.distanceSquaredTo(hqLoc) < 8) {
-                        Direction dir = randomDirection();
-                        if (rc.canMove(dir) && here.add(dir).distanceSquaredTo(hqLoc) < 8) {
-                            tryMove(dir);
+                    if(!isWallComplete || here.distanceSquaredTo(hqLoc) < 8) {
+                        for(int i=0;i<5;i++) {
+                            Direction dir = randomDirection();
+                            if (rc.canMove(dir) && here.add(dir).distanceSquaredTo(hqLoc) < 8) {
+                                tryMove(dir);
+                            }
                         }
                     }
                     else {
-                        goTo(hqLoc);
+                        goToOnLattice(hqLoc, false);
                     }
                 }
+            }
+            else if(buildIfShould()) {
             }
             else if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
                 boolean deposited = false;
@@ -99,8 +105,8 @@ public class Miner extends Unit {
                             rc.setIndicatorLine(here, refineLoc, 0, 255, 0);
                     }
                 }
-            } else if (buildIfShould()) {
-            } else {
+            }
+            else {
                 updateTargetMineLoc();
                 if (targetMineLoc != null) {
                     if (here.distanceSquaredTo(targetMineLoc) <= 2) {
@@ -249,18 +255,23 @@ public class Miner extends Unit {
                 minDist = dist;
             }
         }
-        if(bestLoc == null && !isWallComplete && (!rc.canSenseLocation(hqLoc) || canReachAdj(hqLoc, true, MagicConstants.MINER_ELEVATION_TOLERANCE)))
+        if(bestLoc == null && (!isWallComplete || buildMiner) && (!rc.canSenseLocation(hqLoc) || canReachAdj(hqLoc, true, MagicConstants.MINER_ELEVATION_TOLERANCE)))
             bestLoc = hqLoc;
         return bestLoc;
     }
 
     private boolean buildRefineryIfShould(Direction buildDirection, boolean tryOthers) throws GameActionException {
-        if(!rushing && strat instanceof Rush && round < 250)
+        if(buildMiner ||
+            rc.getTeamSoup() < MagicConstants.SOUP_REQUIRED_FOR_REFINERY ||
+            buildDirection == null ||
+            !rushing && strat instanceof Rush && round < 250)
             return false;
         MapLocation closestRefine = chooseRefineLoc();
         if(closestRefine != null && (hqAttacked || here.distanceSquaredTo(closestRefine) < MagicConstants.REQUIRED_REFINERY_DIST))
             return false;
-        if ((rc.senseNearbySoup().length > 3 && rc.getTeamSoup() >= 300) || closestRefine == null){
+        updateTargetMineLoc();
+        if (targetMineLoc != null && here.distanceSquaredTo(targetMineLoc) <= 25){
+            Utils.log("trying to build refinery!");
             if(tryBuild(RobotType.REFINERY, buildDirection, tryOthers)) {
                 return true;
             }
@@ -269,15 +280,15 @@ public class Miner extends Unit {
     }
 
     private boolean buildIfShould() throws GameActionException {
-        Direction buildDirection = getBuildDirection();
-        if(buildDirection == null)
-            return false;
+        Direction[] buildDirections = getBuildDirections();
         boolean tryOthers = !(strat instanceof EcoLattice);
-        RobotType rt = strat.determineBuildingNeeded();
-        if(rt != null && tryBuild(rt, buildDirection, tryOthers)) {
-            return true;
+        if(buildDirections[0] != null) {
+            RobotType rt = strat.determineBuildingNeeded();
+            if(rt != null && tryBuild(rt, buildDirections[0], tryOthers)) {
+                return true;
+            }
         }
-        return buildRefineryIfShould(buildDirection, tryOthers);
+        return buildRefineryIfShould(buildDirections[1], tryOthers);
     }
 
     private void updateTargetMineLoc() throws GameActionException {

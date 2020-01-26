@@ -17,11 +17,20 @@ class SafetyPolicyCrunch extends Bot implements NavSafetyPolicy {
 }
 
 class SafetyPolicyAvoidAllUnitsAndLattice extends Bot implements NavSafetyPolicy {
+	boolean insideOK;
+
 	public SafetyPolicyAvoidAllUnitsAndLattice() {
+		insideOK = true;
 	}
-	
+
+	public SafetyPolicyAvoidAllUnitsAndLattice(boolean inside) {
+		insideOK = inside;
+	}
+
 	public boolean isSafeToMoveTo(MapLocation loc) throws GameActionException {
 		if(rc.senseFlooding(loc)) //change this to if the tile will flood next turn
+			return false;
+		if(!insideOK && loc.distanceSquaredTo(hqLoc) <= 8)
 			return false;
 		if(hqLoc.x%2 == loc.x%2 && hqLoc.y%2 == loc.y%2 && loc.distanceSquaredTo(hqLoc) > 8)
 			return false;
