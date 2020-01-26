@@ -43,7 +43,7 @@ public class Miner extends Unit {
     public void takeTurn() throws GameActionException {
         super.takeTurn();
         if(!caughtUp) {
-            comms.readMessages(birthRound);
+            comms.readMessages(Math.min(birthRound, round - 1));
             if(comms.readRound - 1 == birthRound) {
                 caughtUp = true;
                 if(strat instanceof EcoLattice) {
@@ -66,7 +66,8 @@ public class Miner extends Unit {
                     if(!isWallComplete || here.distanceSquaredTo(hqLoc) < 8) {
                         for(int i=0;i<5;i++) {
                             Direction dir = randomDirection();
-                            if (rc.canMove(dir) && here.add(dir).distanceSquaredTo(hqLoc) < 8) {
+                            if (rc.canMove(dir) && here.add(dir).distanceSquaredTo(hqLoc) < 8
+                            && (!hqAttacked || here.add(dir).distanceSquaredTo(hqLoc) > 2)) {
                                 tryMove(dir);
                             }
                         }

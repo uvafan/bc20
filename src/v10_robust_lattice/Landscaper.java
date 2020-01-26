@@ -347,15 +347,20 @@ public class Landscaper extends Unit {
                 if(rc.canDepositDirt(here.directionTo(adjBuilding)))
                     rc.depositDirt(here.directionTo(adjBuilding));
             }
-            else if (myDirt < 25) {
+            else if (adjBuilding != null && myDirt < 25) {
                 tryDig(adjBuilding.directionTo(here), true);
             }
             else if (dirtOnHQ > 0){
                 Direction d = hqLoc.directionTo(here);
                 Direction[] dirs = {d, d.rotateLeft(), d.rotateRight(), d.rotateLeft().rotateLeft(), d.rotateRight().rotateRight()};
                 for(Direction dir: dirs) {
+                    MapLocation loc = here.add(dir);
+                    RobotInfo ri = rc.senseRobotAtLocation(loc);
+                    if(ri != null && ri.team == us)
+                        continue;
                     if(rc.canDepositDirt(dir)) {
                         rc.depositDirt(dir);
+                        break;
                     }
                 }
             }
@@ -364,7 +369,7 @@ public class Landscaper extends Unit {
             rc.setIndicatorLine(here, building, 255, 0, 0);
             if(here.distanceSquaredTo(building) <= 2) {
                 if(myDirt == 0) {
-                    tryDig(building.directionTo(here), false);
+                    tryDig(building.directionTo(here), true);
                 }
                 else if(rc.canDepositDirt(here.directionTo(building))) {
                     rc.depositDirt(here.directionTo(building));
@@ -374,7 +379,6 @@ public class Landscaper extends Unit {
                 goTo(building);
             }
         }
-        //
     }
 
     private RobotInfo getBuildingToBury() throws GameActionException {

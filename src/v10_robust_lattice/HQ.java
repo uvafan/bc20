@@ -15,7 +15,7 @@ public class HQ extends Building {
     }
 
     private boolean isUnderAttack() {
-        return (!seesOpponentHQ) && (seesNonDroneEnemy || round - seesDroneEnemyRound < 7);
+        return (!seesOpponentHQ) && (seesNonDroneEnemy /*|| round - seesDroneEnemyRound < 7*/);
     }
 
     public void takeTurn() throws GameActionException {
