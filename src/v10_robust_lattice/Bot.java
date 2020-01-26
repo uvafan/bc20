@@ -245,10 +245,9 @@ public class Bot {
         }
         for (RobotInfo e : enemies) {
             if (e.type == RobotType.HQ) {
-                Utils.log("found you!");
                 enemyHQLoc = e.location;
-                comms.broadcastLoc(Comms.MessageType.ENEMY_HQ_LOC, enemyHQLoc);
-                return false;
+                enemyHqLocPossibilities = new MapLocation[]{e.location};
+                return true;
             }
         }
         boolean removed = false;
@@ -272,8 +271,7 @@ public class Bot {
         }
         if (enemyHqLocPossibilities.length == 1) {
             enemyHQLoc = enemyHqLocPossibilities[0];
-            comms.broadcastLoc(Comms.MessageType.ENEMY_HQ_LOC, enemyHQLoc);
-            return false;
+            return true;
         }
         return removed;
     }
@@ -373,6 +371,8 @@ public class Bot {
         if(enemyHqLocTentativePossibilities.length == 0)
             pickFrom = enemyHqLocPossibilities;
         if(pickFrom.length == 1) {
+            if(enemyHQLoc == null || !enemyHQLoc.equals(pickFrom[0]))
+                comms.broadcastLoc(Comms.MessageType.ENEMY_HQ_LOC, pickFrom[0]);
             enemyHQLoc = pickFrom[0];
             return enemyHQLoc;
         }
