@@ -63,7 +63,8 @@ public class DeliveryDrone extends Unit {
             int dx = MagicConstants.WALL_X_OFFSETS[i];
             int dy = MagicConstants.WALL_Y_OFFSETS[i];
             MapLocation check = new MapLocation(hqLoc.x + dx, hqLoc.y + dy);
-            if(rc.canSenseLocation(check) && !rc.isLocationOccupied(check) && safeFromDrones(check)) {
+            if(rc.canSenseLocation(check) && !rc.isLocationOccupied(check) && safeFromDrones(check)
+                && rc.senseElevation(check) >= MagicConstants.LATTICE_HEIGHT && rc.senseElevation(check) <= MagicConstants.LATTICE_TOLERANCE) {
                 int dist = here.distanceSquaredTo(check);
                 if(dist < minDist) {
                     minDist = dist;
@@ -206,7 +207,7 @@ public class DeliveryDrone extends Unit {
             if (!rc.isCurrentlyHoldingUnit()) {
                 findAndPickUpEnemyUnit();
             }
-            else if (crunching) {
+            else if (crunching && rc.senseFlooding(here)) {
                 rc.disintegrate();
             }
             else {

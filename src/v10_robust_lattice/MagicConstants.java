@@ -10,18 +10,15 @@ public class MagicConstants {
 	public static int ORDINAL_SECRET_NUM = 234746;
 
 	// misc
-	public static int MAX_CLUSTER_DIST = RobotType.MINER.sensorRadiusSquared;
-    public static int GIVE_UP_CLUSTER_DIST = 8;
 	public static int GIVE_UP_WATER_DIST = 2;
 	public static int EXPLORE_BOREDOM = 25;
-    public static int REQUIRED_REFINERY_DIST = 50;
 	public static int TOLERATED_WATER_DIST = 50;
 	public static int RUSH_DEFENSE_DIST = 100;
 	public static int MAX_WATER_LOCS = 20;
 
 	// net guns and dealing with drones
 	public static int MIN_NET_GUN_CLOSENESS = 8;
-	public static int MIN_NET_GUN_DIST_FROM_HQ = 9;
+	public static int MIN_NET_GUN_DIST_FROM_HQ = 8;
 	public static final int MAX_DIST_TO_FLEE = 18;
 	public static final int MAX_DIST_TO_BUILD_NET_GUN = 25;
 	public static final boolean FLEE_BEFORE_BUILD = false;
@@ -36,7 +33,7 @@ public class MagicConstants {
 	// public static int[] WALL_X_OFFSETS = {-2,-2,-2,-2,-2,-1,0,1,2,2,2,2,2,1,0,-1};
 	public static int[] WALL_X_OFFSETS = {-3,-2,-1,0,1,2,3,3,3,3,3,3,3,2,1,0,-1,-2,-3,-3,-3,-3,-3,-3};
 	public static int[] WALL_Y_OFFSETS = {3,3,3,3,3,3,3,2,1,0,-1,-2,-3,-3,-3,-3,-3,-3,-3,-2,-1,0,1,2};
-	public static final int HELP_MINER_UP_ROUND = 400;
+	public static final int HELP_MINER_UP_ROUND = 1000;
 	public static int LATTICE_HEIGHT = 8;
 	public static int LATTICE_TOLERANCE = 50;
 	public static int WATER_TOLERANCE = 100;
@@ -66,7 +63,8 @@ public class MagicConstants {
 			1, //Drones
 			1, //Landscapers
 	};
-	public static int BUILD_MINER_NUM = 5;
+	public static int NUM_MINERS = 5;
+	public static int BUILD_MINERS = 1;
 	public static int TURNS_FOR_VAP_TO_PAY = 250;
 
 	// rush defense prioritization
@@ -86,4 +84,8 @@ public class MagicConstants {
 
 	// mining
 	public static int MINER_ELEVATION_TOLERANCE = 10;
+	public static int MAX_CLUSTER_DIST = RobotType.MINER.sensorRadiusSquared;
+	public static int GIVE_UP_CLUSTER_DIST = 8;
+	public static int REQUIRED_REFINERY_DIST = 50;
+	public static int SOUP_REQUIRED_FOR_REFINERY = 300;
 }
