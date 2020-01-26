@@ -60,7 +60,7 @@ public class Unit extends Bot {
             for(Direction dir: directions) {
                 MapLocation loc = here.add(dir);
                 if(rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir)) {
-                    if(shouldBuildInLoc(loc)) {
+                    if(shouldBuildInLoc(loc, RobotType.DESIGN_SCHOOL)) {
                         int dist = hqLoc.distanceSquaredTo(loc);
                         if (dist < minDist) {
                             minDist = dist;
@@ -74,8 +74,11 @@ public class Unit extends Bot {
         return randomDirection();
     }
 
-    public boolean shouldBuildInLoc(MapLocation loc) throws GameActionException {
-        if(loc.distanceSquaredTo(hqLoc) <= 8) {
+    public boolean shouldBuildInLoc(MapLocation loc, RobotType type) throws GameActionException {
+        if(loc.distanceSquaredTo(hqLoc) == 8) {
+            return type == RobotType.NET_GUN;
+        }
+        if(loc.distanceSquaredTo(hqLoc) < 8) {
             return (loc.x + loc.y) % 2 == (hqLoc.x + hqLoc.y) % 2;
         }
         else {
@@ -87,16 +90,17 @@ public class Unit extends Bot {
         int soupNeeded = RobotType.NET_GUN.cost + 1;
         if(!isWallComplete) {
             int dist = here.distanceSquaredTo(hqLoc);
-            if(dist > 8) {
-                soupNeeded += MagicConstants.DIST_SOUP_MULTIPLIER * (dist-8);
+            if(dist > 18) {
+                soupNeeded += MagicConstants.DIST_SOUP_MULTIPLIER * (dist-18);
             }
         }
         if(type != RobotType.MINER || rc.getTeamSoup() < soupNeeded || here.distanceSquaredTo(closestEnemyDrone) > MagicConstants.MAX_DIST_TO_BUILD_NET_GUN)
             return false;
+        int numFriendlyNGs = 0;
+        MapLocation[] friendlyNGs = new MapLocation[100];
         for(RobotInfo f: friends) {
-            if(f.type == RobotType.NET_GUN && here.distanceSquaredTo(f.location) < Math.max(8, MagicConstants.MIN_NET_GUN_CLOSENESS)) {
-                return false;
-            }
+            if(f.type == RobotType.NET_GUN)
+                friendlyNGs[numFriendlyNGs++] = f.location;
         }
         if(closestEnemyDrone != null) {
             Direction bestDir = null;
@@ -108,9 +112,19 @@ public class Unit extends Bot {
                     if(dist < MagicConstants.MIN_NET_GUN_DIST_FROM_HQ)
                         continue;
                     int score = -Utils.manhattan(loc, closestEnemyDrone) - Utils.manhattan(loc, hqLoc);
-                    if(!shouldBuildInLoc(loc)) {
+                    if(!shouldBuildInLoc(loc, RobotType.NET_GUN)) {
                         continue;
                     }
+                    boolean cont = false;
+                    for(int i=0;i<numFriendlyNGs;i++) {
+                        if(friendlyNGs[i].distanceSquaredTo(loc) < MagicConstants.MIN_NET_GUN_CLOSENESS) {
+                            cont = true;
+                            break;
+                        }
+                    }
+                    if(cont)
+                        continue;
+                    Utils.log("score for " + loc + " is " + score);
                     if (score > maxScore) {
                         maxScore = score;
                         bestDir = dir;
