@@ -58,13 +58,13 @@ public class Landscaper extends Unit {
     }
 
     private void doLattice() throws GameActionException {
-
+    	Utils.log("I'm a lattice landscaper!");
     	int digging = rc.getDirtCarrying();
     	if(digging == 0 || digging == RobotType.LANDSCAPER.dirtLimit) {
     		MapLocation bestDigLoc = null;
             int minDist = Integer.MAX_VALUE;
             int i = 0;
-            MapLocation[] nearbyTiles = getLocationsWithinSensorRad();
+            MapLocation[] nearbyTiles = getLocationsWithinSensorRad(16);
             while(true) {
             	MapLocation testTile = nearbyTiles[i++];
             	if(testTile == null)
@@ -90,15 +90,6 @@ public class Landscaper extends Unit {
             		if(target == null) {
             			target = bestDigLoc;
             		}
-            		if(target != null) {
-                		Utils.log("I'm REALLY WANT TO GO TO: " + target.x + ", " + target.y);
-                		if(here.distanceSquaredTo(target) <= 2) {
-                			target = null;
-                		}
-                		else {
-                			goToOnLattice(target);
-                		}
-                	}
             	}
             }
     	}
@@ -106,7 +97,7 @@ public class Landscaper extends Unit {
     		MapLocation bestDirtLoc = null;
             int minDist = Integer.MAX_VALUE;
             int i = 0;
-            MapLocation[] nearbyTiles = getLocationsWithinSensorRad();
+            MapLocation[] nearbyTiles = getLocationsWithinSensorRad(16);
             while(true) {
             	MapLocation testTile = nearbyTiles[i++];
             	if(testTile == null)
@@ -129,6 +120,8 @@ public class Landscaper extends Unit {
             	if(dist <= 2) {
             		dontNavMod = 0;
             	}
+            	if(testTile.x ==4 )
+            	Utils.log(testTile.x + ", " + testTile.y + ": " + (dist + distToHQ + mainWallMod + dontNavMod) + ", " + shouldRenovate(testTile));
             	if(dist + distToHQ + mainWallMod + dontNavMod < minDist && shouldRenovate(testTile)) {
             		bestDirtLoc = testTile;
             		minDist = dist + distToHQ + mainWallMod + dontNavMod;
@@ -160,17 +153,17 @@ public class Landscaper extends Unit {
             		if(target == null) {
             			target = bestDirtLoc;
             		}
-            		if(target != null) {
-                		Utils.log("I'm REALLY WANT TO GO TO: " + target.x + ", " + target.y);
-                		if(here.distanceSquaredTo(target) <= 2) {
-                			target = null;
-                		}
-                		else {
-                			goToOnLattice(target);
-                		}
-                	}
             	}
             }
+    	}
+		if(target != null) {
+    		Utils.log("I'm REALLY WANT TO GO TO: " + target.x + ", " + target.y);
+    		if(here.distanceSquaredTo(target) <= 2) {
+    			target = null;
+    		}
+    		else {
+    			goToOnLattice(target);
+    		}
     	}
     	if(rc.getCooldownTurns() < 1) {
     		if(enemyHQLoc != null) {
@@ -183,7 +176,7 @@ public class Landscaper extends Unit {
     	if(!badLatticeLoc(testTile,true, true)) {
     		int elev = rc.senseElevation(testTile);
     		if ((elev < MagicConstants.LATTICE_HEIGHT && (elev > MagicConstants.LATTICE_HEIGHT - MagicConstants.LATTICE_TOLERANCE || testTile.distanceSquaredTo(hqLoc) <= 8 && elev > 0-MagicConstants.WATER_TOLERANCE)|| (elev > MagicConstants.LATTICE_HEIGHT + 3 && elev < MagicConstants.LATTICE_HEIGHT + 3 + MagicConstants.LATTICE_TOLERANCE)) && (!(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2) || hqLoc.distanceSquaredTo(testTile) <= 8)) {
-    			Utils.log("I should be renovating: " + testTile.x + ", " + testTile.y);
+    			//Utils.log("I should be renovating: " + testTile.x + ", " + testTile.y);
     			return true;
     		}
     	}

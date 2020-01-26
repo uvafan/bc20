@@ -459,13 +459,17 @@ public class Bot {
     }
 
 
-    static MapLocation[] getLocationsWithinSensorRad() {
-        int sensorRad = rc.getCurrentSensorRadiusSquared();
+    static MapLocation[] getLocationsWithinSensorRad(int rad) {
+        int sensorRad = Math.min(rad, rc.getCurrentSensorRadiusSquared());
         Utils.log("sensorRad: " + sensorRad);
-        MapLocation[] ret = new MapLocation[1000];
+        MapLocation[] ret = new MapLocation[100];
         int idx = 0;
-        for (int i = 0; i * i + i * i <= sensorRad; i++)
+        for (int i = 0; i * i + i * i <= sensorRad; i++) {
+        	if(Clock.getBytecodesLeft() < 1000)
+        		break;
             for (int j = i; i * i + j * j <= sensorRad; j++) {
+            	if(Clock.getBytecodesLeft() < 1000)
+            		break;
                 ret[idx] = here.translate(i, j);
                 idx++;
                 if (i > 0 && j > 0) {
@@ -482,24 +486,25 @@ public class Bot {
                 }
                 if (i == j)
                     continue;
-                int temp = i;
-                i = j;
-                j = temp;
-                ret[idx] = here.translate(i, j);
+                int newi = j;
+                int newj = i;
+                Utils.log("i: " + i + "j: " + j);
+                ret[idx] = here.translate(newi, newj);
                 idx++;
                 if (i > 0 && j > 0) {
-                    ret[idx] = here.translate(-i, -j);
+                    ret[idx] = here.translate(-newi, -newj);
                     idx++;
                 }
                 if (i > 0) {
-                    ret[idx] = here.translate(-i, j);
+                    ret[idx] = here.translate(-newi, newj);
                     idx++;
                 }
                 if (j > 0) {
-                    ret[idx] = here.translate(i, -j);
+                    ret[idx] = here.translate(newi, -newj);
                     idx++;
                 }
             }
+        }
         ret[idx] = null;
         return ret;
     }
