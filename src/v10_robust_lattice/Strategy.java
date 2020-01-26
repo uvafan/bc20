@@ -62,6 +62,7 @@ public class Strategy {
 
 
     public void updateBasedOnDesiredComp(int[] unitCounts, int[] desiredComp, RobotType[] types) {
+        double[] ratios = new double[desiredComp.length];
         RobotType bestType = null;
         RobotType secondBestType = null;
         double bestRatio = Double.MAX_VALUE;
@@ -75,6 +76,7 @@ public class Strategy {
             if(comp==0)
             	continue;
             double ratio = (1.0 * count) / comp;
+            ratios[i] = ratio;
             Utils.log("I think we have " + count + " " + type + " ratio is " + ratio);
             if(ratio < bestRatio || (ratio == bestRatio && comp > highestNum)) {
                 secondBestType = bestType;
@@ -92,13 +94,16 @@ public class Strategy {
         }
         Utils.log("best type is "+ bestType);
         for(int i=0; i < desiredComp.length; i++) {
-        	RobotType type = types[i];
-            if(type == bestType)
+            RobotType type = types[i];
+            if (type == bestType)
                 soupPriorities[type.ordinal()] = 0;
-            else if(desiredComp[i] == 0 || type != secondBestType)
-            	soupPriorities[type.ordinal()] = bestType.cost + secondBestType.cost + type.cost + 2 + 2;
-            else
+            else if (desiredComp[i] == 0)
+                soupPriorities[type.ordinal()] = Integer.MAX_VALUE;
+            else if(bot.hqAttacked)
                 soupPriorities[type.ordinal()] = bestType.cost + type.cost + 2;
+            else
+                soupPriorities[type.ordinal()] = (int) (bestType.cost + type.cost + (ratios[i] - bestRatio) * MagicConstants.SOUP_RATIO_MULTIPLIER);
+            Utils.log("priority for type " + type + " is " + soupPriorities[type.ordinal()]);
         }
     }
 
