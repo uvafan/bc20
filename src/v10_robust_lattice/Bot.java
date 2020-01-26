@@ -278,7 +278,7 @@ public class Bot {
 
     public boolean updateSymmetryAndOpponentHQs() throws GameActionException {
         boolean removed = updateOpponentHQs();
-        if (enemyHqLocPossibilities.length > 1 && Clock.getBytecodesLeft() > 2500)
+        if (enemyHqLocPossibilities.length > 1 && enemyHQLoc == null && Clock.getBytecodesLeft() > 2500)
             removed |= doSymmetryDetection();
         return removed;
     }
@@ -371,7 +371,7 @@ public class Bot {
         if(enemyHqLocTentativePossibilities.length == 0)
             pickFrom = enemyHqLocPossibilities;
         if(pickFrom.length == 1) {
-            if(enemyHQLoc == null || !enemyHQLoc.equals(pickFrom[0]))
+            if(enemyHQLoc == null || (!enemyHQLoc.equals(pickFrom[0])))
                 comms.broadcastLoc(Comms.MessageType.ENEMY_HQ_LOC, pickFrom[0]);
             enemyHQLoc = pickFrom[0];
             return enemyHQLoc;
