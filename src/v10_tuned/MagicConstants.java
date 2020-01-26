@@ -1,4 +1,4 @@
-package v10_robust_lattice;
+package v10_tuned;
 
 import battlecode.common.RobotType;
 
@@ -66,7 +66,6 @@ public class MagicConstants {
 	public static int NUM_MINERS = 5;
 	public static int BUILD_MINERS = 1;
 	public static int TURNS_FOR_VAP_TO_PAY = 250;
-	public static int SOUP_RATIO_MULTIPLIER = 50;
 
 	// rush defense prioritization
 	public static int SPOTS_FREE_MULTIPLIER = 50;

@@ -1,4 +1,4 @@
-package v10_robust_lattice;
+package v10_tuned;
 
 import battlecode.common.*;
 
@@ -23,8 +23,6 @@ public class DeliveryDrone extends Unit {
         }
         if(enemyHQLoc == null) {
             if (rushing && (hqLoc == null || hqLoc.distanceSquaredTo(center) > here.distanceSquaredTo(hqLoc)))
-                targetLoc = center;
-            else if(harassing)
                 targetLoc = center;
             else
                 targetLoc = pickTargetFromEnemyHQs(true);
@@ -173,8 +171,8 @@ public class DeliveryDrone extends Unit {
     }
 
     private void doHarass() throws GameActionException {
-        if(enemyHQLoc == null || enemyHqLocPossibilities.length > 1)
-            if(updateSymmetryAndOpponentHQs()) {
+        if(enemyHQLoc == null)
+            if(updateOpponentHQs()) {
                 targetLoc = pickTargetFromEnemyHQs(true);
             }
         if(landscaperDropper && !droppedOff) {
@@ -319,7 +317,7 @@ public class DeliveryDrone extends Unit {
     }
 
     public void runToEnemyHQ() throws GameActionException {
-        if((enemyHQLoc == null || enemyHqLocPossibilities.length > 1) && rushing){
+        if(enemyHQLoc == null && rushing){
             if(updateSymmetryAndOpponentHQs())
                 targetLoc = pickTargetFromEnemyHQs(true);
         }

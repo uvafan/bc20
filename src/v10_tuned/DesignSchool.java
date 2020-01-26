@@ -1,4 +1,4 @@
-package v10_robust_lattice;
+package v10_tuned;
 
 import battlecode.common.*;
 
@@ -42,8 +42,6 @@ public class DesignSchool extends Building {
             if(ret != null)
                 return ret;
         }
-        else if(here.distanceSquaredTo(hqLoc) == 2)
-            return here.directionTo(hqLoc);
         return hqLoc.directionTo(here);
     }
 

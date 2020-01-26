@@ -1,4 +1,4 @@
-package v10_robust_lattice;
+package v10_tuned;
 
 import battlecode.common.*;
 
@@ -34,14 +34,14 @@ public class Landscaper extends Unit {
     public void takeTurn() throws GameActionException {
         super.takeTurn();
         defending = hqAttacked && !doneDefending;
-        RobotInfo buildingToBury = getBuildingToBury();
-        if(!rushing && rc.getCooldownTurns() < 1 && !(round > MagicConstants.CRUNCH_ROUND && buildingToBury != null && here.distanceSquaredTo(buildingToBury.location) <= 2)) {
+        if(!rushing && rc.getCooldownTurns() < 1) {
             dealWithEnemyDrones();
         }
         if(rushing) {
             doRush();
         }
         else if(rc.getCooldownTurns() < 1){
+            RobotInfo buildingToBury = getBuildingToBury();
             if(defending && (rc.canSenseLocation(hqLoc) || buildingToBury == null))
                 doDefense();
             else {
@@ -58,27 +58,24 @@ public class Landscaper extends Unit {
     }
 
     private void doLattice() throws GameActionException {
-    	Utils.log("I'm a lattice landscaper!");
+
     	int digging = rc.getDirtCarrying();
     	if(digging == 0 || digging == RobotType.LANDSCAPER.dirtLimit) {
     		MapLocation bestDigLoc = null;
             int minDist = Integer.MAX_VALUE;
             int i = 0;
-            MapLocation[] nearbyTiles = getLocationsWithinSensorRad(16);
+            MapLocation[] nearbyTiles = getLocationsWithinSensorRad();
             while(true) {
             	MapLocation testTile = nearbyTiles[i++];
             	if(testTile == null)
             		break;
             	int dist = here.distanceSquaredTo(testTile);
-            	Utils.log("Testing tile: " + testTile.x + ", " + testTile.y);
-            	Utils.log(""+dist);
             	if(dist < minDist && shouldDig(testTile, digging==0)) {
             		bestDigLoc = testTile;
             		minDist = dist;
             	}
             }
             if(bestDigLoc!=null) {
-            	Utils.log("Give me a dead tile at: " + bestDigLoc.x + ", " + bestDigLoc.y);
             	if(here.distanceSquaredTo(bestDigLoc) <=2 ) {
             		target = null;
             		if(digging==0) {
@@ -93,6 +90,15 @@ public class Landscaper extends Unit {
             		if(target == null) {
             			target = bestDigLoc;
             		}
+            		if(target != null) {
+                		Utils.log("I'm REALLY WANT TO GO TO: " + target.x + ", " + target.y);
+                		if(here.distanceSquaredTo(target) <= 2) {
+                			target = null;
+                		}
+                		else {
+                			goToOnLattice(target);
+                		}
+                	}
             	}
             }
     	}
@@ -100,7 +106,7 @@ public class Landscaper extends Unit {
     		MapLocation bestDirtLoc = null;
             int minDist = Integer.MAX_VALUE;
             int i = 0;
-            MapLocation[] nearbyTiles = getLocationsWithinSensorRad(16);
+            MapLocation[] nearbyTiles = getLocationsWithinSensorRad();
             while(true) {
             	MapLocation testTile = nearbyTiles[i++];
             	if(testTile == null)
@@ -123,7 +129,6 @@ public class Landscaper extends Unit {
             	if(dist <= 2) {
             		dontNavMod = 0;
             	}
-            	Utils.log(testTile.x + ", " + testTile.y + ": " + (dist + distToHQ + mainWallMod + dontNavMod) + ", " + shouldRenovate(testTile));
             	if(dist + distToHQ + mainWallMod + dontNavMod < minDist && shouldRenovate(testTile)) {
             		bestDirtLoc = testTile;
             		minDist = dist + distToHQ + mainWallMod + dontNavMod;
@@ -155,23 +160,20 @@ public class Landscaper extends Unit {
             		if(target == null) {
             			target = bestDirtLoc;
             		}
+            		if(target != null) {
+                		Utils.log("I'm REALLY WANT TO GO TO: " + target.x + ", " + target.y);
+                		if(here.distanceSquaredTo(target) <= 2) {
+                			target = null;
+                		}
+                		else {
+                			goToOnLattice(target);
+                		}
+                	}
             	}
             }
     	}
-    	if(rc.getCooldownTurns()<1) {
-    		if(target != null) {
-    			Utils.log("I'm REALLY WANT TO GO TO: " + target.x + ", " + target.y);
-    			Utils.log("I'm currenty at: " + here.x + ", " + here.y);
-    			if(here.distanceSquaredTo(target) <= 2) {
-    				target = null;
-    			}
-    			else {
-    				Utils.log("Well, hope I can get there");
-    				goToOnLattice(target);
-    			}
-    		}
-    		else if (enemyHQLoc != null) {
-    			Utils.log("BRING DOWN THAT WALL");
+    	if(rc.getCooldownTurns() < 1) {
+    		if(enemyHQLoc != null) {
     			goToOnLattice(enemyHQLoc);
     		}
     	}
@@ -180,8 +182,8 @@ public class Landscaper extends Unit {
     	//Utils.log("I'm trying to sense: " + testTile.x + ", " + testTile.y);
     	if(!badLatticeLoc(testTile,true, true)) {
     		int elev = rc.senseElevation(testTile);
-    		if ((elev < MagicConstants.LATTICE_HEIGHT && (elev > MagicConstants.LATTICE_HEIGHT - MagicConstants.LATTICE_TOLERANCE || testTile.distanceSquaredTo(hqLoc) <= 8 && elev > 0-MagicConstants.WATER_TOLERANCE)|| (elev > MagicConstants.LATTICE_HEIGHT + 3 && elev < MagicConstants.LATTICE_HEIGHT + 3 + MagicConstants.LATTICE_TOLERANCE)) && (!(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2) || hqLoc.distanceSquaredTo(testTile) <= 8)) {
-    			//Utils.log("I should be renovating: " + testTile.x + ", " + testTile.y);
+    		if ((elev < MagicConstants.LATTICE_HEIGHT && (elev > MagicConstants.LATTICE_HEIGHT - MagicConstants.LATTICE_TOLERANCE || testTile.distanceSquaredTo(hqLoc) <= 8 && elev > 0- MagicConstants.WATER_TOLERANCE)|| (elev > MagicConstants.LATTICE_HEIGHT + 3 && elev < MagicConstants.LATTICE_HEIGHT + 3 + MagicConstants.LATTICE_TOLERANCE)) && (!(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2) || hqLoc.distanceSquaredTo(testTile) <= 8)) {
+    			Utils.log("I should be renovating: " + testTile.x + ", " + testTile.y);
     			return true;
     		}
     	}
@@ -201,7 +203,7 @@ public class Landscaper extends Unit {
     				if(rc.senseElevation(loc)>hqElevation+3) {
     					return false;
     				}
-    				if(rc.senseElevation(loc) < hqElevation || rc.senseFlooding(loc) && rc.senseElevation(loc) > 0-MagicConstants.WATER_TOLERANCE ) {
+    				if(rc.senseElevation(loc) < hqElevation || rc.senseFlooding(loc) && rc.senseElevation(loc) > 0- MagicConstants.WATER_TOLERANCE ) {
     					return false;
     				}
     			}
@@ -212,7 +214,7 @@ public class Landscaper extends Unit {
     				}
     			}
     			else {
-    				if(rc.senseElevation(loc) < hqElevation || rc.senseFlooding(loc) && rc.senseElevation(loc) > 0-MagicConstants.WATER_TOLERANCE ) {
+    				if(rc.senseElevation(loc) < hqElevation || rc.senseFlooding(loc) && rc.senseElevation(loc) > 0- MagicConstants.WATER_TOLERANCE ) {
     					return false;
     				}
     			}

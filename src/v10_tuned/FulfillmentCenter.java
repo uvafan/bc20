@@ -1,4 +1,4 @@
-package v10_robust_lattice;
+package v10_tuned;
 
 import battlecode.common.*;
 

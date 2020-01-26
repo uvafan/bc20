@@ -1,4 +1,4 @@
-package v10_robust_lattice;
+package v10_tuned;
 
 import battlecode.common.*;
 
@@ -15,8 +15,6 @@ public class Miner extends Unit {
     MapLocation fulfillmentLoc;
     MapLocation designSchoolLoc = null;
     MapLocation droneLoc = null;
-    public static int[] cornerXOffsets = {-2,-2,2,2};
-    public static int[] cornerYOffsets = {-2,2,2,-2};
     boolean buildMiner = false;
     int birthRound;
 
@@ -66,22 +64,13 @@ public class Miner extends Unit {
             if(buildMiner) {
                 if(!buildIfShould()) {
                     if(!isWallComplete || here.distanceSquaredTo(hqLoc) < 8) {
-                        int idxToGoTo = (round / 7) % 4;
-                        MapLocation goalLoc = new MapLocation(hqLoc.x + cornerXOffsets[idxToGoTo], hqLoc.y + cornerYOffsets[idxToGoTo]);
-                        Direction bestDir = null;
-                        int minDist = Integer.MAX_VALUE;
-                        for(Direction dir: directions) {
+                        for(int i=0;i<5;i++) {
+                            Direction dir = randomDirection();
                             if (rc.canMove(dir) && here.add(dir).distanceSquaredTo(hqLoc) < 8
                             && (!hqAttacked || here.add(dir).distanceSquaredTo(hqLoc) > 2)) {
-                                int dist = here.add(dir).distanceSquaredTo(goalLoc);
-                                if(dist < minDist) {
-                                    minDist = dist;
-                                    bestDir = dir;
-                                }
+                                tryMove(dir);
                             }
                         }
-                        if(bestDir != null)
-                            tryMove(bestDir);
                     }
                     else {
                         goToOnLattice(hqLoc, false);

@@ -1,4 +1,4 @@
-package v10_robust_lattice;
+package v10_tuned;
 
 import battlecode.common.*;
 
@@ -9,7 +9,6 @@ public class Bot {
     public static MapLocation enemyHQLocGuessed = null;
     public static boolean hqAttacked = false;
     public static boolean rushing = false;
-    public static boolean triedCenter = false;
     public static RobotType type;
     public static Team enemy;
     public static Team us;
@@ -22,7 +21,6 @@ public class Bot {
     public static int mapHeight;
     public static int mapWidth;
     public static MapLocation[] enemyHqLocPossibilities;
-    public static MapLocation[] enemyHqLocTentativePossibilities;
     public static Symmetry[] symmetryPossibilities;
     public static MapLocation[] refineries;
     public static int numRefineries;
@@ -42,8 +40,6 @@ public class Bot {
     public static MapLocation targetLoc;
     public static int[] unitCounts = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     public static boolean caughtUp = false;
-    public static int[] nearbyXOffsets = {0, 1, 0, -1, 0, 1, 1, -1, -1, 0, 2, 0, -2, -1, 1, 2, 2, 1, -1, -2, -2, -2, 2, 2, -2, 0, 3, 0, -3, -1, 1, 3, 3, 1, -1, -3, -3, -2, 2, 3, 3, 2, -2, -3, -3, 0, 4, 0, -4, -1, 1, 4, 4, 1, -1, -4, -4, -3, 3, 3, -3, -2, 2, 4, 4, 2, -2, -4, -4};
-    public static int[] nearbyYOffsets = {0, 0, -1, 0, 1, 1, -1, -1, 1, 2, 0, -2, 0, 2, 2, 1, -1, -2, -2, -1, 1, 2, 2, -2, -2, 3, 0, -3, 0, 3, 3, 1, -1, -3, -3, -1, 1, 3, 3, 2, -2, -3, -3, -2, 2, 4, 0, -4, 0, 4, 4, 1, -1, -4, -4, -1, 1, 3, 3, -3, -3, 4, 4, 2, -2, -4, -4, -2, 2};
     Strategy strat;
 
     public static enum Symmetry {
@@ -238,6 +234,7 @@ public class Bot {
         }
     }
 
+
     public boolean updateOpponentHQs() throws GameActionException {
         if (hqLoc != null && enemyHqLocPossibilities == null) {
             initializeEnemyHQLocs();
@@ -247,9 +244,10 @@ public class Bot {
         }
         for (RobotInfo e : enemies) {
             if (e.type == RobotType.HQ) {
+                Utils.log("found you!");
                 enemyHQLoc = e.location;
-                enemyHqLocPossibilities = new MapLocation[]{e.location};
-                return true;
+                comms.broadcastLoc(Comms.MessageType.ENEMY_HQ_LOC, enemyHQLoc);
+                return false;
             }
         }
         boolean removed = false;
@@ -269,18 +267,18 @@ public class Bot {
         }
         if (removed) {
             enemyHqLocPossibilities = Utils.removeElement(enemyHqLocPossibilities, toRemove);
-            enemyHqLocTentativePossibilities = Utils.removeElement(enemyHqLocTentativePossibilities, toRemove);
         }
         if (enemyHqLocPossibilities.length == 1) {
             enemyHQLoc = enemyHqLocPossibilities[0];
-            return true;
+            comms.broadcastLoc(Comms.MessageType.ENEMY_HQ_LOC, enemyHQLoc);
+            return false;
         }
         return removed;
     }
 
     public boolean updateSymmetryAndOpponentHQs() throws GameActionException {
         boolean removed = updateOpponentHQs();
-        if (enemyHqLocPossibilities.length > 1 && enemyHQLoc == null && Clock.getBytecodesLeft() > 2500)
+        if (enemyHqLocPossibilities.length > 1 && Clock.getBytecodesLeft() > 2500)
             removed |= doSymmetryDetection();
         return removed;
     }
@@ -336,7 +334,7 @@ public class Bot {
         }
         MapLocation toRemove = null;
         MapLocation toRemoveSecond = null;
-        for (MapLocation loc : enemyHqLocTentativePossibilities) {
+        for (MapLocation loc : enemyHqLocPossibilities) {
             Symmetry s = getSymmetry(loc, hqLoc);
             for (MapLocation check : toCheck) {
                 if (rc.canSenseLocation(check)) {
@@ -355,9 +353,9 @@ public class Bot {
             }
         }
         if (toRemove != null) {
-            enemyHqLocTentativePossibilities = Utils.removeElement(enemyHqLocTentativePossibilities, toRemove);
+            enemyHqLocPossibilities = Utils.removeElement(enemyHqLocPossibilities, toRemove);
             if (toRemoveSecond != null)
-                enemyHqLocTentativePossibilities = Utils.removeElement(enemyHqLocTentativePossibilities, toRemoveSecond);
+                enemyHqLocPossibilities = Utils.removeElement(enemyHqLocPossibilities, toRemoveSecond);
             return true;
         }
         return false;
@@ -369,29 +367,11 @@ public class Bot {
         } else if (hqLoc == null) {
             return center;
         }
-        MapLocation[] pickFrom = enemyHqLocTentativePossibilities;
-        if(enemyHqLocTentativePossibilities.length == 0)
-            pickFrom = enemyHqLocPossibilities;
-        if(pickFrom.length == 1) {
-            if(enemyHQLoc == null || (!enemyHQLoc.equals(pickFrom[0])))
-                comms.broadcastLoc(Comms.MessageType.ENEMY_HQ_LOC, pickFrom[0]);
-            enemyHQLoc = pickFrom[0];
-            return enemyHQLoc;
-        }
-        if(here.isWithinDistanceSquared(center, 8))
-            triedCenter = true;
-        if(!rushing && type == RobotType.DELIVERY_DRONE && round < 200 && pickFrom.length > 1 && !triedCenter) {
-           return center;
-        }
-        MapLocation ret = pickFrom[0];
-        if(type == RobotType.DELIVERY_DRONE && !rushing) {
-            enemyHQLocGuessed = pickFrom[rand.nextInt(pickFrom.length)];
-            return enemyHQLocGuessed;
-        }
-        else if (!closest) {
+        MapLocation ret = enemyHqLocPossibilities[0];
+        if (!closest) {
             int maxDist = hqLoc.distanceSquaredTo(ret);
-            for (int i = 1; i < pickFrom.length; i++) {
-                MapLocation loc = pickFrom[i];
+            for (int i = 1; i < enemyHqLocPossibilities.length; i++) {
+                MapLocation loc = enemyHqLocPossibilities[i];
                 if (here.distanceSquaredTo(loc) > maxDist) {
                     maxDist = hqLoc.distanceSquaredTo(loc);
                     ret = loc;
@@ -399,8 +379,8 @@ public class Bot {
             }
         } else {
             int minDist = here.distanceSquaredTo(ret);
-            for (int i = 1; i < pickFrom.length; i++) {
-                MapLocation loc = pickFrom[i];
+            for (int i = 1; i < enemyHqLocPossibilities.length; i++) {
+                MapLocation loc = enemyHqLocPossibilities[i];
                 if (here.distanceSquaredTo(loc) < minDist) {
                     minDist = here.distanceSquaredTo(loc);
                     ret = loc;
@@ -420,7 +400,6 @@ public class Bot {
         MapLocation c = reflectY(hqLoc);
         Utils.log("poss: " + a + b + c);
         enemyHqLocPossibilities = new MapLocation[]{a, b, c};
-        enemyHqLocTentativePossibilities = new MapLocation[]{a, b, c};
     }
 
     static boolean nearbyRobot(RobotType target) throws GameActionException {
@@ -480,17 +459,13 @@ public class Bot {
     }
 
 
-    static MapLocation[] getLocationsWithinSensorRad(int rad) {
-        int sensorRad = Math.min(rad, rc.getCurrentSensorRadiusSquared());
+    static MapLocation[] getLocationsWithinSensorRad() {
+        int sensorRad = rc.getCurrentSensorRadiusSquared();
         Utils.log("sensorRad: " + sensorRad);
-        MapLocation[] ret = new MapLocation[100];
+        MapLocation[] ret = new MapLocation[1000];
         int idx = 0;
-        for (int i = 0; i * i + i * i <= sensorRad; i++) {
-        	if(Clock.getBytecodesLeft() < 1000)
-        		break;
+        for (int i = 0; i * i + i * i <= sensorRad; i++)
             for (int j = i; i * i + j * j <= sensorRad; j++) {
-            	if(Clock.getBytecodesLeft() < 1000)
-            		break;
                 ret[idx] = here.translate(i, j);
                 idx++;
                 if (i > 0 && j > 0) {
@@ -507,25 +482,24 @@ public class Bot {
                 }
                 if (i == j)
                     continue;
-                int newi = j;
-                int newj = i;
-                //Utils.log("i: " + i + "j: " + j);
-                ret[idx] = here.translate(newi, newj);
+                int temp = i;
+                i = j;
+                j = temp;
+                ret[idx] = here.translate(i, j);
                 idx++;
                 if (i > 0 && j > 0) {
-                    ret[idx] = here.translate(-newi, -newj);
+                    ret[idx] = here.translate(-i, -j);
                     idx++;
                 }
                 if (i > 0) {
-                    ret[idx] = here.translate(-newi, newj);
+                    ret[idx] = here.translate(-i, j);
                     idx++;
                 }
                 if (j > 0) {
-                    ret[idx] = here.translate(newi, -newj);
+                    ret[idx] = here.translate(i, -j);
                     idx++;
                 }
             }
-        }
         ret[idx] = null;
         return ret;
     }
