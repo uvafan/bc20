@@ -35,7 +35,7 @@ public class Landscaper extends Unit {
         super.takeTurn();
         defending = hqAttacked && !doneDefending;
         RobotInfo buildingToBury = getBuildingToBury();
-        if(!rushing && rc.getCooldownTurns() < 1 && !(round > MagicConstants.CRUNCH_ROUND && here.distanceSquaredTo(buildingToBury.location) <= 2)) {
+        if(!rushing && rc.getCooldownTurns() < 1 && !(round > MagicConstants.CRUNCH_ROUND && buildingToBury != null && here.distanceSquaredTo(buildingToBury.location) <= 2)) {
             dealWithEnemyDrones();
         }
         if(rushing) {
