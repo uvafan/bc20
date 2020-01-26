@@ -34,14 +34,14 @@ public class Landscaper extends Unit {
     public void takeTurn() throws GameActionException {
         super.takeTurn();
         defending = hqAttacked && !doneDefending;
-        if(!rushing && rc.getCooldownTurns() < 1) {
+        RobotInfo buildingToBury = getBuildingToBury();
+        if(!rushing && rc.getCooldownTurns() < 1 && !(round > MagicConstants.CRUNCH_ROUND && here.distanceSquaredTo(buildingToBury.location) <= 2)) {
             dealWithEnemyDrones();
         }
         if(rushing) {
             doRush();
         }
         else if(rc.getCooldownTurns() < 1){
-            RobotInfo buildingToBury = getBuildingToBury();
             if(defending && (rc.canSenseLocation(hqLoc) || buildingToBury == null))
                 doDefense();
             else {
