@@ -27,10 +27,10 @@ public class Unit extends Bot {
         for(RobotInfo e: enemies) {
             if(e.type == RobotType.DELIVERY_DRONE) {
                 int dist = here.distanceSquaredTo(e.location);
+                enemyDrones[numEnemyDrones++] = e;
                 if(dist < minDist) {
                     minDist = dist;
                     closestDrone = e.location;
-                    enemyDrones[numEnemyDrones++] = e;
                 }
             }
         }
@@ -163,11 +163,11 @@ public class Unit extends Bot {
             MapLocation loc = here.add(dir);
             if(rc.canMove(dir)) {
                 int minDist = Integer.MAX_VALUE;
-                for(int i=0; i< numDrones; i++) {
+                for(int i=0; i < numDrones; i++) {
                     RobotInfo d = drones[i];
                     minDist = Math.min(minDist, Utils.manhattan(d.location, loc));
                 }
-                // TODO: incorporate net guns and HQ into scoring
+                // TODO: incorporate net guns into scoring
                 int score = minDist * 2 - Utils.manhattan(loc, hqLoc);
                 Utils.log("score for " + loc + " is " + score);
                 if(score > maxScore) {

@@ -9,6 +9,7 @@ public class Bot {
     public static MapLocation enemyHQLocGuessed = null;
     public static boolean hqAttacked = false;
     public static boolean rushing = false;
+    public static boolean triedCenter = false;
     public static RobotType type;
     public static Team enemy;
     public static Team us;
@@ -21,6 +22,7 @@ public class Bot {
     public static int mapHeight;
     public static int mapWidth;
     public static MapLocation[] enemyHqLocPossibilities;
+    public static MapLocation[] enemyHqLocTentativePossibilities;
     public static Symmetry[] symmetryPossibilities;
     public static MapLocation[] refineries;
     public static int numRefineries;
@@ -234,7 +236,6 @@ public class Bot {
         }
     }
 
-
     public boolean updateOpponentHQs() throws GameActionException {
         if (hqLoc != null && enemyHqLocPossibilities == null) {
             initializeEnemyHQLocs();
@@ -267,6 +268,7 @@ public class Bot {
         }
         if (removed) {
             enemyHqLocPossibilities = Utils.removeElement(enemyHqLocPossibilities, toRemove);
+            enemyHqLocTentativePossibilities = Utils.removeElement(enemyHqLocTentativePossibilities, toRemove);
         }
         if (enemyHqLocPossibilities.length == 1) {
             enemyHQLoc = enemyHqLocPossibilities[0];
@@ -334,7 +336,7 @@ public class Bot {
         }
         MapLocation toRemove = null;
         MapLocation toRemoveSecond = null;
-        for (MapLocation loc : enemyHqLocPossibilities) {
+        for (MapLocation loc : enemyHqLocTentativePossibilities) {
             Symmetry s = getSymmetry(loc, hqLoc);
             for (MapLocation check : toCheck) {
                 if (rc.canSenseLocation(check)) {
@@ -353,9 +355,9 @@ public class Bot {
             }
         }
         if (toRemove != null) {
-            enemyHqLocPossibilities = Utils.removeElement(enemyHqLocPossibilities, toRemove);
+            enemyHqLocTentativePossibilities = Utils.removeElement(enemyHqLocTentativePossibilities, toRemove);
             if (toRemoveSecond != null)
-                enemyHqLocPossibilities = Utils.removeElement(enemyHqLocPossibilities, toRemoveSecond);
+                enemyHqLocTentativePossibilities = Utils.removeElement(enemyHqLocTentativePossibilities, toRemoveSecond);
             return true;
         }
         return false;
@@ -367,11 +369,27 @@ public class Bot {
         } else if (hqLoc == null) {
             return center;
         }
-        MapLocation ret = enemyHqLocPossibilities[0];
-        if (!closest) {
+        MapLocation[] pickFrom = enemyHqLocTentativePossibilities;
+        if(enemyHqLocTentativePossibilities.length == 0)
+            pickFrom = enemyHqLocPossibilities;
+        if(pickFrom.length == 1) {
+            enemyHQLoc = pickFrom[0];
+            return enemyHQLoc;
+        }
+        if(here.isWithinDistanceSquared(center, 8))
+            triedCenter = true;
+        if(!rushing && type == RobotType.DELIVERY_DRONE && round < 200 && pickFrom.length > 1 && !triedCenter) {
+           return center;
+        }
+        MapLocation ret = pickFrom[0];
+        if(type == RobotType.DELIVERY_DRONE && !rushing) {
+            enemyHQLocGuessed = pickFrom[rand.nextInt(pickFrom.length)];
+            return enemyHQLocGuessed;
+        }
+        else if (!closest) {
             int maxDist = hqLoc.distanceSquaredTo(ret);
-            for (int i = 1; i < enemyHqLocPossibilities.length; i++) {
-                MapLocation loc = enemyHqLocPossibilities[i];
+            for (int i = 1; i < pickFrom.length; i++) {
+                MapLocation loc = pickFrom[i];
                 if (here.distanceSquaredTo(loc) > maxDist) {
                     maxDist = hqLoc.distanceSquaredTo(loc);
                     ret = loc;
@@ -379,8 +397,8 @@ public class Bot {
             }
         } else {
             int minDist = here.distanceSquaredTo(ret);
-            for (int i = 1; i < enemyHqLocPossibilities.length; i++) {
-                MapLocation loc = enemyHqLocPossibilities[i];
+            for (int i = 1; i < pickFrom.length; i++) {
+                MapLocation loc = pickFrom[i];
                 if (here.distanceSquaredTo(loc) < minDist) {
                     minDist = here.distanceSquaredTo(loc);
                     ret = loc;
@@ -400,6 +418,7 @@ public class Bot {
         MapLocation c = reflectY(hqLoc);
         Utils.log("poss: " + a + b + c);
         enemyHqLocPossibilities = new MapLocation[]{a, b, c};
+        enemyHqLocTentativePossibilities = new MapLocation[]{a, b, c};
     }
 
     static boolean nearbyRobot(RobotType target) throws GameActionException {
