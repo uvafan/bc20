@@ -300,13 +300,15 @@ public class Landscaper extends Unit {
                 spot = loc;
             }
         }
-        spotPriority += spotsFree * MagicConstants.SPOTS_FREE_MULTIPLIER;
-        int diff = landscaperDiff(hqLoc);
-        spotPriority -= diff * MagicConstants.LANDSCAPER_DIFF_MULTIPLIER;
-        int dirtOnHQ = rc.senseRobotAtLocation(hqLoc).dirtCarrying;
-        spotPriority += MagicConstants.HQ_DIRT_MULTIPLIER * 3;
         int myDirt = rc.getDirtCarrying();
-        spotPriority -= myDirt * MagicConstants.MY_DIRT_MULTIPLIER;
+        int dirtOnHQ = rc.senseRobotAtLocation(hqLoc).dirtCarrying;
+        if(spot != null) {
+            spotPriority += spotsFree * MagicConstants.SPOTS_FREE_MULTIPLIER;
+            int diff = landscaperDiff(hqLoc);
+            spotPriority -= diff * MagicConstants.LANDSCAPER_DIFF_MULTIPLIER;
+            spotPriority += MagicConstants.HQ_DIRT_MULTIPLIER * 3;
+            spotPriority -= myDirt * MagicConstants.MY_DIRT_MULTIPLIER;
+        }
         int buildingPriority = Integer.MIN_VALUE;
         int adjBuildingPriority = Integer.MIN_VALUE;
         MapLocation building = null;

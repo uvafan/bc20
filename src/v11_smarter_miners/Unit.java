@@ -90,11 +90,16 @@ public class Unit extends Bot {
             return (loc.x + loc.y) % 2 == (hqLoc.x + hqLoc.y) % 2;
         }
         else if(type == RobotType.REFINERY) {
-            return isOnLatticeIntersection(loc);
+            return isOnLatticeIntersection(loc) && (!isOnWall(loc) || rc.senseElevation(loc) >= MagicConstants.LATTICE_HEIGHT);
         }
         else {
             return isOnLatticeIntersection(loc) && rc.senseElevation(loc) >= MagicConstants.LATTICE_HEIGHT;
         }
+    }
+
+    private boolean isOnWall(MapLocation loc) {
+        int dist = hqLoc.distanceSquaredTo(loc);
+        return dist <= 18 && dist != 16 && dist != 17;
     }
 
     private boolean buildNetGunIfShould(RobotInfo[] drones, int numDrones, MapLocation closestEnemyDrone) throws GameActionException {

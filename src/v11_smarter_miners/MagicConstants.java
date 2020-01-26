@@ -88,6 +88,7 @@ public class MagicConstants {
 	public static int MAX_LATE_RUSH_DIST = 8;
 	public static int REFINERY_BUFFER = 54;
 	public static boolean BUILD_REFINERY = true;
+	public static int NUM_RUSH_DEFENSE_MINERS = 5;
 
 	// mining
 	public static int MINER_ELEVATION_TOLERANCE = 10;

@@ -10,6 +10,7 @@ public class DeliveryDrone extends Unit {
     public static boolean landscaperDropper = false;
     public static boolean droppedOff = false;
     public static boolean pickedUpFriend = false;
+    // public static boolean pickedUpEnemy = false;
 
     public DeliveryDrone(RobotController r) throws GameActionException {
         super(r);
@@ -95,7 +96,7 @@ public class DeliveryDrone extends Unit {
                 tryDrop(here.directionTo(hqLoc), true);
             }
         }
-        else if (wallLoc != null){
+        else if (wallLoc != null && !rc.isCurrentlyHoldingUnit()){
             RobotInfo closestFriend = null;
             int minDist = Integer.MAX_VALUE;
             for (RobotInfo ri : friends) {
