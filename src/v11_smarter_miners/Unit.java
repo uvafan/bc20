@@ -105,7 +105,9 @@ public class Unit extends Bot {
                 soupNeeded += MagicConstants.DIST_SOUP_MULTIPLIER * (dist-18);
             }
         }
-        if(type != RobotType.MINER || rc.getTeamSoup() < soupNeeded || here.distanceSquaredTo(closestEnemyDrone) > MagicConstants.MAX_DIST_TO_BUILD_NET_GUN)
+        if(type != RobotType.MINER || rc.getTeamSoup() < soupNeeded ||
+            here.distanceSquaredTo(closestEnemyDrone) > MagicConstants.MAX_DIST_TO_BUILD_NET_GUN
+            || (numDrones == 1 && round < MagicConstants.BUILD_NET_GUN_ROUND))
             return false;
         int numFriendlyNGs = 0;
         MapLocation[] friendlyNGs = new MapLocation[100];

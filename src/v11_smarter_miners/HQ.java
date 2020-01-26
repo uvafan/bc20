@@ -7,6 +7,7 @@ public class HQ extends Building {
     int seesDroneEnemyRound;
     boolean seesNonDroneEnemy = false;
     boolean seesOpponentHQ = false;
+    int distToOpponent;
 
     public HQ(RobotController r) throws GameActionException {
         super(r);
@@ -15,7 +16,9 @@ public class HQ extends Building {
     }
 
     private boolean isUnderAttack() {
-        return (!seesOpponentHQ) && (seesNonDroneEnemy /*|| round - seesDroneEnemyRound < 7*/);
+        return !seesOpponentHQ && seesNonDroneEnemy &&
+                (distToOpponent <= MagicConstants.MAX_LATE_RUSH_DIST || rc.getDirtCarrying() > 0 ||
+                (!isWallComplete && round <= MagicConstants.NOT_ATTACKED_ROUND));
     }
 
     public void takeTurn() throws GameActionException {
@@ -23,9 +26,11 @@ public class HQ extends Building {
         shootDrones();
         seesNonDroneEnemy = false;
         seesOpponentHQ = false;
+        distToOpponent = Integer.MAX_VALUE;
         for(RobotInfo e: enemies) {
             if(e.type != RobotType.DELIVERY_DRONE && e.type != RobotType.HQ) {
                 seesNonDroneEnemy = true;
+                distToOpponent = Math.min(distToOpponent, here.distanceSquaredTo(e.location));
             }
             else if(e.type == RobotType.DELIVERY_DRONE) {
                 if(seesDroneEnemyRound == -100) {
