@@ -377,13 +377,15 @@ public class Landscaper extends Unit {
         //
     }
 
-    private RobotInfo getBuildingToBury() {
+    private RobotInfo getBuildingToBury() throws GameActionException {
         RobotInfo ret = null;
         int maxPriority = Integer.MIN_VALUE;
         for(RobotInfo e: enemies) {
             if(!Utils.isBuilding(e.type))
                 continue;
             int dist = here.distanceSquaredTo(e.location);
+            if(!hqAttacked && dist > 2 && !canReachAdj(e.location, true))
+                continue;
             int priority = (e.type == RobotType.NET_GUN ? 25 : 0) - dist;
             priority += ((dist <= 2 && here.distanceSquaredTo(hqLoc) <= 2) ? 100: 0);
             if(priority > maxPriority) {
