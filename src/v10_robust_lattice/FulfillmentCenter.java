@@ -24,8 +24,8 @@ public class FulfillmentCenter extends Building {
 
     @Override
     public Direction getBuildDirection() {
-        if(minerLoc != null)
-            return here.directionTo(minerLoc);
-        return randomDirection();
+        if(hqLoc != null && hqAttacked)
+            return here.directionTo(hqLoc);
+        return hqLoc.directionTo(here);
     }
 }
