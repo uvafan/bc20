@@ -33,7 +33,7 @@ public class Landscaper extends Unit {
         super.takeTurn();
         defending = hqAttacked && !doneDefending;
         RobotInfo buildingToBury = getBuildingToBury();
-        if(!rushing && rc.getCooldownTurns() < 1 && !(round > MagicConstants.CRUNCH_ROUND && buildingToBury != null && here.distanceSquaredTo(buildingToBury.location) <= 2)) {
+        if(!rushing && !defending && rc.getCooldownTurns() < 1 && !(round > MagicConstants.CRUNCH_ROUND && buildingToBury != null && here.distanceSquaredTo(buildingToBury.location) <= 2)) {
             dealWithEnemyDrones();
         }
         if(rushing) {
@@ -275,6 +275,8 @@ public class Landscaper extends Unit {
         int numEnemyBuildings = 0;
         for(RobotInfo e: enemies) {
             if(Utils.isBuilding(e.type)) {
+                if(here.distanceSquaredTo(e.location) > 2 && !canReachAdj(e.location, true))
+                    continue;
                 enemyBuildings[numEnemyBuildings++] = e;
             }
         }

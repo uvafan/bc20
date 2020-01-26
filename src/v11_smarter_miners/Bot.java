@@ -46,6 +46,7 @@ public class Bot {
     public static int[] nearbyXOffsets = {0, 1, 0, -1, 0, 1, 1, -1, -1, 0, 2, 0, -2, -1, 1, 2, 2, 1, -1, -2, -2, -2, 2, 2, -2, 0, 3, 0, -3, -1, 1, 3, 3, 1, -1, -3, -3, -2, 2, 3, 3, 2, -2, -3, -3, 0, 4, 0, -4, -1, 1, 4, 4, 1, -1, -4, -4, -3, 3, 3, -3, -2, 2, 4, 4, 2, -2, -4, -4};
     public static int[] nearbyYOffsets = {0, 0, -1, 0, 1, 1, -1, -1, 1, 2, 0, -2, 0, 2, 2, 1, -1, -2, -2, -1, 1, 2, 2, -2, -2, 3, 0, -3, 0, 3, 3, 1, -1, -3, -3, -1, 1, 3, 3, 2, -2, -3, -3, -2, 2, 4, 0, -4, 0, 4, 4, 1, -1, -4, -4, -1, 1, 3, 3, -3, -3, 4, 4, 2, -2, -4, -4, -2, 2};
     Strategy strat;
+    int wallCompletionRound = -1;
 
     public static enum Symmetry {
         VERTICAL,
@@ -88,7 +89,7 @@ public class Bot {
     public static RobotInfo[] knownEnemyNetGuns = {};
     public static RobotInfo[] nearbyEnemyDrones = {};
     public static int turnCount = 0;
-    public static int numMiners = 0;
+    public static int numMiners;
     public static int round = 0;
     public static MapLocation center;
     public static RobotInfo[] enemies;
@@ -115,6 +116,7 @@ public class Bot {
         if (round > 1) {
             comms.readMessages(1);
         }
+        numMiners = 0;
         refineries = new MapLocation[100];
         invalidRefineries = new boolean[100];
         designSchools = new MapLocation[100];

@@ -25,7 +25,7 @@ public class MagicConstants {
 	// net guns and dealing with drones
 	public static int MIN_NET_GUN_CLOSENESS = 8;
 	public static int MIN_NET_GUN_DIST_FROM_HQ = 8;
-	public static final int MAX_DIST_TO_FLEE = 18;
+	public static final int MAX_DIST_TO_FLEE = 8;
 	public static final int MAX_DIST_TO_BUILD_NET_GUN = 25;
 	public static final boolean FLEE_BEFORE_BUILD = false;
 	public static int DIST_SOUP_MULTIPLIER = 10;
@@ -58,9 +58,9 @@ public class MagicConstants {
 			0, //Net Guns
 			1, //FCs
 			1, //DS
-			10, //Drones
-			10, //Vaps
-			10, //Landscapers
+			20, //Drones
+			20, //Vaps
+			20, //Landscapers
 	};
 	public static RobotType[] RUSH_DEFENSE_COMP_TYPES = new RobotType[]{
 			RobotType.DELIVERY_DRONE,
@@ -70,10 +70,11 @@ public class MagicConstants {
 			1, //Drones
 			1, //Landscapers
 	};
-	public static int NUM_MINERS = 5;
-	public static int BUILD_MINERS = 1;
+	public static int NUM_NON_BUILD_MINERS = 6;
+	public static int INITIAL_BUILD_MINERS = 1;
 	public static int TURNS_FOR_VAP_TO_PAY = 250;
 	public static int SOUP_RATIO_MULTIPLIER = 50;
+	public static int NEW_BUILD_MINER_FREQ = 150;
 
 	// rush defense prioritization
 	public static int SPOTS_FREE_MULTIPLIER = 50;

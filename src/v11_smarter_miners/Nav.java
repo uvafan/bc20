@@ -92,7 +92,7 @@ class SafetyPolicyAvoidAllUnits extends Bot implements NavSafetyPolicy {
 				//if(hqLoc.x%2 == loc.x%2 && hqLoc.y%2 == loc.y%2)
 				//	return false;
 				for (RobotInfo e: enemies) {
-					if(e.type == RobotType.DELIVERY_DRONE && loc.distanceSquaredTo(e.location) <=2)
+					if(e.type == RobotType.DELIVERY_DRONE && loc.distanceSquaredTo(e.location) <= 2 && !e.isCurrentlyHoldingUnit())
 						return false;
 				}
 				break;

@@ -71,6 +71,7 @@ public class HQ extends Building {
             }
         }
         isWallComplete = true;
+        wallCompletionRound = round;
         comms.broadcastLoc(Comms.MessageType.WALL_COMPLETE, here);
     }
 

@@ -25,7 +25,7 @@ public class Unit extends Bot {
         MapLocation closestDrone = null;
         int minDist = Integer.MAX_VALUE;
         for(RobotInfo e: enemies) {
-            if(e.type == RobotType.DELIVERY_DRONE) {
+            if(e.type == RobotType.DELIVERY_DRONE && !e.isCurrentlyHoldingUnit()) {
                 int dist = here.distanceSquaredTo(e.location);
                 enemyDrones[numEnemyDrones++] = e;
                 if(dist < minDist) {
@@ -116,6 +116,10 @@ public class Unit extends Bot {
             here.distanceSquaredTo(closestEnemyDrone) > MagicConstants.MAX_DIST_TO_BUILD_NET_GUN
             || (numDrones == 1 && round < MagicConstants.BUILD_NET_GUN_ROUND))
             return false;
+        int numNGs = unitCounts[RobotType.NET_GUN.ordinal()];
+        int numVaps = unitCounts[RobotType.VAPORATOR.ordinal()];
+        if(numNGs > 3 && numVaps < numNGs || numNGs > 1 && numVaps == 0)
+            return false;
         int numFriendlyNGs = 0;
         MapLocation[] friendlyNGs = new MapLocation[100];
         for(RobotInfo f: friends) {
@@ -159,7 +163,7 @@ public class Unit extends Bot {
     }
 
     public boolean fleeIfShould(RobotInfo[] drones, int numDrones, MapLocation closestDrone) throws GameActionException {
-        if(here.distanceSquaredTo(closestDrone) > MagicConstants.MAX_DIST_TO_FLEE)
+        if(numDrones == 1 && here.distanceSquaredTo(closestDrone) > MagicConstants.MAX_DIST_TO_FLEE)
             return false;
         for(RobotInfo f: friends) {
             if((f.type == RobotType.NET_GUN || f.type == RobotType.HQ) && here.distanceSquaredTo(f.location) < 8) {
