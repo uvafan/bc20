@@ -17,22 +17,26 @@ class SafetyPolicyCrunch extends Bot implements NavSafetyPolicy {
 }
 
 class SafetyPolicyAvoidAllUnitsAndLattice extends Bot implements NavSafetyPolicy {
-	boolean insideOK;
+	boolean insideOK, checkElev;
 
 	public SafetyPolicyAvoidAllUnitsAndLattice() {
 		insideOK = true;
+		checkElev = false;
 	}
 
-	public SafetyPolicyAvoidAllUnitsAndLattice(boolean inside) {
+	public SafetyPolicyAvoidAllUnitsAndLattice(boolean inside, boolean elev) {
 		insideOK = inside;
+		checkElev = elev;
 	}
 
 	public boolean isSafeToMoveTo(MapLocation loc) throws GameActionException {
-		if(rc.senseFlooding(loc)) //change this to if the tile will flood next turn
+		if(rc.senseFlooding(loc) || isWaterAdjacent(loc) && Utils.getRoundFlooded(rc.senseElevation(loc)) - round < 2) //change this to if the tile will flood next turn
 			return false;
 		if(!insideOK && loc.distanceSquaredTo(hqLoc) <= 8)
 			return false;
 		if(hqLoc.x%2 == loc.x%2 && hqLoc.y%2 == loc.y%2 && loc.distanceSquaredTo(hqLoc) > 8)
+			return false;
+		if(checkElev && floodingSoon(loc))
 			return false;
 		for (RobotInfo e: enemies) {
 			if(e.type == RobotType.DELIVERY_DRONE && loc.distanceSquaredTo(e.location) <=2)
@@ -81,7 +85,9 @@ class SafetyPolicyAvoidAllUnits extends Bot implements NavSafetyPolicy {
 				return false;
 			break;
 		default:
-				if(rc.senseFlooding(loc)) //change this to if the tile will flood next turn
+				//if(rc.senseFlooding(loc)) //change this to if the tile will flood next turn
+				//	return false;
+				if(rc.senseFlooding(loc) || isWaterAdjacent(loc) && Utils.getRoundFlooded(rc.senseElevation(loc)) - round < 2) //change this to if the tile will flood next turn
 					return false;
 				//if(hqLoc.x%2 == loc.x%2 && hqLoc.y%2 == loc.y%2)
 				//	return false;

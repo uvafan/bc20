@@ -34,6 +34,8 @@ public class Unit extends Bot {
                 }
             }
         }
+        Utils.log("I see " + numEnemyDrones + " drones.");
+        Utils.log("My sight radius is " + rc.getCurrentSensorRadiusSquared());
         if(numEnemyDrones == 0)
             return;
         rc.setIndicatorLine(here, closestDrone, 0, 0, 255);
@@ -142,7 +144,7 @@ public class Unit extends Bot {
                     }
                     if(cont)
                         continue;
-                    Utils.log("score for " + loc + " is " + score);
+                    Utils.log("ng score for " + loc + " is " + score);
                     if (score > maxScore) {
                         maxScore = score;
                         bestDir = dir;
@@ -176,7 +178,7 @@ public class Unit extends Bot {
                 }
                 // TODO: incorporate net guns into scoring
                 int score = minDist * 2 - Utils.manhattan(loc, hqLoc);
-                Utils.log("score for " + loc + " is " + score);
+                Utils.log("flee score for " + loc + " is " + score);
                 if(score > maxScore) {
                    maxScore = score;
                    bestDir = dir;
@@ -201,20 +203,23 @@ public class Unit extends Bot {
     }
 
     // navigate towards a particular location
-    static boolean goTo(MapLocation destination) throws GameActionException {
+    public boolean goTo(MapLocation destination) throws GameActionException {
         if(crunching)
             return Nav.goTo(destination, crunch);
         return Nav.goTo(destination, safe);
     }
 
-    static boolean goToOnLattice(MapLocation destination) throws GameActionException {
+    public static boolean goToOnLattice(MapLocation destination) throws GameActionException {
         return Nav.goTo(destination, new SafetyPolicyAvoidAllUnitsAndLattice());
     }
 
-    static boolean goToOnLattice(MapLocation destination, boolean inside) throws GameActionException {
-        return Nav.goTo(destination, new SafetyPolicyAvoidAllUnitsAndLattice(false));
+    public static boolean goToOnLattice(MapLocation destination, boolean inside, boolean checkElev) throws GameActionException {
+        return Nav.goTo(destination, new SafetyPolicyAvoidAllUnitsAndLattice(inside, checkElev));
     }
 
+    public boolean standingOnLattice() throws GameActionException {
+        return isOnLattice(here) && rc.senseElevation(here) >= MagicConstants.LATTICE_HEIGHT;
+    }
 
     static boolean tryMove(Direction dir) throws GameActionException {
         if (rc.isReady() && rc.canMove(dir) && !rc.senseFlooding(rc.getLocation().add(dir))) {
@@ -223,8 +228,12 @@ public class Unit extends Bot {
         } else return false;
     }
 
-    static void explore() throws GameActionException {
+    public void explore() throws GameActionException {
         Nav.explore(safe);
+    }
+
+    public static void exploreOnLattice(boolean inside, boolean checkElev) throws GameActionException {
+        Nav.explore(new SafetyPolicyAvoidAllUnitsAndLattice(inside, checkElev));
     }
 
 }

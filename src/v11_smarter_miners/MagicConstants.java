@@ -16,6 +16,12 @@ public class MagicConstants {
 	public static int RUSH_DEFENSE_DIST = 100;
 	public static int MAX_WATER_LOCS = 20;
 
+	// determining if tile is flooding soon
+	public static int FLOODING_SOON_MAX = 100;
+	public static int FLOODING_SOON_MIN = -20;
+	public static int FLOODING_SOON_MIN_ROUND = 200;
+	public static int FLOODING_SOON_MIN_HQ_DIST = 18;
+
 	// net guns and dealing with drones
 	public static int MIN_NET_GUN_CLOSENESS = 8;
 	public static int MIN_NET_GUN_DIST_FROM_HQ = 8;

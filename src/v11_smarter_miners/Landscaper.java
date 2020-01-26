@@ -509,7 +509,7 @@ public class Landscaper extends Unit {
         }
     }
 
-    static void doRush() throws GameActionException {
+    public void doRush() throws GameActionException {
         if(here.distanceSquaredTo(enemyHQLoc) > 2) {
             if(rc.getCooldownTurns() < 1)
                 goTo(enemyHQLoc);

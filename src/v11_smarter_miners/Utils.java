@@ -7,7 +7,7 @@ import battlecode.common.RobotType;
 public class Utils {
 
     public static boolean DEBUG = true;
-    public static boolean DEBUG_BYTECODE = true;
+    public static boolean DEBUG_BYTECODE = false;
 
     public static void log(String s){
         if(DEBUG) {

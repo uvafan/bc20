@@ -81,6 +81,7 @@ public class DeliveryDrone extends Unit {
     private void helpOutFriends() throws GameActionException {
         MapLocation wallLoc = getDropOffLoc();
         if(pickedUpFriend) {
+            Utils.log("holding friend!");
             if(wallLoc != null) {
                 int dist = here.distanceSquaredTo(wallLoc);
                 rc.setIndicatorLine(here, wallLoc, 0,  0, 255);
@@ -93,7 +94,8 @@ public class DeliveryDrone extends Unit {
                 }
             }
             else {
-                tryDrop(here.directionTo(hqLoc), true);
+                if(tryDrop(here.directionTo(hqLoc), true))
+                    pickedUpFriend = false;
             }
         }
         else if (wallLoc != null && !rc.isCurrentlyHoldingUnit()){
@@ -108,6 +110,8 @@ public class DeliveryDrone extends Unit {
                 }
             }
             if(closestFriend != null) {
+                if(Utils.DEBUG)
+                    rc.setIndicatorLine(here, closestFriend.location, 0, 255, 0);
                 if(minDist <= 2) {
                     if(rc.canPickUpUnit(closestFriend.ID)) {
                         rc.pickUpUnit(closestFriend.ID);

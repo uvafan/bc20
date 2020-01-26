@@ -84,9 +84,13 @@ public class Miner extends Unit {
                             tryMove(bestDir);
                     }
                     else {
-                        goToOnLattice(hqLoc, false);
+                        goToOnLattice(hqLoc, false, true);
                     }
                 }
+            }
+            else if(floodingSoon(here)) {
+                rc.setIndicatorLine(here, hqLoc, 0, 0, 255);
+                goTo(hqLoc);
             }
             else if(buildIfShould()) {
             }
@@ -261,6 +265,15 @@ public class Miner extends Unit {
         MapLocation bestLoc = null;
         int minDist = Integer.MAX_VALUE;
         for(int i=0; i<unitCounts[RobotType.REFINERY.ordinal()]; i++){
+            if(invalidRefineries[i])
+                continue;
+            if(rc.canSenseLocation(refineries[i])) {
+                RobotInfo ri = rc.senseRobotAtLocation(refineries[i]);
+                if(ri == null || ri.team != us || ri.type != RobotType.REFINERY) {
+                    invalidRefineries[i] = true;
+                    continue;
+                }
+            }
             int dist = here.distanceSquaredTo(refineries[i]);
             if(dist < minDist){
                 bestLoc = refineries[i];
@@ -366,5 +379,24 @@ public class Miner extends Unit {
             return true;
         } else return false;
     }
+
+    public void explore() throws GameActionException {
+        if (standingOnLattice()) {
+            exploreOnLattice(false, true);
+        }
+        else {
+            super.explore();
+        }
+    }
+
+    public boolean goTo(MapLocation location) throws GameActionException {
+        if(standingOnLattice()) {
+            return goToOnLattice(location, false, true);
+        }
+        else {
+            return super.goTo(location);
+        }
+    }
+
 
 }
