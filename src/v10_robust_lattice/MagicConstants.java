@@ -37,6 +37,7 @@ public class MagicConstants {
 	public static int LATTICE_HEIGHT = 8;
 	public static int LATTICE_TOLERANCE = 50;
 	public static int WATER_TOLERANCE = 100;
+	public static int BUBBLE_AROUND_HQ = 100;
 
 	// build order
 	public static RobotType[] LATTICE_COMP_TYPES = new RobotType[]{

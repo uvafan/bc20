@@ -106,9 +106,13 @@ public class Landscaper extends Unit {
             	if(dist > rc.getCurrentSensorRadiusSquared()) {
             		break;
             	}
-            	int distToHQ = hqLoc.distanceSquaredTo(testTile);
-            	int dontNavMod = dist <= 2 ? 0 : 100;
-            	int mainWallMod = 1000;
+            	int distToHQ = Math.min(hqLoc.distanceSquaredTo(testTile), MagicConstants.BUBBLE_AROUND_HQ)*10;
+            	int distToEnemy = 0;
+            	if(enemyHQLoc != null) {
+            		distToEnemy = enemyHQLoc.distanceSquaredTo(testTile);
+            	}
+            	int dontNavMod = dist <= 2 ? 0 : 100000;
+            	int mainWallMod = 1000000;
             	int maybeWall = testTile.distanceSquaredTo(hqLoc);
             	if(maybeWall <= 18) {
             		mainWallMod = 0;
@@ -116,14 +120,14 @@ public class Landscaper extends Unit {
             	switch(maybeWall) {
             	case 16:
             	case 17:
-            		mainWallMod = 1000;
+            		mainWallMod = 1000000;
             		break;
             	default:
             	}
             	//Utils.log(testTile.x + ", " + testTile.y + ": " + (dist + distToHQ + mainWallMod + dontNavMod) + ", " + shouldRenovate(testTile));
-            	if(dist + distToHQ + mainWallMod + dontNavMod < minDist && shouldRenovate(testTile)) {
+            	if(dist + distToHQ + mainWallMod + dontNavMod + distToEnemy < minDist  && shouldRenovate(testTile)) {
             		bestDirtLoc = testTile;
-            		minDist = dist + distToHQ + mainWallMod + dontNavMod;
+            		minDist = dist + distToHQ + mainWallMod + dontNavMod + distToEnemy;
             	}
             	i++;
             }
@@ -158,12 +162,6 @@ public class Landscaper extends Unit {
     	}
     	if(rc.getCooldownTurns()<1) {
     		Utils.log("Case 3");
-    		if(enemyHQLoc != null) {
-    			Utils.log("Darn");
-    		}
-    		else {
-    			Utils.log("Yay");
-    		}
     		if(target != null) {
     			Utils.log("I'm REALLY WANT TO GO TO: " + target.x + ", " + target.y);
     			Utils.log("I'm currenty at: " + here.x + ", " + here.y);

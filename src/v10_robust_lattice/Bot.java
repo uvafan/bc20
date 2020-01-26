@@ -247,7 +247,7 @@ public class Bot {
         }
         for (RobotInfo e : enemies) {
             if (e.type == RobotType.HQ) {
-                enemyHQLoc = e.location;
+                Utils.log("found enemy!");
                 enemyHqLocPossibilities = new MapLocation[]{e.location};
                 return true;
             }
@@ -272,7 +272,6 @@ public class Bot {
             enemyHqLocTentativePossibilities = Utils.removeElement(enemyHqLocTentativePossibilities, toRemove);
         }
         if (enemyHqLocPossibilities.length == 1) {
-            enemyHQLoc = enemyHqLocPossibilities[0];
             return true;
         }
         return removed;
@@ -370,6 +369,10 @@ public class Bot {
             return center;
         }
         MapLocation[] pickFrom = enemyHqLocTentativePossibilities;
+        Utils.log("Num tentative possibilities: " + enemyHqLocTentativePossibilities.length);
+        Utils.log("Num real possibilities: " + enemyHqLocPossibilities.length);
+        if(enemyHQLoc != null)
+        	Utils.log("Enemy hq loc is: " + enemyHQLoc);
         if(enemyHqLocTentativePossibilities.length == 0 || enemyHqLocPossibilities.length == 1)
             pickFrom = enemyHqLocPossibilities;
         if(pickFrom.length == 1) {
@@ -377,6 +380,9 @@ public class Bot {
                 comms.broadcastLoc(Comms.MessageType.ENEMY_HQ_LOC, pickFrom[0]);
             enemyHQLoc = pickFrom[0];
             return enemyHQLoc;
+        }
+        else if(enemyHQLoc != null) {
+        	return enemyHQLoc;
         }
         if(here.isWithinDistanceSquared(center, 8))
             triedCenter = true;
