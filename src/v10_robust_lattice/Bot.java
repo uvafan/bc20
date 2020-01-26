@@ -368,7 +368,7 @@ public class Bot {
             return center;
         }
         MapLocation[] pickFrom = enemyHqLocTentativePossibilities;
-        if(enemyHqLocTentativePossibilities.length == 0)
+        if(enemyHqLocTentativePossibilities.length == 0 || enemyHqLocPossibilities.length == 1)
             pickFrom = enemyHqLocPossibilities;
         if(pickFrom.length == 1) {
             if(enemyHQLoc == null || (!enemyHQLoc.equals(pickFrom[0])))
