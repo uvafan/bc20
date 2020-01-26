@@ -96,7 +96,7 @@ public class Strategy {
         for(int i=0; i < desiredComp.length; i++) {
             RobotType type = types[i];
             if (type == bestType)
-                soupPriorities[type.ordinal()] = 0;
+                soupPriorities[type.ordinal()] = type.cost + 1;
             else if (desiredComp[i] == 0)
                 soupPriorities[type.ordinal()] = Integer.MAX_VALUE;
             else if(bot.hqAttacked)

@@ -86,6 +86,8 @@ public class MagicConstants {
 	public static int BUILD_NET_GUN_ROUND = 200;
 	public static int NOT_ATTACKED_ROUND = 300;
 	public static int MAX_LATE_RUSH_DIST = 8;
+	public static int REFINERY_BUFFER = 54;
+	public static boolean BUILD_REFINERY = true;
 
 	// mining
 	public static int MINER_ELEVATION_TOLERANCE = 10;

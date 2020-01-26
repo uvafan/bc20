@@ -63,11 +63,11 @@ public class EcoLattice extends Strategy {
         if(bot.hqAttacked) {
             if(bot.hqLoc != null && bot.here.distanceSquaredTo(bot.hqLoc) <= MagicConstants.RUSH_DEFENSE_DIST) {
                 if ((!seesEnemyNetGun || unitCounts[RobotType.LANDSCAPER.ordinal()] > 3) && unitCounts[RobotType.FULFILLMENT_CENTER.ordinal()] == 0)
-                    soupPriorities[RobotType.FULFILLMENT_CENTER.ordinal()] = 0;
+                    soupPriorities[RobotType.FULFILLMENT_CENTER.ordinal()] = RobotType.FULFILLMENT_CENTER.cost + 1;
                 else if (numFriendlyDS == 0 && unitCounts[RobotType.DESIGN_SCHOOL.ordinal()] == 0 && (unitCounts[RobotType.DELIVERY_DRONE.ordinal()] > 0 || seesEnemyNetGun || bot.numEnemyNetGuns > 0))
-                    soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = 0;
+                    soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = RobotType.DESIGN_SCHOOL.cost + 1;
                 else if (seesEnemyNetGun)
-                    soupPriorities[RobotType.LANDSCAPER.ordinal()] = 0;
+                    soupPriorities[RobotType.LANDSCAPER.ordinal()] = RobotType.LANDSCAPER.cost + 1;
                 else
                     updateBasedOnDesiredComp(unitCounts,
                             MagicConstants.RUSH_DEFENSE_ARMY_COMP,
@@ -75,6 +75,14 @@ public class EcoLattice extends Strategy {
             }
             else {
                 // nothing for now
+            }
+            if(MagicConstants.BUILD_REFINERY && unitCounts[RobotType.REFINERY.ordinal()] == 0) {
+                // leave buffer for refineries
+                for(RobotType type: MagicConstants.RUSH_DEFENSE_COMP_TYPES) {
+                    if(soupPriorities[type.ordinal()] < Integer.MAX_VALUE) {
+                        soupPriorities[type.ordinal()] += MagicConstants.REFINERY_BUFFER;
+                    }
+                }
             }
             Utils.log("Drone priority: " + soupPriorities[RobotType.DELIVERY_DRONE.ordinal()]);
             Utils.log("Landscaper priority: " + soupPriorities[RobotType.LANDSCAPER.ordinal()]);

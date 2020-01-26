@@ -274,15 +274,14 @@ public class Miner extends Unit {
 
     private boolean buildRefineryIfShould(Direction buildDirection, boolean tryOthers) throws GameActionException {
         if(buildMiner ||
-            rc.getTeamSoup() < MagicConstants.SOUP_REQUIRED_FOR_REFINERY ||
             buildDirection == null ||
             !rushing && strat instanceof Rush && round < 250)
             return false;
         MapLocation closestRefine = chooseRefineLoc();
-        if(closestRefine != null && (hqAttacked || here.distanceSquaredTo(closestRefine) < MagicConstants.REQUIRED_REFINERY_DIST))
+        if(closestRefine != null && (rc.getTeamSoup() < MagicConstants.SOUP_REQUIRED_FOR_REFINERY || (hqAttacked && !MagicConstants.BUILD_REFINERY)|| here.distanceSquaredTo(closestRefine) < MagicConstants.REQUIRED_REFINERY_DIST))
             return false;
         updateTargetMineLoc();
-        if (targetMineLoc != null && here.distanceSquaredTo(targetMineLoc) <= 25){
+        if (closestRefine == null || targetMineLoc != null && here.distanceSquaredTo(targetMineLoc) <= 25){
             Utils.log("trying to build refinery!");
             if(tryBuild(RobotType.REFINERY, buildDirection, tryOthers)) {
                 return true;
