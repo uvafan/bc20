@@ -1,4 +1,4 @@
-package v11_smarter_miners;
+package v11_tuned.v11_smarter_miners;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotInfo;
