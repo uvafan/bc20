@@ -183,7 +183,7 @@ public class Landscaper extends Unit {
     	//Utils.log("I'm trying to sense: " + testTile.x + ", " + testTile.y);
     	if(!badLatticeLoc(testTile,true, true)) {
     		int elev = rc.senseElevation(testTile);
-    		if ((elev < MagicConstants.LATTICE_HEIGHT && (elev > MagicConstants.LATTICE_HEIGHT - MagicConstants.LATTICE_TOLERANCE || testTile.distanceSquaredTo(hqLoc) <= 8 && elev > 0- MagicConstants.WATER_TOLERANCE)|| (elev > MagicConstants.LATTICE_HEIGHT + 3 && elev < MagicConstants.LATTICE_HEIGHT + 3 + MagicConstants.LATTICE_TOLERANCE)) && (!(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2) || hqLoc.distanceSquaredTo(testTile) <= 8)) {
+    		if ((elev < MagicConstants.LATTICE_HEIGHT && (elev > MagicConstants.LATTICE_HEIGHT - MagicConstants.LATTICE_TOLERANCE || testTile.distanceSquaredTo(hqLoc) <= 18 && elev > 0- MagicConstants.WATER_TOLERANCE)|| (elev > MagicConstants.LATTICE_HEIGHT + 3 && elev < MagicConstants.LATTICE_HEIGHT + 3 + MagicConstants.LATTICE_TOLERANCE)) && (!(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2) || hqLoc.distanceSquaredTo(testTile) <= 8)) {
     			//Utils.log("I should be renovating: " + testTile.x + ", " + testTile.y);
     			return true;
     		}
