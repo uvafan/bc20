@@ -24,22 +24,22 @@ public class Comms {
     int numSuperImportantMessages = 0;
 
     public static enum MessageType {
-        HQ_LOC,
-        REFINERY_LOC,
-        SOUP_CLUSTER_LOC,
-        OUR_NET_GUN_LOC,
-        ENEMY_NET_GUN_LOC,
-        DESIGN_SCHOOL_LOC,
-        FULFILLMENT_CENTER_LOC,
-        VAPORATOR_LOC,
-        UNIT_CREATED,
-        WATER_LOC,
-        ENEMY_HQ_LOC,
-        HQ_ATTACKED,
-        HQ_OK,
-        NET_GUN_REMOVED,
-        WALL_COMPLETE,
-        UNIT_DEATH,
+        HQ_LOC, // 0
+        REFINERY_LOC, // 1
+        SOUP_CLUSTER_LOC, // 2
+        OUR_NET_GUN_LOC, // 3
+        ENEMY_NET_GUN_LOC, // 4
+        DESIGN_SCHOOL_LOC, // 5
+        FULFILLMENT_CENTER_LOC, // 6
+        VAPORATOR_LOC, // 7
+        UNIT_CREATED, // 8
+        WATER_LOC, // 9
+        ENEMY_HQ_LOC, // 10
+        HQ_ATTACKED, // 11
+        HQ_OK, // 12
+        NET_GUN_REMOVED, // 13
+        WALL_COMPLETE, // 14
+        UNIT_DEATH, // 15
     }
 
     public Comms(Bot b) {
@@ -149,11 +149,13 @@ public class Comms {
                 break;
             case HQ_ATTACKED:
                 Utils.log("hq attacked");
-                bot.hqAttacked = true;
+                if(bot.type != RobotType.HQ)
+                    bot.hqAttacked = true;
                 break;
             case HQ_OK:
                 Utils.log("hq ok");
-                bot.hqAttacked = false;
+                if(bot.type != RobotType.HQ)
+                    bot.hqAttacked = false;
                 break;
             case WALL_COMPLETE:
                 Utils.log("wall complete");

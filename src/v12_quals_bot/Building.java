@@ -28,7 +28,7 @@ public class Building extends Bot {
     @Override
     public void takeTurn() throws GameActionException {
         super.takeTurn();
-        if(type != RobotType.HQ && !deathBroadcasted && type.dirtLimit < rc.getDirtCarrying() + 3) {
+        if(type != RobotType.HQ && !deathBroadcasted && (type.dirtLimit < rc.getDirtCarrying() + 3 || floodingNextRound(here))) {
            deathBroadcasted = true;
            comms.broadcastUnitDeath(type);
         }

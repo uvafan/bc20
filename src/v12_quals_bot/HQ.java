@@ -7,6 +7,7 @@ public class HQ extends Building {
     int seesDroneEnemyRound;
     boolean seesNonDroneEnemy = false;
     boolean seesOpponentHQ = false;
+    int lastAttackedRound = -100;
     int distToOpponent;
 
     public HQ(RobotController r) throws GameActionException {
@@ -16,9 +17,11 @@ public class HQ extends Building {
     }
 
     private boolean isUnderAttack() {
+        boolean isLate = isWallComplete || round > MagicConstants.NOT_ATTACKED_ROUND;
         return !seesOpponentHQ && seesNonDroneEnemy &&
-                (distToOpponent <= MagicConstants.MAX_LATE_RUSH_DIST || rc.getDirtCarrying() > 0 ||
-                (!isWallComplete && round <= MagicConstants.NOT_ATTACKED_ROUND));
+                (rc.getDirtCarrying() < 0 ||
+                distToOpponent <= MagicConstants.MAX_EARLY_RUSH_DIST && !isLate ||
+                distToOpponent <= MagicConstants.MAX_LATE_RUSH_DIST);
     }
 
     public void takeTurn() throws GameActionException {
@@ -41,12 +44,14 @@ public class HQ extends Building {
                 seesOpponentHQ = true;
             }
         }
-        if(hqAttacked && !isUnderAttack()) {
+        boolean underAttack = isUnderAttack();
+        if(hqAttacked && !underAttack && round - lastAttackedRound > MagicConstants.MIN_ATTACK_DURATION) {
            hqAttacked = false;
            comms.broadcastLoc(Comms.MessageType.HQ_OK, here);
         }
-        else if(!hqAttacked && isUnderAttack()) {
+        else if(!hqAttacked && underAttack) {
             hqAttacked = true;
+            lastAttackedRound = round;
             comms.broadcastLoc(Comms.MessageType.HQ_ATTACKED, here);
         }
         if(!isWallComplete) {

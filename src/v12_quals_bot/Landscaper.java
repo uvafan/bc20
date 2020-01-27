@@ -462,8 +462,10 @@ public class Landscaper extends Unit {
 				spot = loc;
 			}
 		}
-		spotPriority += spotsFree * MagicConstants.SPOTS_FREE_MULTIPLIER;
-		herePriority += 8 * MagicConstants.SPOTS_FREE_MULTIPLIER;
+		if(spot != null)
+			spotPriority += spotsFree * MagicConstants.SPOTS_FREE_MULTIPLIER;
+		if(here.isAdjacentTo(hqLoc))
+			herePriority += 8 * MagicConstants.SPOTS_FREE_MULTIPLIER;
 		if(herePriority > spotPriority) {
 			spot = here;
 			spotPriority = herePriority;

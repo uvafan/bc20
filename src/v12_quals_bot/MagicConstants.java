@@ -94,11 +94,13 @@ public class MagicConstants {
 	public static int BUILDING_ADJ_BONUS = 50;
 	public static int BUILDING_DIFF_MULTIPLIER = 10;
 	public static int BUILD_NET_GUN_ROUND = 200;
-	public static int NOT_ATTACKED_ROUND = 300;
+	public static int NOT_ATTACKED_ROUND = 400;
+	public static int MAX_EARLY_RUSH_DIST = 30;
 	public static int MAX_LATE_RUSH_DIST = 8;
 	public static int REFINERY_BUFFER = 54;
 	public static boolean BUILD_REFINERY = true;
 	public static int NUM_RUSH_DEFENSE_MINERS = 5;
+	public static int MIN_ATTACK_DURATION = 35;
 
 	// mining
 	public static int MINER_ELEVATION_TOLERANCE = 10;
