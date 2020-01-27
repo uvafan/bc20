@@ -280,7 +280,7 @@ public class Miner extends Unit {
         for(int i=0; i<unitCounts[RobotType.REFINERY.ordinal()]; i++){
             if(invalidRefineries[i])
                 continue;
-            System.out.println("checking " + refineries[i]);
+            // System.out.println("checking " + refineries[i]);
             if(rc.canSenseLocation(refineries[i])) {
                 RobotInfo ri = rc.senseRobotAtLocation(refineries[i]);
                 if(ri == null || ri.team != us || ri.type != RobotType.REFINERY) {

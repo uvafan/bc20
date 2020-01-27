@@ -20,6 +20,8 @@ public class Comms {
     static Bot bot;
     static RobotController rc;
     public static int readRound;
+    public static MessageType[] superImportantMessages;
+    int numSuperImportantMessages = 0;
 
     public static enum MessageType {
         HQ_LOC,
@@ -43,10 +45,16 @@ public class Comms {
         bot = b;
         rc = b.rc;
         readRound = 1;
+        superImportantMessages = new MessageType[20];
     }
 
     public void readMessages() throws GameActionException {
+        if(isReallyCaughtUp())
+            return;
         readMessages(bot.round - 1);
+        for(int i=0; i<numSuperImportantMessages; i++) {
+            broadcastLoc(superImportantMessages[i], bot.here);
+        }
     }
 
     public void readMessages(int upUntil) throws GameActionException {
@@ -66,8 +74,22 @@ public class Comms {
         return bot.round - 2 < readRound;
     }
 
+    public boolean isReallyCaughtUp() {
+        return bot.round - 1 < readRound;
+    }
+
     private void processMessage(int[] msg) {
-        switch(MessageType.values()[msg[5]]) {
+        MessageType type = MessageType.values()[msg[5]];
+        if(isSuperImportant(type)) {
+            for(int i=0;i<numSuperImportantMessages; i++) {
+                if(superImportantMessages[i] == type) {
+                    superImportantMessages = Utils.removeElement(superImportantMessages, i);
+                    numSuperImportantMessages--;
+                    break;
+                }
+            }
+        }
+        switch(type) {
             case HQ_LOC:
                 bot.hqLoc = msgToLocation(msg[6]);
                 break;
@@ -164,15 +186,19 @@ public class Comms {
     	return msg[1]==verifyHash(msg, round);
     }
 
-    public int getCost(MessageType mt) {
-        if(rc.getTeamSoup() > 1000)
+    public int getCost() {
+        if(rc.getTeamSoup() > 1000 || bot.unitCounts[RobotType.VAPORATOR.ordinal()] > 10)
             return 2;
+        return 1;
+    }
+
+    public boolean isSuperImportant(MessageType mt) {
         switch(mt) {
-            case HQ_ATTACKED: return 2;
-            case HQ_OK: return 3;
-            case HQ_LOC: return 3;
-            case WALL_COMPLETE: return 3;
-            default: return 1;
+            case HQ_ATTACKED: return true;
+            case HQ_OK: return true;
+            case HQ_LOC: return true;
+            case WALL_COMPLETE: return true;
+            default: return false;
         }
     }
 
@@ -180,7 +206,18 @@ public class Comms {
     public void broadcastLoc(MessageType mt, MapLocation loc) throws GameActionException {
         if(rc.getTeamSoup() == 0)
             return;
-        int cost = Math.min(getCost(mt), rc.getTeamSoup());
+        if(isSuperImportant(mt)) {
+            boolean alreadyThere = false;
+            for(int i=0; i<numSuperImportantMessages; i++) {
+                if(superImportantMessages[i] == mt) {
+                    alreadyThere = true;
+                    break;
+                }
+            }
+            if(!alreadyThere)
+                superImportantMessages[numSuperImportantMessages++] = mt;
+        }
+        int cost = Math.min(getCost(), rc.getTeamSoup());
         int[] message = new int[7];
         message[5] = mt.ordinal();
         message[6] = locationToMsg(loc);

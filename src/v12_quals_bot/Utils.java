@@ -1,8 +1,6 @@
 package v12_quals_bot;
 
-import battlecode.common.Clock;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 public class Utils {
 
@@ -25,6 +23,17 @@ public class Utils {
     public static MapLocation[] removeElement(MapLocation[] arr, int idx) {
         int at = 0;
         MapLocation[] ret = new MapLocation[arr.length-1];
+        for(int i=0; i<arr.length; i++){
+            if(i==idx)
+                continue;
+            ret[at++] = arr[i];
+        }
+        return ret;
+    }
+
+    public static Comms.MessageType[] removeElement(Comms.MessageType[] arr, int idx) {
+        int at = 0;
+        Comms.MessageType[] ret = new Comms.MessageType[arr.length-1];
         for(int i=0; i<arr.length; i++){
             if(i==idx)
                 continue;
