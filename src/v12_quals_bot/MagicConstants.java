@@ -50,6 +50,8 @@ public class MagicConstants {
 	public static int WATER_TOLERANCE = 150;
 	public static int BUBBLE_AROUND_HQ = 60;
 	public static int GIVE_UP_ON_TARGET = 20;
+	public static int MOVE_OUT_OF_CRUNCH_WAY = 20;
+	public static boolean suicideOnCrunch = true;
 
 	// build order
 	public static RobotType[] LATTICE_COMP_TYPES = new RobotType[]{
