@@ -551,7 +551,15 @@ public class Bot {
                 && roundsLeft <= MagicConstants.FLOODING_SOON_MAX
                 && roundsLeft >= MagicConstants.FLOODING_SOON_MIN;
     }
-    
+
+    public static boolean reallyFloodingSoon(MapLocation loc) throws GameActionException {
+        int roundsLeft = Utils.getRoundFlooded(rc.senseElevation(loc)) - round;
+        return loc.distanceSquaredTo(hqLoc) >= MagicConstants.FLOODING_SOON_MIN_HQ_DIST
+                && round >= MagicConstants.FLOODING_SOON_MIN_ROUND
+                && roundsLeft <= MagicConstants.REALLY_FLOODING_SOON_MAX
+                && roundsLeft >= MagicConstants.FLOODING_SOON_MIN;
+    }
+
 
     public boolean isOnLatticeIntersection(MapLocation loc) {
         return hqLoc.x % 2 != loc.x % 2 && hqLoc.y % 2 != loc.y % 2;

@@ -9,6 +9,7 @@ public class Miner extends Unit {
     RobotInfo[] enemyUnits;
     boolean builtOffensiveNetGun;
     boolean nearbyDrone;
+    boolean runningBackToLattice;
     boolean nearbyFulfillment;
     int fulfillmentDist;
     int builtFulfillmentRound;
@@ -22,6 +23,7 @@ public class Miner extends Unit {
 
     public Miner(RobotController r) throws GameActionException {
         super(r);
+        runningBackToLattice = false;
         if(round == 2 && strat instanceof Rush) {
             rushing = true;
         }
@@ -57,6 +59,10 @@ public class Miner extends Unit {
                 }
             }
         }
+        if(Clock.getBytecodesLeft() < 1000)
+            return;
+        if(standingOnLattice() || here.distanceSquaredTo(hqLoc) <= 8)
+            runningBackToLattice = false;
         if(!rushing && rc.getCooldownTurns() < 1)
             dealWithEnemyDrones();
         if(rushing) {
@@ -94,7 +100,8 @@ public class Miner extends Unit {
                     }
                 }
             }
-            else if(floodingSoon(here)) {
+            else if((runningBackToLattice || floodingSoon(here)) && round > MagicConstants.RUN_BACK_TO_LATTICE_ROUND || reallyFloodingSoon(here)) {
+                runningBackToLattice = true;
                 rc.setIndicatorLine(here, hqLoc, 0, 0, 255);
                 goTo(hqLoc);
             }
@@ -273,6 +280,7 @@ public class Miner extends Unit {
         for(int i=0; i<unitCounts[RobotType.REFINERY.ordinal()]; i++){
             if(invalidRefineries[i])
                 continue;
+            System.out.println("checking " + refineries[i]);
             if(rc.canSenseLocation(refineries[i])) {
                 RobotInfo ri = rc.senseRobotAtLocation(refineries[i]);
                 if(ri == null || ri.team != us || ri.type != RobotType.REFINERY) {
@@ -286,7 +294,7 @@ public class Miner extends Unit {
                 minDist = dist;
             }
         }
-        if(bestLoc == null && (!isWallComplete || buildMiner) && (!rc.canSenseLocation(hqLoc) || canReachAdj(hqLoc, true, MagicConstants.MINER_ELEVATION_TOLERANCE)))
+        if(bestLoc == null && !isWallComplete && (!rc.canSenseLocation(hqLoc) || canReachAdj(hqLoc, true, MagicConstants.MINER_ELEVATION_TOLERANCE)))
             bestLoc = hqLoc;
         return bestLoc;
     }
@@ -300,6 +308,10 @@ public class Miner extends Unit {
         if(closestRefine != null && (rc.getTeamSoup() < MagicConstants.SOUP_REQUIRED_FOR_REFINERY || (hqAttacked && !MagicConstants.BUILD_REFINERY)|| here.distanceSquaredTo(closestRefine) < MagicConstants.REQUIRED_REFINERY_DIST))
             return false;
         updateTargetMineLoc();
+        if(targetMineLoc != null && Utils.DEBUG)
+            rc.setIndicatorLine(here, targetMineLoc, 255, 0 ,0);
+        if(closestRefine != null && Utils.DEBUG)
+            rc.setIndicatorLine(here, targetMineLoc, 0, 0,255);
         if (closestRefine == null || targetMineLoc != null && here.distanceSquaredTo(targetMineLoc) <= 25){
             Utils.log("trying to build refinery!");
             if(tryBuild(RobotType.REFINERY, buildDirection, tryOthers)) {
@@ -323,6 +335,13 @@ public class Miner extends Unit {
 
     private void updateTargetMineLoc() throws GameActionException {
         int elevationTolerance = rc.canSenseLocation(hqLoc) ? MagicConstants.MINER_ELEVATION_TOLERANCE: 3;
+        for(Direction d: directions) {
+            MapLocation loc = here.add(d);
+            if(rc.canSenseLocation(loc) && rc.senseSoup(loc) > 0) {
+                targetMineLoc = loc;
+                return;
+            }
+        }
         if(targetMineLoc != null) {
             if(rc.canSenseLocation(targetMineLoc) && rc.senseSoup(targetMineLoc) > 0 && canReachAdj(targetMineLoc, false, elevationTolerance))
                 return;

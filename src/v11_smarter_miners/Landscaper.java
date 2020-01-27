@@ -415,6 +415,7 @@ public class Landscaper extends Unit {
 		int spotPriority = Integer.MIN_VALUE;
 		MapLocation spot = null;
 		int spotsFree = 0;
+		int herePriority = Integer.MIN_VALUE;
 		for(Direction dir: directions) {
 			MapLocation loc = hqLoc.add(dir);
 			if(!rc.canSenseLocation(loc) || (!loc.equals(here) && !canReach(loc, here, true))) {
@@ -429,15 +430,22 @@ public class Landscaper extends Unit {
 				minDist = Math.min(minDist, loc.distanceSquaredTo(ri.location));
 			}
 			priority += (minDist <= 2 ? MagicConstants.NEXT_TO_BUILDING_BONUS : (MagicConstants.MAX_BUILDING_DIST - minDist) / 2);
+			if(loc.equals(here))
+				herePriority = priority;
 			if(priority > spotPriority) {
 				spotPriority = priority;
 				spot = loc;
 			}
 		}
+		spotPriority += spotsFree * MagicConstants.SPOTS_FREE_MULTIPLIER;
+		herePriority += 8 * MagicConstants.SPOTS_FREE_MULTIPLIER;
+		if(herePriority > spotPriority) {
+			spot = here;
+			spotPriority = herePriority;
+		}
 		int myDirt = rc.getDirtCarrying();
 		int dirtOnHQ = rc.senseRobotAtLocation(hqLoc).dirtCarrying;
 		if(spot != null) {
-			spotPriority += spotsFree * MagicConstants.SPOTS_FREE_MULTIPLIER;
 			int diff = landscaperDiff(hqLoc);
 			spotPriority -= diff * MagicConstants.LANDSCAPER_DIFF_MULTIPLIER;
 			spotPriority += MagicConstants.HQ_DIRT_MULTIPLIER * 3;

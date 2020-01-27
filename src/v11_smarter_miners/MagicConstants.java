@@ -18,6 +18,7 @@ public class MagicConstants {
 
 	// determining if tile is flooding soon
 	public static int FLOODING_SOON_MAX = 100;
+	public static int REALLY_FLOODING_SOON_MAX = 10;
 	public static int FLOODING_SOON_MIN = -20;
 	public static int FLOODING_SOON_MIN_ROUND = 200;
 	public static int FLOODING_SOON_MIN_HQ_DIST = 18;
@@ -104,4 +105,5 @@ public class MagicConstants {
 	public static int GIVE_UP_CLUSTER_DIST = 8;
 	public static int REQUIRED_REFINERY_DIST = 50;
 	public static int SOUP_REQUIRED_FOR_REFINERY = 300;
+	public static int RUN_BACK_TO_LATTICE_ROUND = 500;
 }
