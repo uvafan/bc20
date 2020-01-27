@@ -30,7 +30,7 @@ public class EcoLattice extends Strategy {
                 Integer.MAX_VALUE,
                 Integer.MAX_VALUE,
         };
-        soupPriorities[RobotType.MINER.ordinal()] = 0;
+        soupPriorities[RobotType.MINER.ordinal()] = RobotType.MINER.cost + 1;
     }
 
 
@@ -58,8 +58,11 @@ public class EcoLattice extends Strategy {
         }
         if(bot.isWallComplete && bot.type == RobotType.HQ) {
             int expectedMiners = MagicConstants.NUM_NON_BUILD_MINERS + MagicConstants.INITIAL_BUILD_MINERS + (bot.round - bot.wallCompletionRound) / MagicConstants.NEW_BUILD_MINER_FREQ;
-            if(bot.numMiners < expectedMiners)
+            if(bot.numMiners < expectedMiners) {
+                if(bot.numMiners > unitCounts[RobotType.VAPORATOR.ordinal()])
+                    soupPriorities[RobotType.MINER.ordinal()] = RobotType.VAPORATOR.cost + 40;
                 soupPriorities[RobotType.MINER.ordinal()] = RobotType.MINER.cost + 1;
+            }
         }
         Utils.log("seesEnemyNetGun: " + seesEnemyNetGun);
         if(bot.hqAttacked) {
