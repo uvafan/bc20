@@ -118,7 +118,7 @@ public class Unit extends Bot {
             return false;
         int numNGs = unitCounts[RobotType.NET_GUN.ordinal()];
         int numVaps = unitCounts[RobotType.VAPORATOR.ordinal()];
-        if(numNGs > 3 && numVaps < numNGs || numNGs > 1 && numVaps == 0)
+        if(round < MagicConstants.CRUNCH_ROUND - 300 && (numNGs > 3 && numVaps < numNGs || numNGs > 1 && numVaps == 0))
             return false;
         int numFriendlyNGs = 0;
         MapLocation[] friendlyNGs = new MapLocation[100];
