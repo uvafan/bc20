@@ -25,15 +25,19 @@ public class MagicConstants {
 
 	// net guns and dealing with drones
 	public static int MIN_NET_GUN_CLOSENESS = 8;
+	public static int MIN_EXCITED_NET_GUN_CLOSENESS = 4;
 	public static int MIN_NET_GUN_DIST_FROM_HQ = 8;
 	public static final int MAX_DIST_TO_FLEE = 8;
 	public static final int MAX_DIST_TO_BUILD_NET_GUN = 25;
 	public static final boolean FLEE_BEFORE_BUILD = false;
 	public static int DIST_SOUP_MULTIPLIER = 10;
+	public static int MIN_NEARBY_DRONES_AND_BUILDINGS = 3;
+	public static int EXCITED_HQ_CLOSENESS = 85;
 
 	// crunching
 	public static int CRUNCH_ROUND = 1500;
-	public static int PICK_UP_LANDSCAPER_ROUND = 1150;
+	public static int PICK_UP_LANDSCAPER_ROUND = 1175;
+	public static int DONT_PICK_UP = 1460;
 
 	// lattice
 	//public static int[] WALL_Y_OFFSETS = {-2,-1,0,1,2,2,2,2,2,1,0,-1,-2,-2,-2,-2};
@@ -109,4 +113,9 @@ public class MagicConstants {
 	public static int REQUIRED_REFINERY_DIST = 50;
 	public static int SOUP_REQUIRED_FOR_REFINERY = 300;
 	public static int RUN_BACK_TO_LATTICE_ROUND = 500;
+
+	// landscaper burying
+	public static int VAP_PRIORITY = 1;
+	public static int NET_GUN_PRIORITY = 1;
+	public static int HQ_PRIORITY = 2;
 }

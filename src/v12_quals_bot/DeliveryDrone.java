@@ -18,9 +18,16 @@ public class DeliveryDrone extends Unit {
             rushing = true;
         }
         else {
-            harassing = true;
-            if (round >= MagicConstants.PICK_UP_LANDSCAPER_ROUND)
+            if (round >= MagicConstants.PICK_UP_LANDSCAPER_ROUND && round < MagicConstants.DONT_PICK_UP) {
+                harassing = true;
                 landscaperDropper = true;
+            }
+            else if(round > MagicConstants.DONT_PICK_UP) {
+                defending = true;
+            }
+            else {
+                harassing = true;
+            }
         }
         if(enemyHQLoc == null) {
             if (rushing && (hqLoc == null || hqLoc.distanceSquaredTo(center) > here.distanceSquaredTo(hqLoc)))
@@ -34,7 +41,7 @@ public class DeliveryDrone extends Unit {
 
     public void takeTurn() throws GameActionException {
         super.takeTurn();
-        defending = hqAttacked || (defending && round >= MagicConstants.CRUNCH_ROUND);
+        defending = hqAttacked || (defending && round >= MagicConstants.DONT_PICK_UP);
         if (rushing) {
             doRush();
         }
@@ -42,12 +49,15 @@ public class DeliveryDrone extends Unit {
             if(!crunching && shouldCrunch())
                 crunching = true;
             if(crunching) {
+                System.out.println("crunching");
                 doCrunch();
             }
-            else if (!defending || pickedUpFriend) {
+            else if ((!defending && !rc.isCurrentlyHoldingUnit() && !landscaperDropper) || pickedUpFriend) {
+                System.out.println("helping out friends");
                 helpOutFriends();
             }
             if(rc.getCooldownTurns() < 1 && (harassing || defending)) {
+                System.out.println("harassing");
                 doHarass();
             }
         }
@@ -184,6 +194,13 @@ public class DeliveryDrone extends Unit {
             }
         if(landscaperDropper && !droppedOff) {
             if(!rc.isCurrentlyHoldingUnit()) {
+                if(round > MagicConstants.DONT_PICK_UP) {
+                    landscaperDropper = false;
+                    crunching = false;
+                    harassing = false;
+                    defending = true;
+                    return;
+                }
                 RobotInfo closestLandscaper = null;
                 int minDist = Integer.MAX_VALUE;
                 for(RobotInfo f: friends) {
@@ -198,7 +215,8 @@ public class DeliveryDrone extends Unit {
                 if(minDist <= 2) {
                     if(rc.canPickUpUnit(closestLandscaper.ID))
                         rc.pickUpUnit(closestLandscaper.ID);
-                } else if (closestLandscaper != null) {
+                }
+                else if (closestLandscaper != null) {
                     goTo(closestLandscaper.location);
                 }
                 else {
@@ -214,9 +232,6 @@ public class DeliveryDrone extends Unit {
             if (!rc.isCurrentlyHoldingUnit()) {
                 findAndPickUpEnemyUnit();
             }
-            else if (crunching && rc.senseFlooding(here)) {
-                rc.disintegrate();
-            }
             else {
                 dropUnitInWater();
             }
@@ -224,6 +239,7 @@ public class DeliveryDrone extends Unit {
     }
 
     private void dropUnitInWater() throws GameActionException {
+        System.out.println("trying to drop unit in water.");
         for(Direction dir: directions) {
             MapLocation loc = here.add(dir);
             if(rc.canSenseLocation(loc) && rc.senseFlooding(loc)) {
@@ -365,7 +381,7 @@ public class DeliveryDrone extends Unit {
             }
             return false;
         }
-        else if(crunching || harassing) {
+        else if(crunching || harassing || defending) {
             return true;
         }
         return false;

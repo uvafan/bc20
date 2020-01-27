@@ -380,12 +380,12 @@ public class Bot {
         if(enemyHqLocTentativePossibilities.length == 0 || enemyHqLocPossibilities.length == 1)
             pickFrom = enemyHqLocPossibilities;
         if(pickFrom.length == 1) {
-            if(enemyHQLoc == null || (!enemyHQLoc.equals(pickFrom[0])))
+            if(comms.isCaughtUp() && (enemyHQLoc == null || !enemyHQLoc.equals(pickFrom[0]) && enemyHqLocPossibilities.length == 1))
                 comms.broadcastLoc(Comms.MessageType.ENEMY_HQ_LOC, pickFrom[0]);
             enemyHQLoc = pickFrom[0];
             return enemyHQLoc;
         }
-        else if(enemyHQLoc != null) {
+        else if(enemyHQLoc != null && pickFrom.length == 0) {
             enemyHQLoc = null;
         }
         if(here.isWithinDistanceSquared(center, 8))

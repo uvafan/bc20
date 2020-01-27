@@ -125,6 +125,7 @@ public class Comms {
             case ENEMY_HQ_LOC:
                 Utils.log("adding enemy hq loc");
                 bot.enemyHQLoc = msgToLocation(msg[6]);
+                //System.out.println("got message " + bot.enemyHQLoc);
                 break;
             case WATER_LOC:
                 Utils.log("adding water loc");
@@ -194,7 +195,7 @@ public class Comms {
     }
 
     public int getCost() {
-        if(rc.getTeamSoup() > 1000 || bot.unitCounts[RobotType.VAPORATOR.ordinal()] > 10)
+        if(rc.getTeamSoup() > 1000)
             return 2;
         return 1;
     }

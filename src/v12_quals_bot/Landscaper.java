@@ -40,7 +40,7 @@ public class Landscaper extends Unit {
 
 		defending = hqAttacked && !doneDefending;
 		RobotInfo buildingToBury = getBuildingToBury();
-		if(!rushing && rc.getCooldownTurns() < 1 && !(round > MagicConstants.CRUNCH_ROUND && buildingToBury != null && here.distanceSquaredTo(buildingToBury.location) <= 2)) {
+		if(!rushing && rc.getCooldownTurns() < 1 && round < MagicConstants.CRUNCH_ROUND) {
 			dealWithEnemyDrones();
 		}
 		if(rushing) {
@@ -51,11 +51,12 @@ public class Landscaper extends Unit {
 				doDefense();
 			else {
 				if (buildingToBury != null) {
+					rc.setIndicatorLine(here, buildingToBury.location, 255, 0, 0);
 					buryEnemy(buildingToBury);
 				}
-				else if (turtling)
+				if (turtling && rc.getCooldownTurns() < 1)
 					doTurtle();
-				else
+				if(rc.getCooldownTurns() < 1)
 					doLattice();
 			}
 		}
@@ -572,6 +573,15 @@ public class Landscaper extends Unit {
 		}
 	}
 
+	public int getBuryingPriority(RobotType rt) {
+		switch (rt) {
+			case VAPORATOR: return MagicConstants.VAP_PRIORITY;
+			case NET_GUN: return MagicConstants.NET_GUN_PRIORITY;
+			case HQ: return MagicConstants.HQ_PRIORITY;
+			default: return 0;
+		}
+	}
+
 	private RobotInfo getBuildingToBury() throws GameActionException {
 		RobotInfo ret = null;
 		int maxPriority = Integer.MIN_VALUE;
@@ -579,9 +589,12 @@ public class Landscaper extends Unit {
 			if(!Utils.isBuilding(e.type))
 				continue;
 			int dist = here.distanceSquaredTo(e.location);
+			int manhattan = Utils.manhattan(here, e.location);
+			if(dist < 3)
+				manhattan = 1;
 			if(!hqAttacked && dist > 2 && !canReachAdj(e.location, true))
 				continue;
-			int priority = (e.type == RobotType.NET_GUN ? 25 : 0) - dist;
+			int priority = getBuryingPriority(e.type) - manhattan;
 			priority += ((dist <= 2 && here.distanceSquaredTo(hqLoc) <= 2) ? 100: 0);
 			if(priority > maxPriority) {
 				maxPriority = priority;
@@ -667,19 +680,46 @@ public class Landscaper extends Unit {
 
 	private void buryEnemy(RobotInfo closestEnemyBuilding) throws GameActionException {
 		MapLocation targetLoc = closestEnemyBuilding.location;
+		boolean closerToUs = (enemyHQLoc == null || here.distanceSquaredTo(hqLoc) < here.distanceSquaredTo(enemyHQLoc));
 		if(here.distanceSquaredTo(closestEnemyBuilding.location) <= 2) {
 			if(rc.getDirtCarrying() == 0) {
-				if(hqLoc != null && rc.canSenseLocation(hqLoc)) {
-					if (rc.senseRobotAtLocation(hqLoc).dirtCarrying > 0 && here.distanceSquaredTo(hqLoc) == 2) {
-						tryDig(here.directionTo(hqLoc), false);
-					}
-					if (rc.getCooldownTurns() < 1) {//< RobotType.LANDSCAPER.dirtLimit) {
-						tryDig(hqLoc.directionTo(here), true);
+				int maxScore = Integer.MIN_VALUE;
+				Direction bestDir = Direction.CENTER;
+				for(Direction d: directionsPlusCenter) {
+					MapLocation loc = here.add(d);
+					if(rc.canDigDirt(d)) {
+					    int score = 0;
+					    RobotInfo ri = rc.senseRobotAtLocation(loc);
+					    if(ri != null) {
+					    	if(Utils.isBuilding(ri.type)) {
+					    		if(ri.team == us)
+					    			score += 10000;
+					    		else
+									score -= 10000;
+							}
+					    	else {
+								if(ri.team == enemy)
+									score += 100;
+								else
+									score -= 100;
+							}
+						}
+					    if(closerToUs) {
+					    	if(loc.x % 2 == hqLoc.x % 2 && loc.y % 2 == hqLoc.y % 2) {
+					    		score += 500;
+							}
+						}
+					    else {
+					    	score -= Utils.manhattan(loc, enemyHQLoc);
+					    	score -= (rc.senseFlooding(loc) ? 50 : 0);
+						}
+						if(score > maxScore) {
+							maxScore = score;
+							bestDir = d;
+						}
 					}
 				}
-				else {
-					tryDig(randomDirection(), true);
-				}
+				tryDig(bestDir, false);
 			}
 			else if(rc.canDepositDirt(here.directionTo(targetLoc))) {
 				if(closestEnemyBuilding.dirtCarrying + 1 == closestEnemyBuilding.type.dirtLimit) {
@@ -694,6 +734,9 @@ public class Landscaper extends Unit {
 		else if (hqLoc == null || here.distanceSquaredTo(hqLoc) > 2 || rc.senseRobotAtLocation(hqLoc).dirtCarrying == 0) {
 			if(spotIsFreeAround(targetLoc))
 				goTo(targetLoc);
+		}
+		else if (round >= MagicConstants.CRUNCH_ROUND) {
+			goTo(targetLoc);
 		}
 	}
 

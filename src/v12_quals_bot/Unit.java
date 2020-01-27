@@ -105,6 +105,8 @@ public class Unit extends Bot {
     }
 
     private boolean buildNetGunIfShould(RobotInfo[] drones, int numDrones, MapLocation closestEnemyDrone) throws GameActionException {
+        if(type != RobotType.MINER)
+            return false;
         int soupNeeded = RobotType.NET_GUN.cost + 1;
         if(!isWallComplete) {
             int dist = here.distanceSquaredTo(hqLoc);
@@ -112,14 +114,26 @@ public class Unit extends Bot {
                 soupNeeded += MagicConstants.DIST_SOUP_MULTIPLIER * (dist-18);
             }
         }
-        if(type != RobotType.MINER || rc.getTeamSoup() < soupNeeded ||
-            here.distanceSquaredTo(closestEnemyDrone) > MagicConstants.MAX_DIST_TO_BUILD_NET_GUN
+        int numBuildings = 0;
+        int distToEnemy = enemyHQLoc == null ? Integer.MAX_VALUE : here.distanceSquaredTo(enemyHQLoc);
+        for(RobotInfo e: enemies) {
+            if(Utils.isBuilding(e.type))
+                numBuildings++;
+        }
+        boolean reallyWantToBuildNetGun = false;
+        if(numBuildings > 0 && numBuildings + numDrones >= MagicConstants.MIN_NEARBY_DRONES_AND_BUILDINGS
+                || (numDrones > 0 && distToEnemy <= MagicConstants.EXCITED_HQ_CLOSENESS))
+            reallyWantToBuildNetGun = true;
+        if( rc.getTeamSoup() < soupNeeded ||
+            (!reallyWantToBuildNetGun && here.distanceSquaredTo(closestEnemyDrone) > MagicConstants.MAX_DIST_TO_BUILD_NET_GUN)
             || (numDrones == 1 && round < MagicConstants.BUILD_NET_GUN_ROUND))
             return false;
-        int numNGs = unitCounts[RobotType.NET_GUN.ordinal()];
-        int numVaps = unitCounts[RobotType.VAPORATOR.ordinal()];
-        if(round < MagicConstants.CRUNCH_ROUND - 300 && (numNGs > 3 && numVaps < numNGs || numNGs > 1 && numVaps == 0))
-            return false;
+        if(!reallyWantToBuildNetGun) {
+            int numNGs = unitCounts[RobotType.NET_GUN.ordinal()];
+            int numVaps = unitCounts[RobotType.VAPORATOR.ordinal()];
+            if (round < MagicConstants.CRUNCH_ROUND - 300 && (numNGs > 3 && numVaps < numNGs || numNGs > 1 && numVaps == 0))
+                return false;
+        }
         int numFriendlyNGs = 0;
         MapLocation[] friendlyNGs = new MapLocation[100];
         for(RobotInfo f: friends) {
@@ -135,13 +149,14 @@ public class Unit extends Bot {
                     int dist = hqLoc.distanceSquaredTo(loc);
                     if(dist < MagicConstants.MIN_NET_GUN_DIST_FROM_HQ)
                         continue;
-                    int score = -Utils.manhattan(loc, closestEnemyDrone) - Utils.manhattan(loc, hqLoc);
+                    int score = -Utils.manhattan(loc, closestEnemyDrone) + Utils.manhattan(loc, hqLoc);
                     if(!shouldBuildInLoc(loc, RobotType.NET_GUN)) {
                         continue;
                     }
                     boolean cont = false;
                     for(int i=0;i<numFriendlyNGs;i++) {
-                        if(friendlyNGs[i].distanceSquaredTo(loc) < MagicConstants.MIN_NET_GUN_CLOSENESS) {
+                        int min_closeness = reallyWantToBuildNetGun ? MagicConstants.MIN_EXCITED_NET_GUN_CLOSENESS : MagicConstants.MIN_NET_GUN_CLOSENESS;
+                        if(friendlyNGs[i].distanceSquaredTo(loc) < min_closeness) {
                             cont = true;
                             break;
                         }
@@ -174,7 +189,7 @@ public class Unit extends Bot {
         int maxScore = Integer.MIN_VALUE;
         for(Direction dir: directionsPlusCenter) {
             MapLocation loc = here.add(dir);
-            if(rc.canMove(dir)) {
+            if(rc.canMove(dir) && !rc.senseFlooding(loc)) {
                 int minDist = Integer.MAX_VALUE;
                 for(int i=0; i < numDrones; i++) {
                     RobotInfo d = drones[i];
