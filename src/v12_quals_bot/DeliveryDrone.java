@@ -44,7 +44,7 @@ public class DeliveryDrone extends Unit {
             if(crunching) {
                 doCrunch();
             }
-            else if (!defending) {
+            else if (!defending || pickedUpFriend) {
                 helpOutFriends();
             }
             if(rc.getCooldownTurns() < 1 && (harassing || defending)) {

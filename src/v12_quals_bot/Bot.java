@@ -386,7 +386,7 @@ public class Bot {
             return enemyHQLoc;
         }
         else if(enemyHQLoc != null) {
-        	return enemyHQLoc;
+            enemyHQLoc = null;
         }
         if(here.isWithinDistanceSquared(center, 8))
             triedCenter = true;

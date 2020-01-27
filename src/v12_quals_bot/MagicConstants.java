@@ -83,7 +83,8 @@ public class MagicConstants {
 	public static int SPOT_DIST_MULTIPLIER = 1;
     public static int MAX_BUILDING_DIST = 20;
     public static int NEXT_TO_BUILDING_BONUS = 1000;
-    public static int STAY_HERE_BONUS = 50;
+	public static int NEXT_TO_FRIENDLY_BUILDING_BONUS = 300;
+	public static int STAY_HERE_BONUS = 50;
     public static int LANDSCAPER_DIFF_MULTIPLIER = 50;
     public static int HQ_DIRT_MULTIPLIER = 2;
 	public static int MY_DIRT_MULTIPLIER = 0;

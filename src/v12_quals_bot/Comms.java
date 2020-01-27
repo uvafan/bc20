@@ -39,6 +39,7 @@ public class Comms {
         HQ_OK,
         NET_GUN_REMOVED,
         WALL_COMPLETE,
+        UNIT_DEATH,
     }
 
     public Comms(Bot b) {
@@ -160,6 +161,10 @@ public class Comms {
                 break;
             case UNIT_CREATED:
                 bot.unitCounts[msg[6]- MagicConstants.ORDINAL_SECRET_NUM]++;
+                break;
+            case UNIT_DEATH:
+                bot.unitCounts[msg[6] - MagicConstants.ORDINAL_SECRET_NUM]--;
+                break;
         }
     }
 
@@ -232,6 +237,17 @@ public class Comms {
             return;
         int[] message = new int[7];
         message[5] = MessageType.UNIT_CREATED.ordinal();
+        message[6] = rt.ordinal()+ MagicConstants.ORDINAL_SECRET_NUM;
+        message[0] = MagicConstants.FAST_SECRET_NUM+bot.us.ordinal();
+        message[1] = generateHash(message);
+        rc.submitTransaction(message, 1);
+    }
+
+    public void broadcastUnitDeath(RobotType rt) throws GameActionException {
+        if(rc.getTeamSoup() == 0)
+            return;
+        int[] message = new int[7];
+        message[5] = MessageType.UNIT_DEATH.ordinal();
         message[6] = rt.ordinal()+ MagicConstants.ORDINAL_SECRET_NUM;
         message[0] = MagicConstants.FAST_SECRET_NUM+bot.us.ordinal();
         message[1] = generateHash(message);

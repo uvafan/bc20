@@ -28,7 +28,7 @@ public class HQ extends Building {
         seesOpponentHQ = false;
         distToOpponent = Integer.MAX_VALUE;
         for(RobotInfo e: enemies) {
-            if(e.type != RobotType.DELIVERY_DRONE && e.type != RobotType.HQ) {
+            if(e.type != RobotType.DELIVERY_DRONE && !Utils.isBuilding(e.type)) {
                 seesNonDroneEnemy = true;
                 distToOpponent = Math.min(distToOpponent, here.distanceSquaredTo(e.location));
             }

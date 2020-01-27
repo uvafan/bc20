@@ -5,9 +5,11 @@ import battlecode.common.*;
 public class Building extends Bot {
 
     RobotType prodType;
+    boolean deathBroadcasted;
 
     public Building(RobotController r) throws GameActionException {
         super(r);
+        deathBroadcasted = false;
         prodType = null;
         switch(type){
             case HQ:
@@ -26,6 +28,10 @@ public class Building extends Bot {
     @Override
     public void takeTurn() throws GameActionException {
         super.takeTurn();
+        if(type != RobotType.HQ && !deathBroadcasted && type.dirtLimit < rc.getDirtCarrying() + 3) {
+           deathBroadcasted = true;
+           comms.broadcastUnitDeath(type);
+        }
         buildIfShould();
     }
 

@@ -399,17 +399,36 @@ public class Landscaper extends Unit {
 	}
 
 	private void doDefense() throws GameActionException {
-		Utils.log("defending!");
+		System.out.println("defending!");
 		if(!rc.canSenseLocation(hqLoc)) {
 			goTo(hqLoc);
 			return;
 		}
 		RobotInfo ret = null;
-		RobotInfo[] enemyBuildings = new RobotInfo[100];
+		RobotInfo[] enemyBuildings = new RobotInfo[50];
 		int numEnemyBuildings = 0;
 		for(RobotInfo e: enemies) {
 			if(Utils.isBuilding(e.type)) {
 				enemyBuildings[numEnemyBuildings++] = e;
+			}
+		}
+		MapLocation adjFriendlyBuilding = null;
+		RobotInfo[] friendlyBuildings = new RobotInfo[50];
+		MapLocation closestFriendlyBuilding = null;
+		int minFDist = Integer.MAX_VALUE;
+		int numFriendlyBuildings = 0;
+		for(RobotInfo f: friends) {
+			if(Utils.isBuilding(f.type) && f.type != RobotType.HQ) {
+				friendlyBuildings[numFriendlyBuildings++] = f;
+				int dist = f.location.distanceSquaredTo(here);
+				if(f.dirtCarrying > 0 || (landscaperDiff(f.location) < 0 || (dist <= 2 && landscaperDiff(f.location) < 1))) {
+				    if(f.dirtCarrying > 0 && dist <= 2)
+						adjFriendlyBuilding = f.location;
+				    if(dist < minFDist) {
+				    	closestFriendlyBuilding = f.location;
+				    	minFDist = dist;
+					}
+				}
 			}
 		}
 		int spotPriority = Integer.MIN_VALUE;
@@ -425,11 +444,17 @@ public class Landscaper extends Unit {
 			int priority = -here.distanceSquaredTo(loc) * MagicConstants.SPOT_DIST_MULTIPLIER;
 			priority += (loc.equals(here) ? MagicConstants.STAY_HERE_BONUS: 0);
 			int minDist = MagicConstants.MAX_BUILDING_DIST;
+			int friendlyMinDist = MagicConstants.MAX_BUILDING_DIST;
 			for(int i=0; i<numEnemyBuildings; i++) {
 				RobotInfo ri = enemyBuildings[i];
 				minDist = Math.min(minDist, loc.distanceSquaredTo(ri.location));
 			}
+			for(int i=0; i<numFriendlyBuildings; i++) {
+				RobotInfo ri = friendlyBuildings[i];
+				friendlyMinDist = Math.min(minDist, loc.distanceSquaredTo(ri.location));
+			}
 			priority += (minDist <= 2 ? MagicConstants.NEXT_TO_BUILDING_BONUS : (MagicConstants.MAX_BUILDING_DIST - minDist) / 2);
+			priority += (friendlyMinDist <= 2 ? MagicConstants.NEXT_TO_FRIENDLY_BUILDING_BONUS : (MagicConstants.MAX_BUILDING_DIST - minDist) / 2);
 			if(loc.equals(here))
 				herePriority = priority;
 			if(priority > spotPriority) {
@@ -474,11 +499,23 @@ public class Landscaper extends Unit {
 			}
 		}
 		if(spot != null)
-			Utils.log("spot is " + spot + " priority: " + spotPriority);
+			System.out.println("spot is " + spot + " priority: " + spotPriority);
 		if(building != null)
-			Utils.log("building at " + building + " priority: " + buildingPriority);
+			System.out.println("building at " + building + " priority: " + buildingPriority);
 		if(spot == null && building == null) {
-			doneDefending = true;
+			if(closestFriendlyBuilding == null)
+				doneDefending = true;
+			else if(here.isAdjacentTo(closestFriendlyBuilding)) {
+				if(myDirt < 25)
+					tryDig(here.directionTo(closestFriendlyBuilding), false);
+				if(rc.senseRobotAtLocation(closestFriendlyBuilding).dirtCarrying > 0) {
+					if(rc.canDepositDirt(closestFriendlyBuilding.directionTo(here)))
+						rc.depositDirt(closestFriendlyBuilding.directionTo(here));
+				}
+			}
+			else {
+				goTo(closestFriendlyBuilding);
+			}
 		}
 		else if(spotPriority > buildingPriority) {
 			rc.setIndicatorLine(here, spot, 255, 0, 0);
@@ -493,9 +530,14 @@ public class Landscaper extends Unit {
 					rc.depositDirt(here.directionTo(adjBuilding));
 			}
 			else if (adjBuilding != null && myDirt < 25) {
+				if(adjFriendlyBuilding != null)
+					tryDig(here.directionTo(adjFriendlyBuilding), false);
 				tryDig(adjBuilding.directionTo(here), true);
 			}
-			else if (dirtOnHQ > 0){
+			else if(adjFriendlyBuilding != null && myDirt < 25) {
+				tryDig(here.directionTo(adjFriendlyBuilding), false);
+			}
+			else if (dirtOnHQ > 0 || adjFriendlyBuilding != null){
 				Direction d = hqLoc.directionTo(here);
 				Direction[] dirs = {d, d.rotateLeft(), d.rotateRight(), d.rotateLeft().rotateLeft(), d.rotateRight().rotateRight()};
 				for(Direction dir: dirs) {
@@ -514,6 +556,8 @@ public class Landscaper extends Unit {
 			rc.setIndicatorLine(here, building, 255, 0, 0);
 			if(here.distanceSquaredTo(building) <= 2) {
 				if(myDirt == 0) {
+					if(adjFriendlyBuilding != null)
+						tryDig(here.directionTo(adjFriendlyBuilding), false);
 					tryDig(building.directionTo(here), true);
 				}
 				else if(rc.canDepositDirt(here.directionTo(building))) {
