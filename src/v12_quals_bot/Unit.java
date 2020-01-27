@@ -64,14 +64,14 @@ public class Unit extends Bot {
                 MapLocation loc = here.add(dir);
                 if(rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir)) {
                     if(shouldBuildInLoc(loc, RobotType.DESIGN_SCHOOL)) {
-                        int dist = hqLoc.distanceSquaredTo(loc);
+                        int dist = -hqLoc.distanceSquaredTo(loc);
                         if (dist < minDist0) {
                             minDist0 = dist;
                             buildDirs[0] = dir;
                         }
                     }
                     if(shouldBuildInLoc(loc, RobotType.REFINERY)) {
-                        int dist = hqLoc.distanceSquaredTo(loc);
+                        int dist = -hqLoc.distanceSquaredTo(loc);
                         if (dist < minDist1) {
                             minDist1 = dist;
                             buildDirs[1] = dir;

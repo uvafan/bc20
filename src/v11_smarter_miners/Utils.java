@@ -6,13 +6,8 @@ import battlecode.common.RobotType;
 
 public class Utils {
 
-<<<<<<< HEAD
-    public static boolean DEBUG = false;
-    public static boolean DEBUG_BYTECODE = false;
-=======
     public static boolean DEBUG = true;
     public static boolean DEBUG_BYTECODE = true;
->>>>>>> d35adad95c137a9c1f849b83ea1b0ba160d97abd
 
     public static void log(String s){
         if(DEBUG && false) {
