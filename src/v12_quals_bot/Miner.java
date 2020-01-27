@@ -1,4 +1,4 @@
-package v11_smarter_miners;
+package v12_quals_bot;
 
 import battlecode.common.*;
 

@@ -1,4 +1,4 @@
-package v11_smarter_miners;
+package v12_quals_bot;
 
 import battlecode.common.*;
 
@@ -247,7 +247,7 @@ public class Landscaper extends Unit {
 	}
 	private boolean shouldRenovate(MapLocation testTile) throws GameActionException {
 		//Utils.log("I'm trying to sense: " + testTile.x + ", " + testTile.y);
-		// set wouldRenovateI    
+		// set wouldRenovateI
 		//public static boolean shouldRemoveDirt = false;
 		//public static boolean wouldDigFromLoc = false;
 		if(!badLatticeLoc(testTile)) {
@@ -267,7 +267,7 @@ public class Landscaper extends Unit {
 							return false;
 						}
 					}
-					if(sensedHQElevation && elev < hqElevation || rc.senseFlooding(testTile) && elev > (0-MagicConstants.WATER_TOLERANCE)) {
+					if(sensedHQElevation && elev < hqElevation || rc.senseFlooding(testTile) && elev > (0- MagicConstants.WATER_TOLERANCE)) {
 						//Utils.log("her13");
 						shouldRemoveDirt = false;
 						wouldDigFromLoc = false;
@@ -305,7 +305,7 @@ public class Landscaper extends Unit {
 				if(!(hqLoc.x%2 == testTile.x%2 && hqLoc.y%2 == testTile.y%2)) {
 					//Utils.log("Got here4");
 					//Utils.log(""+elev);
-					if(elev < MagicConstants.LATTICE_HEIGHT && (elev > (turnDist(testTile,hqLoc) < 50 ? 0-MagicConstants.WATER_TOLERANCE : MagicConstants.LATTICE_HEIGHT - MagicConstants.LATTICE_TOLERANCE))) {
+					if(elev < MagicConstants.LATTICE_HEIGHT && (elev > (turnDist(testTile,hqLoc) < 50 ? 0- MagicConstants.WATER_TOLERANCE : MagicConstants.LATTICE_HEIGHT - MagicConstants.LATTICE_TOLERANCE))) {
 						//Utils.log("Got here2");
 						shouldRemoveDirt = false;
 						wouldDigFromLoc = false;
