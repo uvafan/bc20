@@ -168,7 +168,7 @@ public class Landscaper extends Unit {
 					default:
 					}
 					int value = realDist + distToHQ + mainWallMod + dontNavMod + distToEnemy + floodedMod;
-					Utils.log(testTile.x + ", " + testTile.y + ": " + value);
+					//Utils.log(testTile.x + ", " + testTile.y + ": " + value);
 					if(shouldRenovate(testTile)) {
 						if(!wouldDigFromLoc) {
 							if(value < minDist) {
@@ -237,8 +237,13 @@ public class Landscaper extends Unit {
 				}
 			}
 			else if (enemyHQLoc != null) {
+				if(round < MagicConstants.CRUNCH_ROUND - MagicConstants.MOVE_OUT_OF_CRUNCH_WAY) {
 				Utils.log("BRING DOWN THAT WALL");
 				goToOnLattice(enemyHQLoc);
+				}
+				else {
+					goToOnLattice(hqLoc);
+				}
 			}
 			else if (hqLoc != null){
 				goToOnLattice(reflectR(hqLoc));
@@ -274,7 +279,7 @@ public class Landscaper extends Unit {
 						return true;
 					}
 					if(Utils.getRoundFlooded(elev-1) >= round) {
-						if(sensedHQElevation && elev > hqElevation +3) {
+						if(sensedHQElevation && elev > hqElevation +3 && elev <= hqElevation +3 + MagicConstants.LATTICE_TOLERANCE) {
 							//Utils.log("her14");
 							shouldRemoveDirt = true;
 							wouldDigFromLoc = false;
