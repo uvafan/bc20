@@ -1,18 +1,61 @@
-package v4_best_turtle_only;
+package v11_smarter_miners_tuned;
 
 import battlecode.common.Clock;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotType;
 
 public class Utils {
 
     public static boolean DEBUG = false;
-    public static boolean DEBUG_BYTECODE = true;
+    public static boolean DEBUG_BYTECODE = false;
 
     public static void log(String s){
-        if(DEBUG) {
+        if(DEBUG && false) {
             System.out.println(s);
             if(DEBUG_BYTECODE){
                 System.out.println(Clock.getBytecodesLeft() + " bytecodes left.");
             }
+        }
+    }
+
+    public static int manhattan(MapLocation a, MapLocation b) {
+        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    }
+
+    public static MapLocation[] removeElement(MapLocation[] arr, int idx) {
+        int at = 0;
+        MapLocation[] ret = new MapLocation[arr.length-1];
+        for(int i=0; i<arr.length; i++){
+            if(i==idx)
+                continue;
+            ret[at++] = arr[i];
+        }
+        return ret;
+    }
+
+    public static MapLocation[] removeElement(MapLocation[] arr, MapLocation loc) {
+        int at = 0;
+        MapLocation[] ret = new MapLocation[arr.length-1];
+        boolean removed = false;
+        for(int i=0; i<arr.length; i++){
+            if(!removed && arr[i].equals(loc)) {
+                removed = true;
+                continue;
+            }
+            ret[at++] = arr[i];
+        }
+        return ret;
+    }
+
+    public static boolean isBuilding(RobotType type){
+        switch(type) {
+            case HQ: return true;
+            case DESIGN_SCHOOL: return true;
+            case FULFILLMENT_CENTER: return true;
+            case REFINERY: return true;
+            case NET_GUN: return true;
+            case VAPORATOR: return true;
+            default: return false;
         }
     }
 
@@ -2519,7 +2562,7 @@ public class Utils {
             case 2498: return 3204;
             case 2499: return 3204;
             case 2500: return 3204;
-            default: return 3205;
+            default: return 0;
         }
     }
 }

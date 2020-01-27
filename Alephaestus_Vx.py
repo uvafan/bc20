@@ -1,5 +1,5 @@
 '''
-## Alex - Hephaestus, a system for mass testing the high ground!
+## Alex - Hephaestus, a system for mass testing and tuning the high ground!
 In order to use Alephaestus you need python. To run Hephaestus simply navigate to the battlecodeScaffold2020 root directory (be able to see the python file)
 and run the following command.
 python Alephaestus.py <pkg of team a> <pkg of team b>
@@ -25,16 +25,28 @@ def getMapNames():
 	infile.close()
 	return names
 
-def runMatches(teamA, teamB, stats, maps, flipTeams=False):
+def runMatches(teamA, teamB, teamC, stats, maps, flipTeams=False):
 	for mapName in maps:
 		command = ['gradlew.bat', 'run', '-PteamA='+teamA, '-PteamB='+teamB, '-Pmaps='+mapName]
 		print(command)
 		result = subprocess.check_output(command, shell=True).decode("utf-8")
 		winningTeam = result[result.find(') wins')-1]
-		if (flipTeams):
-			winningTeam  = ('A','B')[winningTeam == 'A']
+		if str(winningTeam) == "B":
+			winningTeam = 'B'
+		else: 
+			winningTeam = 'AB'
 		stats[winningTeam]+=1
+		print ('Team ' + winningTeam + ' won on '+mapName)
 
+		command = ['gradlew.bat', 'run', '-PteamA='+teamA, '-PteamB='+teamC, '-Pmaps='+mapName]
+		print(command)
+		result = subprocess.check_output(command, shell=True).decode("utf-8")
+		winningTeam = result[result.find(') wins')-1]
+		if str(winningTeam) == "B":
+			winningTeam = 'C'
+		else: 
+			winningTeam = 'AC'
+		stats[winningTeam]+=1
 		print ('Team ' + winningTeam + ' won on '+mapName)
 
 if __name__ == '__main__':
@@ -42,35 +54,34 @@ if __name__ == '__main__':
 	mapNames = ''
 	teamA = ''
 	teamB = ''
-	doBothDirs = False
+	teamC = ''
+	teamD = ''
+	doBothDirs = True
 	skipNext = False
 	for i in range(1, len(sys.argv)):
-		if skipNext:
-			skipNext = False
-			continue
-		if sys.argv[i][0] == '-':
-			# flag
-			if sys.argv[i][1] == 'x':
-				doBothDirs = True
-			elif sys.argv[i][1] == 'm':
-				skipNext = True
-				mapNames = sys.argv[i+1].split()
-		elif teamA:
+		if teamB:
+			teamC = sys.argv[i]
+			print("Team C is: "+teamC)
+
+		elif teamA and not teamB:
 			teamB = sys.argv[i]
+			print("Team B is: " +teamB)
+
 		else:
 			teamA = sys.argv[i]
+			print("Team A is: " +teamA)
+
 
 	if not mapNames:
 		mapNames = getMapNames()
-	print("running on maps: ", mapNames, "both ways" if doBothDirs else "only one way")
-	gameStats = {'A': 0, 'B': 0} #index zero for team A index one for Team B
+		gameCount = len(mapNames)*2
+	print("running on maps: ")
+	gameStats = {'AB': 0,'AC': 0,'B': 0, 'C': 0} #index zero for team A index one for Team B, etc.
 
 	#Play all the maps
-	runMatches(teamA, teamB, gameStats, mapNames)
-	if doBothDirs:
-		#Play all maps with reverse spots
-		print("flipping sides... (but not names: %s is still called team A but plays as blue)"%teamA)
-		runMatches(teamB, teamA, gameStats, mapNames, True)
+	runMatches(teamA, teamB, teamC, gameStats, mapNames)
 
 	#Print the final results
-	print('Team A won ' + str(gameStats['A']) +' games -- Team B won ' + str(gameStats['B']) )
+	print('Team A beat team B ' + str(gameStats['AB']) +' games -- Team B won ' + str(gameStats['B'])+' games ')
+	print('Team A beat team C ' + str(gameStats['AC']) +' games -- Team C won ' + str(gameStats['C'])+' games ')
+	print('Team A won '+str(gameStats['AB']+gameStats['AC'])+' games overall out of '+str(gameCount)+' games played')
