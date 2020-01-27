@@ -35,7 +35,7 @@ public class Miner extends Unit {
         if(strat instanceof EcoLattice) {
             comms.readMessages();
             Utils.log("I think there are " + unitCounts[RobotType.MINER.ordinal()] + " miners.");
-            buildMiner = MagicConstants.NUM_MINERS - unitCounts[RobotType.MINER.ordinal()] < MagicConstants.BUILD_MINERS;
+            buildMiner = unitCounts[RobotType.MINER.ordinal()] > MagicConstants.NUM_NON_BUILD_MINERS || isWallComplete;
             if(buildMiner) {
                 Utils.log("I'm a build miner!");
             }
@@ -44,13 +44,13 @@ public class Miner extends Unit {
 
     public void takeTurn() throws GameActionException {
         super.takeTurn();
-        if(!caughtUp) {
+        if(comms.readRound < Math.min(birthRound, round - 1) && !buildMiner) {
             comms.readMessages(Math.min(birthRound, round - 1));
             if(comms.readRound - 1 == birthRound) {
                 caughtUp = true;
                 if(strat instanceof EcoLattice) {
                     Utils.log("I think there are " + unitCounts[RobotType.MINER.ordinal()] + " miners.");
-                    buildMiner = MagicConstants.NUM_MINERS - unitCounts[RobotType.MINER.ordinal()] < MagicConstants.BUILD_MINERS;
+                    buildMiner = unitCounts[RobotType.MINER.ordinal()] > MagicConstants.NUM_NON_BUILD_MINERS;
                     if(buildMiner) {
                         Utils.log("I'm a build miner!");
                     }
@@ -83,10 +83,20 @@ public class Miner extends Unit {
                         if(bestDir != null)
                             tryMove(bestDir);
                     }
+                    else if (standingOnLattice()){
+                        if(enemyHQLoc != null)
+                            goToOnLattice(enemyHQLoc, false, true);
+                        else
+                            goToOnLattice(hqLoc, false, true);
+                    }
                     else {
-                        goToOnLattice(hqLoc, false);
+                        goTo(hqLoc);
                     }
                 }
+            }
+            else if(floodingSoon(here)) {
+                rc.setIndicatorLine(here, hqLoc, 0, 0, 255);
+                goTo(hqLoc);
             }
             else if(buildIfShould()) {
             }
@@ -261,6 +271,15 @@ public class Miner extends Unit {
         MapLocation bestLoc = null;
         int minDist = Integer.MAX_VALUE;
         for(int i=0; i<unitCounts[RobotType.REFINERY.ordinal()]; i++){
+            if(invalidRefineries[i])
+                continue;
+            if(rc.canSenseLocation(refineries[i])) {
+                RobotInfo ri = rc.senseRobotAtLocation(refineries[i]);
+                if(ri == null || ri.team != us || ri.type != RobotType.REFINERY) {
+                    invalidRefineries[i] = true;
+                    continue;
+                }
+            }
             int dist = here.distanceSquaredTo(refineries[i]);
             if(dist < minDist){
                 bestLoc = refineries[i];
@@ -366,5 +385,24 @@ public class Miner extends Unit {
             return true;
         } else return false;
     }
+
+    public void explore() throws GameActionException {
+        if (standingOnLattice()) {
+            exploreOnLattice(false, true);
+        }
+        else {
+            super.explore();
+        }
+    }
+
+    public boolean goTo(MapLocation location) throws GameActionException {
+        if(standingOnLattice()) {
+            return goToOnLattice(location, false, true);
+        }
+        else {
+            return super.goTo(location);
+        }
+    }
+
 
 }

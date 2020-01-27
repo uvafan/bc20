@@ -16,10 +16,16 @@ public class MagicConstants {
 	public static int RUSH_DEFENSE_DIST = 100;
 	public static int MAX_WATER_LOCS = 20;
 
+	// determining if tile is flooding soon
+	public static int FLOODING_SOON_MAX = 100;
+	public static int FLOODING_SOON_MIN = -20;
+	public static int FLOODING_SOON_MIN_ROUND = 200;
+	public static int FLOODING_SOON_MIN_HQ_DIST = 18;
+
 	// net guns and dealing with drones
 	public static int MIN_NET_GUN_CLOSENESS = 8;
 	public static int MIN_NET_GUN_DIST_FROM_HQ = 8;
-	public static final int MAX_DIST_TO_FLEE = 18;
+	public static final int MAX_DIST_TO_FLEE = 8;
 	public static final int MAX_DIST_TO_BUILD_NET_GUN = 25;
 	public static final boolean FLEE_BEFORE_BUILD = false;
 	public static int DIST_SOUP_MULTIPLIER = 10;
@@ -36,9 +42,8 @@ public class MagicConstants {
 	public static final int HELP_MINER_UP_ROUND = 1000;
 	public static int LATTICE_HEIGHT = 8;
 	public static int LATTICE_TOLERANCE = 50;
-	public static int WATER_TOLERANCE = 100;
-	public static int HEAVY_LATTICE_TOLERANCE = 200;
-	public static int BUBBLE_AROUND_HQ = 100;
+	public static int WATER_TOLERANCE = 150;
+	public static int BUBBLE_AROUND_HQ = 60;
 	public static int GIVE_UP_ON_TARGET = 20;
 
 	// build order
@@ -54,9 +59,9 @@ public class MagicConstants {
 			0, //Net Guns
 			1, //FCs
 			1, //DS
-			10, //Drones
-			10, //Vaps
-			10, //Landscapers
+			20, //Drones
+			20, //Vaps
+			20, //Landscapers
 	};
 	public static RobotType[] RUSH_DEFENSE_COMP_TYPES = new RobotType[]{
 			RobotType.DELIVERY_DRONE,
@@ -66,10 +71,11 @@ public class MagicConstants {
 			1, //Drones
 			1, //Landscapers
 	};
-	public static int NUM_MINERS = 5;
-	public static int BUILD_MINERS = 1;
+	public static int NUM_NON_BUILD_MINERS = 6;
+	public static int INITIAL_BUILD_MINERS = 1;
 	public static int TURNS_FOR_VAP_TO_PAY = 250;
 	public static int SOUP_RATIO_MULTIPLIER = 50;
+	public static int NEW_BUILD_MINER_FREQ = 150;
 
 	// rush defense prioritization
 	public static int SPOTS_FREE_MULTIPLIER = 50;

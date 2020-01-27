@@ -209,6 +209,8 @@ public class Comms {
             case FULFILLMENT_CENTER: broadcastLoc(MessageType.FULFILLMENT_CENTER_LOC, loc); break;
             default: broadcastUnitCreated(rt);
         }
+        if(rt == RobotType.MINER)
+            bot.numMiners++;
     }
 
     private int locationToMsg(MapLocation m) {
