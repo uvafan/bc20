@@ -90,6 +90,15 @@ public class Landscaper extends Unit {
 	private void doLattice() throws GameActionException {
 		Utils.log("I'm a lattice landscaper!");
 		//System.out.println(Clock.getBytecodesLeft() + " bytecodes left.");
+		if(round > MagicConstants.CRUNCH_ROUND - MagicConstants.MOVE_OUT_OF_CRUNCH_WAY) {
+			if(MagicConstants.suicideOnCrunch && here.distanceSquaredTo(enemyHQLoc) <= 25 && round == MagicConstants.CRUNCH_ROUND - 1){
+				rc.disintegrate();
+			}
+			else {
+				goToOnLattice(hqLoc);
+
+			}
+		}
 		int digging = rc.getDirtCarrying();
 		if(digging == 0 || digging == RobotType.LANDSCAPER.dirtLimit) {
 			checkUrgentDirt();
@@ -148,8 +157,8 @@ public class Landscaper extends Unit {
 						break;
 					}
 					int realDist = turnDist(here,testTile);
-					int distToHQ = Math.min(turnDist(hqLoc,testTile), MagicConstants.BUBBLE_AROUND_HQ);
-					int distToEnemy = enemyHQLoc == null ? 0 : turnDist(enemyHQLoc,testTile);
+					int distToHQ = Math.min(turnDist(hqLoc,testTile), MagicConstants.BUBBLE_AROUND_HQ)*3;
+					int distToEnemy = enemyHQLoc == null ? 0 : turnDist(enemyHQLoc,testTile)*2;
 					int dontNavMod = dist <= 2 ? 0 : 100;
 					int mainWallMod = 200;
 					int floodedMod = 500;
@@ -237,13 +246,8 @@ public class Landscaper extends Unit {
 				}
 			}
 			else if (enemyHQLoc != null) {
-				if(round < MagicConstants.CRUNCH_ROUND - MagicConstants.MOVE_OUT_OF_CRUNCH_WAY) {
-				Utils.log("BRING DOWN THAT WALL");
-				goToOnLattice(enemyHQLoc);
-				}
-				else {
-					goToOnLattice(hqLoc);
-				}
+					Utils.log("BRING DOWN THAT WALL");
+					goToOnLattice(enemyHQLoc);
 			}
 			else if (hqLoc != null){
 				goToOnLattice(reflectR(hqLoc));
