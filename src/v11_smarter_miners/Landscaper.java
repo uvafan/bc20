@@ -240,6 +240,9 @@ public class Landscaper extends Unit {
 				Utils.log("BRING DOWN THAT WALL");
 				goToOnLattice(enemyHQLoc);
 			}
+			else if (hqLoc != null){
+				goToOnLattice(reflectR(hqLoc));
+			}
 		}
 	}
 	private boolean shouldRenovate(MapLocation testTile) throws GameActionException {

@@ -296,7 +296,7 @@ public class Bot {
         return new MapLocation(loc.x, mapHeight - 1 - loc.y);
     }
 
-    private MapLocation reflectR(MapLocation loc) {
+    public MapLocation reflectR(MapLocation loc) {
         return new MapLocation(mapWidth - 1 - loc.x, mapHeight - 1 - loc.y);
     }
 
