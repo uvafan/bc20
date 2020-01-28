@@ -9,6 +9,7 @@ public class Bot {
     public static MapLocation enemyHQLocGuessed = null;
     public static boolean hqAttacked = false;
     public static boolean rushing = false;
+    public static int numNearbyEnemyDrones;
     public static boolean triedCenter = false;
     public static RobotType type;
     public static Team enemy;

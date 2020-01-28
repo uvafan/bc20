@@ -117,6 +117,8 @@ public class MagicConstants {
 	public static int REFINERY_DIST_MULTIPLIER = 150;
 	public static int REFINERY_SOUP_MULTIPLIER = 5;
 	public static int NO_REFINERIES_FACTOR = 1000;
+	public static int MIN_IF_2_LESS_THAN_VAPES = 600;
+	public static int DRONE_PENALTY_MULTIPLIER = 5000;
 
 	// landscaper burying
 	public static int VAP_PRIORITY = 1;

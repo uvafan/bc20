@@ -33,6 +33,7 @@ public class Miner extends Unit {
         nearbyFulfillment = false;
         builtFulfillmentRound = -100;
         targetLoc = center;
+        numNearbyEnemyDrones = 0;
         fulfillmentDist = 100; //inf basically;
         if(strat instanceof EcoLattice) {
             comms.readMessages();
@@ -304,7 +305,8 @@ public class Miner extends Unit {
     private int countNearbySoup() throws GameActionException {
         int count = 0;
         for(MapLocation loc: rc.senseNearbySoup()) {
-            count += rc.senseSoup(loc);
+            if(canReachAdj(loc, false, MagicConstants.MINER_ELEVATION_TOLERANCE))
+                count += rc.senseSoup(loc);
         }
         return count;
     }
@@ -332,7 +334,10 @@ public class Miner extends Unit {
             return false;
         int distFactor = Math.min(distToClosestRefine * MagicConstants.REFINERY_DIST_MULTIPLIER + (closestRefine == hqLoc ? MagicConstants.NO_REFINERIES_FACTOR : 0), 3500);
         int soupFactor = Math.min(numNearbySoup * MagicConstants.REFINERY_SOUP_MULTIPLIER, 3500);
-        int soupPriority = Math.max(RobotType.REFINERY.cost + 1, 5000 - distFactor - soupFactor);
+        int dronePenalty = numNearbyEnemyDrones * MagicConstants.DRONE_PENALTY_MULTIPLIER;
+        int soupPriority = Math.max(RobotType.REFINERY.cost + 1, 5000 - distFactor - soupFactor + dronePenalty);
+        if(unitCounts[RobotType.REFINERY.ordinal()] - unitCounts[RobotType.VAPORATOR.ordinal()] > 1)
+            soupPriority = Math.max(soupPriority, MagicConstants.MIN_IF_2_LESS_THAN_VAPES);
         Utils.log("dist factor " + distFactor + " soup factor " + soupFactor + " soup priority " + soupPriority);
         if (rc.getTeamSoup() >= soupPriority){
             Utils.log("trying to build refinery!");

@@ -36,6 +36,7 @@ public class Unit extends Bot {
         }
         Utils.log("I see " + numEnemyDrones + " drones.");
         Utils.log("My sight radius is " + rc.getCurrentSensorRadiusSquared());
+        numNearbyEnemyDrones = numEnemyDrones;
         if(numEnemyDrones == 0)
             return;
         rc.setIndicatorLine(here, closestDrone, 0, 0, 255);
