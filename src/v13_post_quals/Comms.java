@@ -212,8 +212,6 @@ public class Comms {
 
     // Used for broadcasting all the location type messages
     public void broadcastLoc(MessageType mt, MapLocation loc) throws GameActionException {
-        if(rc.getTeamSoup() == 0)
-            return;
         if(isSuperImportant(mt)) {
             boolean alreadyThere = false;
             for(int i=0; i<numSuperImportantMessages; i++) {
@@ -225,6 +223,8 @@ public class Comms {
             if(!alreadyThere)
                 superImportantMessages[numSuperImportantMessages++] = mt;
         }
+        if(rc.getTeamSoup() == 0)
+            return;
         int cost = Math.min(getCost(), rc.getTeamSoup());
         int[] message = new int[7];
         message[5] = mt.ordinal();
