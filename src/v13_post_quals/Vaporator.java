@@ -1,11 +1,11 @@
-package v13_post_quals.v12_quals_bot;
+package v13_post_quals;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 
-public class Refinery extends Building {
+public class Vaporator extends Building {
 
-    public Refinery(RobotController r) throws GameActionException {
+    public Vaporator(RobotController r) throws GameActionException {
         super(r);
     }
 

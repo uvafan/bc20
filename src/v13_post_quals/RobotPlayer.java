@@ -1,4 +1,4 @@
-package v13_post_quals.v12_quals_bot;
+package v13_post_quals;
 
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
