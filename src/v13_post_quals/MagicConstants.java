@@ -113,8 +113,10 @@ public class MagicConstants {
 	public static int MAX_CLUSTER_DIST = RobotType.MINER.sensorRadiusSquared;
 	public static int GIVE_UP_CLUSTER_DIST = 8;
 	public static int REQUIRED_REFINERY_DIST = 50;
-	public static int SOUP_REQUIRED_FOR_REFINERY = 300;
 	public static int RUN_BACK_TO_LATTICE_ROUND = 500;
+	public static int REFINERY_DIST_MULTIPLIER = 150;
+	public static int REFINERY_SOUP_MULTIPLIER = 5;
+	public static int NO_REFINERIES_FACTOR = 1000;
 
 	// landscaper burying
 	public static int VAP_PRIORITY = 1;
