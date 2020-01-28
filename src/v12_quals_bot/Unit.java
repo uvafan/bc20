@@ -85,7 +85,7 @@ public class Unit extends Bot {
     }
 
     public boolean shouldBuildInLoc(MapLocation loc, RobotType type) throws GameActionException {
-        if(loc.distanceSquaredTo(hqLoc) == 8) {
+        if(loc.distanceSquaredTo(hqLoc) == 8 || (enemyHQLoc != null && loc.distanceSquaredTo(enemyHQLoc) <= 50 && loc.distanceSquaredTo(enemyHQLoc) < loc.distanceSquaredTo(hqLoc))) {
             return type == RobotType.NET_GUN;
         }
         if(loc.distanceSquaredTo(hqLoc) < 8) {

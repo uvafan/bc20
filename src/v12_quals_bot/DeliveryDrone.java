@@ -49,15 +49,15 @@ public class DeliveryDrone extends Unit {
             if(!crunching && shouldCrunch())
                 crunching = true;
             if(crunching) {
-                System.out.println("crunching");
+                Utils.log("crunching");
                 doCrunch();
             }
             else if ((!defending && !rc.isCurrentlyHoldingUnit() && !landscaperDropper) || pickedUpFriend) {
-                System.out.println("helping out friends");
+                Utils.log("helping out friends");
                 helpOutFriends();
             }
             if(rc.getCooldownTurns() < 1 && (harassing || defending)) {
-                System.out.println("harassing");
+                Utils.log("harassing");
                 doHarass();
             }
         }
@@ -239,7 +239,7 @@ public class DeliveryDrone extends Unit {
     }
 
     private void dropUnitInWater() throws GameActionException {
-        System.out.println("trying to drop unit in water.");
+        Utils.log("trying to drop unit in water.");
         for(Direction dir: directions) {
             MapLocation loc = here.add(dir);
             if(rc.canSenseLocation(loc) && rc.senseFlooding(loc)) {

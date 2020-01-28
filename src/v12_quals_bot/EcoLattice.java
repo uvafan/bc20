@@ -99,7 +99,7 @@ public class EcoLattice extends Strategy {
                 soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = 0;
             else {
                 int[] comp = MagicConstants.LATTICE_ARMY_COMP;
-                if(bot.round + MagicConstants.TURNS_FOR_VAP_TO_PAY >= MagicConstants.CRUNCH_ROUND) {
+                if (bot.round + MagicConstants.TURNS_FOR_VAP_TO_PAY >= MagicConstants.CRUNCH_ROUND) {
                     for (int i = 0; i < MagicConstants.LATTICE_ARMY_COMP.length; i++) {
                         if (MagicConstants.LATTICE_COMP_TYPES[i] == RobotType.VAPORATOR) {
                             comp[i] = 0;
@@ -110,6 +110,13 @@ public class EcoLattice extends Strategy {
                 updateBasedOnDesiredComp(unitCounts,
                         comp,
                         MagicConstants.LATTICE_COMP_TYPES);
+                // let us build net guns still!
+                if (bot.round > MagicConstants.CRUNCH_ROUND - MagicConstants.TURNS_FOR_VAP_TO_PAY && bot.unitCounts[RobotType.VAPORATOR.ordinal()] > 10) {
+                    for (int i = 0; i < MagicConstants.LATTICE_ARMY_COMP.length; i++) {
+                        if (soupPriorities[MagicConstants.LATTICE_COMP_TYPES[i].ordinal()] < 1000)
+                            soupPriorities[MagicConstants.LATTICE_COMP_TYPES[i].ordinal()] += 150;
+                    }
+                }
             }
         }
     }
