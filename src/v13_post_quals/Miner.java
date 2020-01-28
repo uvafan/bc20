@@ -154,6 +154,8 @@ public class Miner extends Unit {
             }
         }
         comms.readMessages();
+        if(numWaterLocs <= MagicConstants.MAX_WATER_LOCS && comms.isCaughtUp())
+            broadcastWater();
     }
 
     private void doRush() throws GameActionException{

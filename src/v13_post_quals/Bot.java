@@ -385,7 +385,7 @@ public class Bot {
             enemyHQLoc = pickFrom[0];
             return enemyHQLoc;
         }
-        else if(enemyHQLoc != null && pickFrom.length == 0) {
+        else if(enemyHQLoc != null && enemyHqLocTentativePossibilities.length == 0) {
             enemyHQLoc = null;
         }
         if(here.isWithinDistanceSquared(center, 8))
@@ -577,6 +577,36 @@ public class Bot {
             }
         }
         return false;
+    }
+
+    public void broadcastWater() throws GameActionException {
+        if(Clock.getBytecodesLeft() < 1000)
+            return;
+        for(Direction dir: directions) {
+            if(Clock.getBytecodesLeft() < 1000)
+                break;
+            MapLocation loc = here;
+            for(int i=1; i*i<=rc.getCurrentSensorRadiusSquared(); i++) {
+                if(Clock.getBytecodesLeft() < 1000)
+                    break;
+                loc = loc.add(dir);
+                if(!rc.canSenseLocation(loc))
+                    break;
+                if(rc.senseFlooding(loc)) {
+                    boolean shouldAdd = true;
+                    for(int j=0; j <numWaterLocs; j++) {
+                        if(!invalidWater[j] && waterLocs[j].distanceSquaredTo(loc) <= MagicConstants.TOLERATED_WATER_DIST) {
+                            shouldAdd = false;
+                            break;
+                        }
+                    }
+                    if(shouldAdd) {
+                        comms.broadcastLoc(Comms.MessageType.WATER_LOC, loc);
+                        return;
+                    }
+                }
+            }
+        }
     }
 
 

@@ -135,36 +135,6 @@ public class DeliveryDrone extends Unit {
         }
     }
 
-    private void broadcastWater() throws GameActionException {
-        if(Clock.getBytecodesLeft() < 1000)
-            return;
-        for(Direction dir: directions) {
-            if(Clock.getBytecodesLeft() < 1000)
-                break;
-            MapLocation loc = here;
-            for(int i=1; i*i<=rc.getCurrentSensorRadiusSquared(); i++) {
-                if(Clock.getBytecodesLeft() < 1000)
-                    break;
-                loc = loc.add(dir);
-                if(!rc.canSenseLocation(loc))
-                    break;
-                if(rc.senseFlooding(loc)) {
-                    boolean shouldAdd = true;
-                    for(int j=0; j <numWaterLocs; j++) {
-                        if(!invalidWater[j] && waterLocs[j].distanceSquaredTo(loc) <= MagicConstants.TOLERATED_WATER_DIST) {
-                            shouldAdd = false;
-                            break;
-                        }
-                    }
-                    if(shouldAdd) {
-                        comms.broadcastLoc(Comms.MessageType.WATER_LOC, loc);
-                        return;
-                    }
-                }
-            }
-        }
-    }
-
     private void doRush() throws GameActionException {
         if(!rc.isCurrentlyHoldingUnit()) {
             int minerID = -1;
