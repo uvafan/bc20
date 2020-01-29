@@ -1,4 +1,4 @@
-package v14_final_bot;
+package v14_final_bot_tuned;
 
 import battlecode.common.Clock;
 import battlecode.common.MapLocation;

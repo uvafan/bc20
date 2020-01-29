@@ -1,13 +1,9 @@
 ALandDivided
-BeachFrontProperty
 CentralSoup
 CowFarm
-DidAMonkeyMakeThis
 Egg
-Hourglass
 Infinity
 MoreCowbell
-NoU
 OmgThisIsProcedural
 SoupOnTheSide
 TheHighGround
