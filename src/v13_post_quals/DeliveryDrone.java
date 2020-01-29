@@ -93,7 +93,7 @@ public class DeliveryDrone extends Unit {
         }
         if(rc.getCooldownTurns() < 1) {
             updateObjective();
-            System.out.println("objective: " + obj + " state: " + state);
+            // System.out.println("objective: " + obj + " state: " + state);
             switch (obj) {
                 case RUSH:
                     doRush();

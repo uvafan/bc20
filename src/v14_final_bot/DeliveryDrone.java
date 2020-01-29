@@ -84,7 +84,7 @@ public class DeliveryDrone extends Unit {
         super.takeTurn();
         if(turnCount == 9 && comms.isCaughtUp() && prevObj == Objective.HARASS_ENEMY_HQ) {
             if(enemyHQLoc != null && round < MagicConstants.STOP_HARASSING_SOUP_ROUND) {
-                if (round % MagicConstants.HQ_SOUP_HARASS_RATIO == 0) {
+                if (unitCounts[RobotType.DELIVERY_DRONE.ordinal()] % MagicConstants.HQ_SOUP_HARASS_RATIO == 0) {
                     prevObj = Objective.HARASS_SOUP_LOCATIONS;
                     if(obj == Objective.HARASS_ENEMY_HQ)
                         obj = Objective.HARASS_SOUP_LOCATIONS;
@@ -93,7 +93,7 @@ public class DeliveryDrone extends Unit {
         }
         if(rc.getCooldownTurns() < 1) {
             updateObjective();
-            System.out.println("objective: " + obj + " state: " + state);
+            Utils.log("objective: " + obj + " state: " + state);
             switch (obj) {
                 case RUSH:
                     doRush();
@@ -109,9 +109,11 @@ public class DeliveryDrone extends Unit {
                 case HARASS_ENEMY_HQ:
                 case HARASS_SOUP_LOCATIONS:
                 case HARASS_RANDOMLY:
-                case PICK_UP_LANDSCAPER:
-                case PICK_UP_MINER:
                     doHarass();
+                    break;
+                case PICK_UP_MINER:
+                case PICK_UP_LANDSCAPER:
+                    pickUpAttackDrop();
                     break;
                 case HELP_FRIEND_UP:
                     helpOutFriends();
@@ -212,16 +214,20 @@ public class DeliveryDrone extends Unit {
         else if(!isCrunching() && shouldCrunch()) {
             setCrunchObjective();
         }
-        else if((obj == Objective.PICK_UP_MINER ||
-                obj == Objective.PICK_UP_LANDSCAPER) &&
-                state == State.NOT_HOLDING_ANYTHING) {
-            if(shouldGiveUpOnPickingUp()) {
+        else if(obj == Objective.PICK_UP_MINER ||
+                obj == Objective.PICK_UP_LANDSCAPER) {
+            // System.out.println("here");
+            if(state == State.NOT_HOLDING_ANYTHING && shouldGiveUpOnPickingUp()) {
                 if(enemyHQLoc != null && here.distanceSquaredTo(enemyHQLoc) <= MagicConstants.BECOME_NON_DROPPER_DIST) {
-                    obj = Objective.CRUNCH_ENEMY_HQ_DROWN_ENEMY;
+                    setObjective(Objective.CRUNCH_ENEMY_HQ_DROWN_ENEMY);
                 }
                 else {
-                    obj = Objective.DEFEND_HQ;
+                    // System.out.println("here2");
+                    setObjective(Objective.DEFEND_HQ);
                 }
+            }
+            else if (state != State.NOT_HOLDING_ANYTHING){
+                setObjective(Objective.HARASS_ENEMY_HQ);
             }
         }
         else if(shouldHelpOutFriends()) {
@@ -417,11 +423,8 @@ public class DeliveryDrone extends Unit {
         return targetLoc;
     }
 
-    private void doHarass() throws GameActionException {
-        // updateTargetLoc();
-        if((obj == Objective.PICK_UP_LANDSCAPER ||
-           obj == Objective.PICK_UP_MINER) &&
-            state == State.NOT_HOLDING_ANYTHING) {
+    private void pickUpAttackDrop() throws GameActionException {
+        if(state == State.NOT_HOLDING_ANYTHING) {
             RobotType desiredType = obj == Objective.PICK_UP_LANDSCAPER ? RobotType.LANDSCAPER : RobotType.MINER;
             RobotInfo closestFriend = null;
             int minDist = Integer.MAX_VALUE;
@@ -450,23 +453,25 @@ public class DeliveryDrone extends Unit {
                 explore();
             }
         }
+    }
+
+    private void doHarass() throws GameActionException {
+        // updateTargetLoc();
+        if (state == State.NOT_HOLDING_ANYTHING) {
+            findAndPickUpEnemyUnit();
+        }
+        else if (state == State.HOLDING_ENEMY){
+            dropUnitInWater();
+        }
+        else if (prevObj != Objective.PICK_UP_LANDSCAPER &&
+                prevObj != Objective.PICK_UP_MINER) {
+            dropFriendlyUnit();
+        }
         else {
-            if (state == State.NOT_HOLDING_ANYTHING) {
-                findAndPickUpEnemyUnit();
-            }
-            else if (state == State.HOLDING_ENEMY){
-                dropUnitInWater();
-            }
-            else if (obj != Objective.CRUNCH_ENEMY_HQ_DROP_MINER &&
-                    obj != Objective.CRUNCH_ENEMY_HQ_DROP_LANDSCAPER) {
-                dropFriendlyUnit();
-            }
-            else {
-                if(targetLoc == null)
-                    explore();
-                else
-                    goTo(targetLoc);
-            }
+            if(targetLoc == null)
+                explore();
+            else
+                goTo(targetLoc);
         }
     }
 
