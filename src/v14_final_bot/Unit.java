@@ -92,7 +92,7 @@ public class Unit extends Bot {
         if(loc.distanceSquaredTo(hqLoc) < 8) {
             return (loc.x + loc.y) % 2 == (hqLoc.x + hqLoc.y) % 2;
         }
-        else if(type == RobotType.REFINERY) {
+        else if(type == RobotType.REFINERY || rc.getTeamSoup() > MagicConstants.BUILD_OFF_LATTICE_THRESHOLD) {
             return isOnLatticeIntersection(loc) && (!isOnWall(loc) || rc.senseElevation(loc) >= MagicConstants.LATTICE_HEIGHT);
         }
         else {

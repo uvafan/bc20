@@ -332,8 +332,8 @@ public class Miner extends Unit {
             rc.setIndicatorLine(here, closestRefine, 0, 0,255);
         if(targetMineLoc == null && rc.getSoupCarrying() < type.soupLimit)
             return false;
-        int distFactor = Math.min(distToClosestRefine * MagicConstants.REFINERY_DIST_MULTIPLIER + (closestRefine == hqLoc ? MagicConstants.NO_REFINERIES_FACTOR : 0), 3500);
-        int soupFactor = Math.min(numNearbySoup * MagicConstants.REFINERY_SOUP_MULTIPLIER, 3500);
+        int distFactor = Math.min(distToClosestRefine * MagicConstants.REFINERY_DIST_MULTIPLIER + (closestRefine == hqLoc ? MagicConstants.NO_REFINERIES_FACTOR : 0), 3000);
+        int soupFactor = Math.min(numNearbySoup * MagicConstants.REFINERY_SOUP_MULTIPLIER, 3000);
         int dronePenalty = numNearbyEnemyDrones * MagicConstants.DRONE_PENALTY_MULTIPLIER;
         int soupPriority = Math.max(RobotType.REFINERY.cost + 1, 5000 - distFactor - soupFactor + dronePenalty);
         if(unitCounts[RobotType.REFINERY.ordinal()] - unitCounts[RobotType.VAPORATOR.ordinal()] > 1)

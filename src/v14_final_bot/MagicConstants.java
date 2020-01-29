@@ -119,6 +119,7 @@ public class MagicConstants {
 	public static boolean BUILD_REFINERY = true;
 	public static int NUM_RUSH_DEFENSE_MINERS = 7;
 	public static int MIN_ATTACK_DURATION = 35;
+	public static int BUILD_OFF_LATTICE_THRESHOLD = 700;
 
 	// mining
 	public static int MINER_ELEVATION_TOLERANCE = 10;
@@ -126,7 +127,7 @@ public class MagicConstants {
 	public static int GIVE_UP_CLUSTER_DIST = 8;
 	public static int REQUIRED_REFINERY_DIST = 50;
 	public static int RUN_BACK_TO_LATTICE_ROUND = 500;
-	public static int REFINERY_DIST_MULTIPLIER = 150;
+	public static int REFINERY_DIST_MULTIPLIER = 120;
 	public static int REFINERY_SOUP_MULTIPLIER = 5;
 	public static int NO_REFINERIES_FACTOR = 1000;
 	public static int MIN_IF_2_LESS_THAN_VAPES = 600;

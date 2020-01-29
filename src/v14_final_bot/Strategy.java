@@ -40,7 +40,7 @@ public class Strategy {
         int minPri = rc.getTeamSoup() + 1;
         for(int i=0; i<buildingIndices.length; i++){
             int idx = buildingIndices[i];
-            //Utils.log("priority for " + RobotType.values()[idx] + " is " + soupPriorities[idx]);
+            Utils.log("priority for " + RobotType.values()[idx] + " is " + soupPriorities[idx]);
             if(soupPriorities[idx] < minPri){
                 minPri = soupPriorities[idx];
                 ret = RobotType.values()[idx];
@@ -59,7 +59,6 @@ public class Strategy {
     public void updatePriorities(int[] unitCounts) throws GameActionException {
         return;
     }
-
 
     public void updateBasedOnDesiredComp(int[] unitCounts, int[] desiredComp, RobotType[] types) {
         double[] ratios = new double[desiredComp.length];
@@ -92,7 +91,7 @@ public class Strategy {
                 secondHighestNum = comp;
             }
         }
-        Utils.log("best type is "+ bestType);
+        System.out.println("best type is "+ bestType);
         for(int i=0; i < desiredComp.length; i++) {
             RobotType type = types[i];
             if (type == bestType)
@@ -103,7 +102,7 @@ public class Strategy {
                 soupPriorities[type.ordinal()] = bestType.cost + type.cost + 2;
             else
                 soupPriorities[type.ordinal()] = (int) (bestType.cost + type.cost + (ratios[i] - bestRatio) * MagicConstants.SOUP_RATIO_MULTIPLIER);
-            Utils.log("priority for type " + type + " is " + soupPriorities[type.ordinal()]);
+            System.out.println("priority for type " + type + " is " + soupPriorities[type.ordinal()]);
         }
     }
 
