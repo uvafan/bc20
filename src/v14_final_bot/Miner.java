@@ -303,9 +303,10 @@ public class Miner extends Unit {
     }
 
     private int countNearbySoup() throws GameActionException {
+        int elevationTolerance = rc.canSenseLocation(hqLoc) ? MagicConstants.MINER_ELEVATION_TOLERANCE: 3;
         int count = 0;
         for(MapLocation loc: rc.senseNearbySoup()) {
-            if(canReachAdj(loc, false, MagicConstants.MINER_ELEVATION_TOLERANCE))
+            if(canReachAdj(loc, false, elevationTolerance))
                 count += rc.senseSoup(loc);
         }
         return count;
@@ -326,10 +327,10 @@ public class Miner extends Unit {
         }
         int numNearbySoup = countNearbySoup();
         updateTargetMineLoc();
-        if(targetMineLoc != null && Utils.DEBUG)
-            rc.setIndicatorLine(here, targetMineLoc, 255, 0 ,0);
-        if(closestRefine != null && Utils.DEBUG)
-            rc.setIndicatorLine(here, closestRefine, 0, 0,255);
+        //if(targetMineLoc != null && Utils.DEBUG)
+        //    rc.setIndicatorLine(here, targetMineLoc, 255, 0 ,0);
+        //if(closestRefine != null && Utils.DEBUG)
+        //    rc.setIndicatorLine(here, closestRefine, 0, 0,255);
         if(targetMineLoc == null && rc.getSoupCarrying() < type.soupLimit)
             return false;
         int distFactor = Math.min(distToClosestRefine * MagicConstants.REFINERY_DIST_MULTIPLIER + (closestRefine == hqLoc ? MagicConstants.NO_REFINERIES_FACTOR : 0), 3000);
@@ -442,8 +443,9 @@ public class Miner extends Unit {
     }
 
     public boolean goTo(MapLocation location) throws GameActionException {
-        if(standingOnLattice()) {
-            return goToOnLattice(location, false, true);
+        if(standingOnLattice() && here.distanceSquaredTo(hqLoc) > 8) {
+            boolean inside = location == hqLoc;
+            return goToOnLattice(location, inside, true);
         }
         else {
             return super.goTo(location);

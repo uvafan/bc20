@@ -122,7 +122,7 @@ public class MagicConstants {
 	public static int BUILD_OFF_LATTICE_THRESHOLD = 700;
 
 	// mining
-	public static int MINER_ELEVATION_TOLERANCE = 10;
+	public static int MINER_ELEVATION_TOLERANCE = 13;
 	public static int MAX_CLUSTER_DIST = RobotType.MINER.sensorRadiusSquared;
 	public static int GIVE_UP_CLUSTER_DIST = 8;
 	public static int REQUIRED_REFINERY_DIST = 50;

@@ -95,7 +95,7 @@ public class Comms {
                 bot.hqLoc = msgToLocation(msg[6]);
                 break;
             case REFINERY_LOC:
-                Utils.log("adding refinery");
+                System.out.println("adding refinery");
                 MapLocation rLoc = msgToLocation(msg[6]);
                 bot.refineries[bot.unitCounts[RobotType.REFINERY.ordinal()]] = rLoc;
                 bot.unitCounts[RobotType.REFINERY.ordinal()]++;
