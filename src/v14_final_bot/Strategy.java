@@ -8,10 +8,10 @@ public class Strategy {
     static Bot bot;
     static RobotController rc;
     static int[] buildingIndices = {
+            RobotType.FULFILLMENT_CENTER.ordinal(),
             RobotType.DESIGN_SCHOOL.ordinal(),
             RobotType.REFINERY.ordinal(),
             RobotType.NET_GUN.ordinal(),
-            RobotType.FULFILLMENT_CENTER.ordinal(),
             RobotType.VAPORATOR.ordinal()
     };
     static int[] soupPriorities;
@@ -98,7 +98,7 @@ public class Strategy {
                 soupPriorities[type.ordinal()] = type.cost + 1;
             else if (desiredComp[i] == 0)
                 soupPriorities[type.ordinal()] = Integer.MAX_VALUE;
-            else if(bot.hqAttacked)
+            else if(bot.hqAttacked && bot.round < MagicConstants.NORMAL_BUILD_ROUND)
                 soupPriorities[type.ordinal()] = bestType.cost + type.cost + 2;
             else
                 soupPriorities[type.ordinal()] = (int) (bestType.cost + type.cost + (ratios[i] - bestRatio) * MagicConstants.SOUP_RATIO_MULTIPLIER);
