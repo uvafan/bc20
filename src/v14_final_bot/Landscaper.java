@@ -64,7 +64,7 @@ public class Landscaper extends Unit {
 	}
 	public static boolean needsUrgentFixing(MapLocation loc) throws GameActionException {
         int roundsLeft = Utils.getRoundFlooded(rc.senseElevation(loc)) - round;
-        return  roundsLeft <= 50 && roundsLeft >= -20;
+        return  roundsLeft <= 50 && rc.senseElevation(loc) > 0-MagicConstants.WATER_TOLERANCE && !isWallComplete;
     }
 	private void checkUrgentDirt() throws GameActionException {
 		if(here.distanceSquaredTo(hqLoc) <= 8 && rc.getDirtCarrying() == 0) {
@@ -284,7 +284,7 @@ public class Landscaper extends Unit {
 						return true;
 					}
 					if(Utils.getRoundFlooded(elev-1) >= round) {
-						if(sensedHQElevation && elev > hqElevation +3 && elev <= hqElevation +3 + MagicConstants.LATTICE_TOLERANCE) {
+						if(sensedHQElevation && elev > hqElevation +3 && elev <= hqElevation +3 + (testTile.distanceSquaredTo(hqLoc) < 100 ? MagicConstants.WATER_TOLERANCE : MagicConstants.LATTICE_TOLERANCE)) {
 							//Utils.log("her14");
 							shouldRemoveDirt = true;
 							wouldDigFromLoc = false;
@@ -321,7 +321,7 @@ public class Landscaper extends Unit {
 						wouldDigFromLoc = false;
 						return true;
 					}
-					else if (elev > MagicConstants.LATTICE_HEIGHT + 3 && (elev < MagicConstants.LATTICE_HEIGHT + 3 + MagicConstants.LATTICE_TOLERANCE)) {
+					else if (elev > MagicConstants.LATTICE_HEIGHT + 3 && (elev < MagicConstants.LATTICE_HEIGHT + 3 + (testTile.distanceSquaredTo(hqLoc) < 100 ? MagicConstants.WATER_TOLERANCE : MagicConstants.LATTICE_TOLERANCE))) {
 						shouldRemoveDirt = true;
 						wouldDigFromLoc = false;
 						return true;
