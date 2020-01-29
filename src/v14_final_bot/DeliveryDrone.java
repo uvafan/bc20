@@ -160,6 +160,7 @@ public class DeliveryDrone extends Unit {
             return false;
         switch(obj) {
             case DEFEND_HQ:
+                return enemies.length == 0;
             case DEFEND_EDGE_OF_LATTICE:
             case CRUNCH_ENEMY_HQ_DROP_LANDSCAPER:
             case CRUNCH_ENEMY_HQ_DROP_MINER:
@@ -196,7 +197,7 @@ public class DeliveryDrone extends Unit {
     }
 
     private boolean shouldDefend() {
-        return enemyHQLoc == null || round < MagicConstants.RUN_BACK_TO_DEFEND_MAX_ROUND || here.distanceSquaredTo(enemyHQLoc) > here.distanceSquaredTo(hqLoc);
+        return enemyHQLoc == null || round < MagicConstants.RUN_BACK_TO_DEFEND_MAX_ROUND || (round < MagicConstants.PICK_UP_LANDSCAPER_ROUND && here.distanceSquaredTo(enemyHQLoc) > here.distanceSquaredTo(hqLoc));
     }
 
     private boolean shouldGiveUpOnPickingUp() {
@@ -206,7 +207,7 @@ public class DeliveryDrone extends Unit {
     private void updateObjective() throws GameActionException {
         if(hqAttacked && obj != Objective.DEFEND_HQ && shouldDefend())
             setObjective(Objective.DEFEND_HQ);
-        else if(obj == Objective.DEFEND_HQ && !hqAttacked && round < MagicConstants.DONT_PICK_UP)
+        else if(obj == Objective.DEFEND_HQ && (!hqAttacked || round > MagicConstants.PICK_UP_LANDSCAPER_ROUND) && round < MagicConstants.DONT_PICK_UP)
             setObjective(prevObj);
         if(obj == Objective.HARASS_SOUP_LOCATIONS && round > MagicConstants.STOP_HARASSING_SOUP_ROUND) {
             setObjective(Objective.HARASS_ENEMY_HQ);
@@ -545,7 +546,7 @@ public class DeliveryDrone extends Unit {
     }
 
     public boolean shouldCrunch() {
-        return round >= MagicConstants.CRUNCH_ROUND && !isDefending();
+        return round >= MagicConstants.CRUNCH_ROUND && !isDefending() && obj != Objective.HELP_FRIEND_UP;
     }
 
     public boolean seesNearbyDrone() {

@@ -556,6 +556,8 @@ public class Bot {
     }
 
     public static boolean reallyFloodingSoon(MapLocation loc) throws GameActionException {
+        if(rc.senseElevation(loc) >= MagicConstants.LATTICE_HEIGHT)
+            return false;
         int roundsLeft = Utils.getRoundFlooded(rc.senseElevation(loc)) - round;
         return loc.distanceSquaredTo(hqLoc) >= MagicConstants.FLOODING_SOON_MIN_HQ_DIST
                 && round >= MagicConstants.FLOODING_SOON_MIN_ROUND
