@@ -10,7 +10,10 @@ class SafetyPolicyCrunch extends Bot implements NavSafetyPolicy {
 	public SafetyPolicyCrunch() {
 	}
 
-	public boolean isSafeToMoveTo(MapLocation loc) {
+	public boolean isSafeToMoveTo(MapLocation loc) throws GameActionException {
+		if(rc.canSenseLocation(loc) && rc.sensePollution(loc) > 8000) {
+			return false;
+		}
 		return true;
 	}
 
@@ -30,6 +33,9 @@ class SafetyPolicyAvoidAllUnitsAndLattice extends Bot implements NavSafetyPolicy
 	}
 
 	public boolean isSafeToMoveTo(MapLocation loc) throws GameActionException {
+		if(rc.canSenseLocation(loc) && rc.sensePollution(loc) > 8000) {
+			return false;
+		}
 		if(rc.senseFlooding(loc) || isWaterAdjacent(loc) && Utils.getRoundFlooded(rc.senseElevation(loc)) - round < 2) //change this to if the tile will flood next turn
 			return false;
 		if(!insideOK && loc.distanceSquaredTo(hqLoc) <= 8)
@@ -53,6 +59,9 @@ class SafetyPolicyAvoidAllUnits extends Bot implements NavSafetyPolicy {
 	}
 
 	public boolean isSafeToMoveTo(MapLocation loc) throws GameActionException {
+		if(rc.canSenseLocation(loc) && rc.sensePollution(loc) > 8000) {
+			return false;
+		}
 		switch(type) {
 		case DELIVERY_DRONE:
 			for (int i=0; i<numEnemyNetGuns; i++) {

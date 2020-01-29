@@ -163,7 +163,7 @@ public class Landscaper extends Unit {
 						}
 					}
 				}
-				if( rc.canDepositDirt(bestDir) && (needToBuryBuilding || (Utils.getRoundFlooded(minHeight-1) < round))) {
+				if( rc.canDepositDirt(bestDir) && (needToBuryBuilding || (Utils.getRoundFlooded(minHeight-1) < round) || round > 1800)) {
 					rc.depositDirt(bestDir);
 				}
 				else if (rc.getDirtCarrying() < 25) {
