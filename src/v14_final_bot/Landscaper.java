@@ -17,6 +17,8 @@ public class Landscaper extends Unit {
 	
 	public static boolean urgentlyNeedDirt = false;
 	public static MapLocation urgentTile = null;
+	
+	public static boolean floodingNearMyHQ = false;
 
 	public Landscaper(RobotController r) throws GameActionException {
 		super(r);
@@ -62,12 +64,23 @@ public class Landscaper extends Unit {
 		}
 		comms.readMessages();
 	}
+	public static void updateFlooding() throws GameActionException {
+		floodingNearMyHQ = false;
+		int i = 0;
+		while(i++ < 9) {
+			MapLocation testTile = hqLoc.translate(nearbyXOffsets[i], nearbyYOffsets[i]);
+			if(rc.canSenseLocation(testTile) && (rc.senseFlooding(testTile))) {
+				floodingNearMyHQ = true;
+				return;
+			}
+		}
+	}
 	public static boolean needsUrgentFixing(MapLocation loc) throws GameActionException {
         int roundsLeft = Utils.getRoundFlooded(rc.senseElevation(loc)) - round;
         return  roundsLeft <= 50 && rc.senseElevation(loc) > 0-MagicConstants.WATER_TOLERANCE && !isWallComplete;
     }
 	private void checkUrgentDirt() throws GameActionException {
-		if(here.distanceSquaredTo(hqLoc) <= 8 && rc.getDirtCarrying() == 0) {
+		if(here.distanceSquaredTo(hqLoc) <= 8 && rc.getDirtCarrying() == 0 && floodingNearMyHQ) {
 			int i = 0;
 			while(i++ < 9) {
 				MapLocation testTile = hqLoc.translate(nearbyXOffsets[i], nearbyYOffsets[i]);
@@ -88,7 +101,11 @@ public class Landscaper extends Unit {
 	private int turnDist(MapLocation a, MapLocation b) {
 		return Math.max(Math.abs(a.x-b.x), Math.abs(a.y-b.y))*10 + Math.min(Math.abs(a.x-b.x), Math.abs(a.y-b.y));
 	}
+	public void secretTurtle() throws GameActionException {
+		goToOnLattice(hqLoc);
+	}
 	private void doLattice() throws GameActionException {
+		updateFlooding();
 		Utils.log("I'm a lattice landscaper!");
 		//System.out.println(Clock.getBytecodesLeft() + " bytecodes left.");
 		if(round > MagicConstants.CRUNCH_ROUND - MagicConstants.MOVE_OUT_OF_CRUNCH_WAY) {
@@ -96,8 +113,7 @@ public class Landscaper extends Unit {
 				rc.disintegrate();
 			}
 			else {
-				goToOnLattice(hqLoc);
-
+				secretTurtle();
 			}
 		}
 		int digging = rc.getDirtCarrying();
@@ -700,7 +716,7 @@ public class Landscaper extends Unit {
 					    int score = 0;
 					    RobotInfo ri = rc.senseRobotAtLocation(loc);
 					    if(ri != null) {
-					    	if(Utils.isBuilding(ri.type)) {
+					    	if(Utils.isBuilding(ri.type) && ri.dirtCarrying > 0) {
 					    		if(ri.team == us)
 					    			score += 10000;
 					    		else
@@ -713,6 +729,9 @@ public class Landscaper extends Unit {
 									score -= 100;
 							}
 						}
+					    if(isActuallyOnWall(loc)) {
+					    	score -= 100000;
+					    }
 					    if(closerToUs) {
 					    	if(loc.x % 2 == hqLoc.x % 2 && loc.y % 2 == hqLoc.y % 2) {
 					    		score += 500;

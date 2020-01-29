@@ -100,9 +100,26 @@ public class Unit extends Bot {
         }
     }
 
-    private boolean isOnWall(MapLocation loc) {
+    public boolean isOnWall(MapLocation loc) {
         int dist = hqLoc.distanceSquaredTo(loc);
         return dist <= 18 && dist != 16 && dist != 17;
+    }
+    public boolean isActuallyOnWall(MapLocation loc) {
+    	int maybeWall = loc.distanceSquaredTo(hqLoc);
+		boolean ret = false;
+    	if(maybeWall <= 18) {
+			ret = true; 
+		}
+    	if(maybeWall <= 8)
+    		ret = false;
+		switch(maybeWall) {
+		case 16:
+		case 17:
+			ret = false;;
+			break;
+		default:
+		}
+		return ret;
     }
 
     private boolean buildNetGunIfShould(RobotInfo[] drones, int numDrones, MapLocation closestEnemyDrone) throws GameActionException {

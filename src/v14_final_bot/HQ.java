@@ -19,7 +19,7 @@ public class HQ extends Building {
     private boolean isUnderAttack() {
         boolean isLate = isWallComplete || round > MagicConstants.NOT_ATTACKED_ROUND;
         return !seesOpponentHQ && seesNonDroneEnemy &&
-                (rc.getDirtCarrying() < 0 ||
+                (rc.getDirtCarrying() > 0 ||
                 distToOpponent <= MagicConstants.MAX_EARLY_RUSH_DIST && !isLate ||
                 distToOpponent <= MagicConstants.MAX_LATE_RUSH_DIST);
     }
