@@ -5,7 +5,7 @@ import battlecode.common.Clock;
 public class Utils {
 
     public static boolean DEBUG = false;
-    public static boolean DEBUG_BYTECODE = true;
+    public static boolean DEBUG_BYTECODE = false;
 
     public static void log(String s){
         if(DEBUG) {

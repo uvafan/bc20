@@ -42,7 +42,7 @@ if __name__ == '__main__':
 	mapNames = ''
 	teamA = ''
 	teamB = ''
-	doBothDirs = False
+	doBothDirs = True
 	skipNext = False
 	for i in range(1, len(sys.argv)):
 		if skipNext:
