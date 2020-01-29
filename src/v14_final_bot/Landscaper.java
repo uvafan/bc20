@@ -114,7 +114,7 @@ public class Landscaper extends Unit {
 				else {
 					int minHeight = Integer.MAX_VALUE;
 					Direction bestDir = hqLoc.directionTo(here);
-					for(Direction d : cardinalsPlusCenter) {
+					for(Direction d : directionsPlusCenter) {
 						MapLocation testLoc = here.add(d);
 						if(!rc.canSenseLocation(testLoc)) {
 							continue;
@@ -165,10 +165,10 @@ public class Landscaper extends Unit {
 						}
 					}
 				}
-				if( rc.canDepositDirt(bestDir) && ((Utils.getRoundFlooded(minHeight-1) < round) || round > 1800)) {
+				if( rc.canDepositDirt(bestDir) && ((Utils.getRoundFlooded(minHeight-1) < round))) {
 					rc.depositDirt(bestDir);
 				}
-				else if (rc.getDirtCarrying() < 25) {
+				else if (rc.getDirtCarrying() < (round > 1800 ? 1 : 25)) {
 					tryDig(myDirtDir,true);
 				}
 				else {
@@ -179,29 +179,40 @@ public class Landscaper extends Unit {
 			}
 		
 	}
-	private Direction getCounterClockwiseWallDir(MapLocation here) {
-		Direction d = here.directionTo(hqLoc);
-			for(int i = 0; i < 5; i++) {
-				d = d.rotateRight();
-				if(isActuallyOnWall(here.add(d))){
-					return d;
-				}
+	
+	private boolean isCardinal(Direction d) {
+		return d == Direction.NORTH || d == Direction.EAST || d == Direction.WEST || d == Direction.SOUTH;
+	}
+	
+	private Direction getCounterClockwiseWallDir(MapLocation loc) {
+		Direction d = loc.directionTo(hqLoc);
+		if(isActuallyOnWall(loc.add(d))){
+			return d;
+		}
+		for(int i = 0; i < 5; i++) {
+			d = d.rotateRight();
+			if(isActuallyOnWall(loc.add(d)) && isCardinal(d) ){
+				return d;
 			}
+		}
 		return Direction.CENTER;
 	}
 	private boolean moveAroundIfShould() throws GameActionException {
 		MapLocation nextLoc = here.add(getCounterClockwiseWallDir(here));
+		rc.setIndicatorLine(here, nextLoc, 255, 0, 0);
 		if(nextLoc == null || !rc.canSenseLocation(nextLoc)) {
 			return false;
 		}
 		MapLocation nextNextLoc = nextLoc.add(getCounterClockwiseWallDir(nextLoc));
+		rc.setIndicatorLine(here, nextNextLoc, 0, 0, 255);
 
-		if(nextLoc == null || !rc.canSenseLocation(nextNextLoc)) {
+
+		if(nextNextLoc == null || !rc.canSenseLocation(nextNextLoc)) {
 			return false;
 		}
 		if(!nextNextLoc.equals(here)) {
 			RobotInfo r1 = rc.senseRobotAtLocation(nextLoc);
-			RobotInfo r2 = rc.senseRobotAtLocation(nextLoc);
+			RobotInfo r2 = rc.senseRobotAtLocation(nextNextLoc);
 			if((r1 == null || r1.type != RobotType.LANDSCAPER)  && (r2 == null || r2.type != RobotType.LANDSCAPER)) {
 				if(rc.canMove(here.directionTo(nextLoc)) && rc.senseElevation(nextNextLoc) < rc.senseElevation(here)) {
 					rc.move(here.directionTo(nextLoc));
