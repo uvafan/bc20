@@ -65,7 +65,13 @@ public class Bot {
             Direction.WEST,
             Direction.NORTHWEST
     };
-
+    public static Direction [] cardinalsPlusCenter = {
+             Direction.CENTER, 
+    		 Direction.NORTH,
+             Direction.EAST,
+             Direction.SOUTH,
+             Direction.WEST
+    };
     public static Direction[] directionsPlusCenter = {
             Direction.NORTH,
             Direction.NORTHEAST,

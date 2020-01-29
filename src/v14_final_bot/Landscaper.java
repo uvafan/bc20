@@ -102,8 +102,107 @@ public class Landscaper extends Unit {
 		return Math.max(Math.abs(a.x-b.x), Math.abs(a.y-b.y))*10 + Math.min(Math.abs(a.x-b.x), Math.abs(a.y-b.y));
 	}
 	public void secretTurtle() throws GameActionException {
-		goToOnLattice(hqLoc);
+		if(here.distanceSquaredTo(hqLoc) >= 8 && !isActuallyOnWall(here)){
+			goToOnLattice(hqLoc);
+		}
+		else if(here.distanceSquaredTo(hqLoc)<= 8) {
+			if(enemyHQLoc != null && (here.distanceSquaredTo(hqLoc) <=2 || round < Utils.getRoundFlooded(MagicConstants.LATTICE_HEIGHT)))
+				goToOnLattice(enemyHQLoc);
+			else {
+				if(rc.getDirtCarrying() == 0) {
+					tryDig(Direction.CENTER,true);
+					}
+				else {
+					int minHeight = Integer.MAX_VALUE;
+					Direction bestDir = hqLoc.directionTo(here);
+					for(Direction d : cardinalsPlusCenter) {
+						MapLocation testLoc = here.add(d);
+						if(isActuallyOnWall(testLoc)) {
+							int h = rc.senseElevation(testLoc);
+							if(h < minHeight && rc.canDepositDirt(d)) {
+								minHeight = h;
+								bestDir = d;
+							}
+						}
+					}
+					if(rc.canDepositDirt(bestDir)) {
+						rc.depositDirt(bestDir);
+					}
+				}
+			}
+		}else {
+				Direction myDirtDir = hqLoc.directionTo(here);
+				MapLocation bestLoc = here.add(myDirtDir);
+				for(Direction d : directions) {
+					MapLocation testLoc = here.add(d);
+					if(testLoc.x % 2 == hqLoc.x % 2 && testLoc.y % 2 == hqLoc.y % 2 && testLoc.distanceSquaredTo(hqLoc) >= 13 && testLoc.distanceSquaredTo(hqLoc) != 18) {
+						bestLoc = testLoc;
+						myDirtDir = d;
+						break;
+					}
+				}
+				if(rc.getDirtCarrying() == 0) {
+				tryDig(myDirtDir,true);
+				}
+
+				boolean needToBuryBuilding = false;
+				int minHeight = Integer.MAX_VALUE;
+				Direction bestDir = Direction.CENTER;
+				for(Direction d : cardinalsPlusCenter) {
+					MapLocation testLoc = here.add(d);
+					if(isActuallyOnWall(testLoc)) {
+						int h = rc.senseElevation(testLoc);
+						RobotInfo possiblyUs = rc.senseRobotAtLocation(testLoc);
+						if(possiblyUs != null && Utils.isBuilding(possiblyUs.type)) {
+							h-=25;
+							needToBuryBuilding = true;
+						}
+						if(h < minHeight) {
+							minHeight = h;
+							bestDir = d;
+						}
+					}
+				}
+				if( rc.canDepositDirt(bestDir) && (needToBuryBuilding || (Utils.getRoundFlooded(minHeight-1) < round) || round > 1800)) {
+					rc.depositDirt(bestDir);
+				}
+				else if (rc.getDirtCarrying() < 25) {
+					tryDig(myDirtDir,true);
+				}
+				else {
+					if(!moveAroundIfShould()) {
+						rc.depositDirt(bestDir);
+					}
+				}
+			}
+		
 	}
+	private Direction getCounterClockwiseWallDir(MapLocation here) {
+		Direction d = here.directionTo(hqLoc);
+			for(int i = 0; i < 5; i++) {
+				d = d.rotateRight();
+				if(isActuallyOnWall(here.add(d))){
+					return d;
+				}
+			}
+		return Direction.CENTER;
+	}
+	private boolean moveAroundIfShould() throws GameActionException {
+		MapLocation nextLoc = here.add(getCounterClockwiseWallDir(here));
+		MapLocation nextNextLoc = nextLoc.add(getCounterClockwiseWallDir(nextLoc));
+		if(!nextNextLoc.equals(here)) {
+			RobotInfo r1 = rc.senseRobotAtLocation(nextLoc);
+			RobotInfo r2 = rc.senseRobotAtLocation(nextLoc);
+			if(r1 == null || r1.type != RobotType.LANDSCAPER  && r2 == null || r2.type != RobotType.LANDSCAPER) {
+				if(rc.canMove(here.directionTo(nextLoc)) && rc.senseElevation(nextNextLoc) < rc.senseElevation(here)) {
+					rc.move(here.directionTo(nextLoc));
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	private void doLattice() throws GameActionException {
 		updateFlooding();
 		Utils.log("I'm a lattice landscaper!");
