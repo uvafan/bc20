@@ -58,7 +58,12 @@ public class EcoLattice extends Strategy {
         }
         if(bot.isWallComplete && bot.type == RobotType.HQ) {
             int expectedMiners = Math.max(MagicConstants.NUM_NON_BUILD_MINERS + MagicConstants.INITIAL_BUILD_MINERS + (bot.round - bot.wallCompletionRound) / MagicConstants.NEW_BUILD_MINER_FREQ, bot.unitCounts[RobotType.LANDSCAPER.ordinal()] / MagicConstants.LANDSCAPER_MINER_RATIO);
-            if(bot.numMiners < expectedMiners) {
+            int minersInVision = 0;
+            for(RobotInfo f: bot.friends) {
+                if(f.type == RobotType.MINER)
+                    minersInVision++;
+            }
+            if(bot.numMiners < expectedMiners && minersInVision < MagicConstants.MIN_MINERS_IN_VISION_DONT_BUILD) {
                 if(bot.numMiners > unitCounts[RobotType.VAPORATOR.ordinal()])
                     soupPriorities[RobotType.MINER.ordinal()] = RobotType.VAPORATOR.cost + 100;
                 else
@@ -66,7 +71,7 @@ public class EcoLattice extends Strategy {
             }
         }
         Utils.log("seesEnemyNetGun: " + seesEnemyNetGun);
-        if(bot.hqAttacked) {
+        if(bot.hqAttacked && bot.round < MagicConstants.NORMAL_BUILD_ROUND) {
             if(bot.hqLoc != null && bot.here.distanceSquaredTo(bot.hqLoc) <= MagicConstants.RUSH_DEFENSE_DIST) {
                 if ((!seesEnemyNetGun || unitCounts[RobotType.LANDSCAPER.ordinal()] > 3) && unitCounts[RobotType.FULFILLMENT_CENTER.ordinal()] == 0)
                     soupPriorities[RobotType.FULFILLMENT_CENTER.ordinal()] = RobotType.FULFILLMENT_CENTER.cost + 1;
@@ -114,8 +119,10 @@ public class EcoLattice extends Strategy {
                 // let us build net guns still!
                 if (bot.round > MagicConstants.CRUNCH_ROUND - MagicConstants.TURNS_FOR_VAP_TO_PAY && bot.unitCounts[RobotType.VAPORATOR.ordinal()] > 10) {
                     for (int i = 0; i < MagicConstants.LATTICE_ARMY_COMP.length; i++) {
-                        if (soupPriorities[MagicConstants.LATTICE_COMP_TYPES[i].ordinal()] < 1000)
-                            soupPriorities[MagicConstants.LATTICE_COMP_TYPES[i].ordinal()] += 150;
+                        if (soupPriorities[MagicConstants.LATTICE_COMP_TYPES[i].ordinal()] < 1000) {
+                            int additive = bot.round > MagicConstants.CRUNCH_ROUND - 10 && bot.round < MagicConstants.CRUNCH_ROUND + 100 ? 300 : 150;
+                            soupPriorities[MagicConstants.LATTICE_COMP_TYPES[i].ordinal()] += additive;
+                        }
                     }
                 }
             }

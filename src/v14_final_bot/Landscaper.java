@@ -418,7 +418,7 @@ public class Landscaper extends Unit {
 		RobotInfo[] enemyBuildings = new RobotInfo[50];
 		int numEnemyBuildings = 0;
 		for(RobotInfo e: enemies) {
-			if(Utils.isBuilding(e.type)) {
+			if(Utils.isBuilding(e.type) && !(here.distanceSquaredTo(e.location) <= 13 && !spotIsFreeAround(e.location))) {
 				enemyBuildings[numEnemyBuildings++] = e;
 			}
 		}

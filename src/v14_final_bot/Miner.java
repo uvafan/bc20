@@ -319,7 +319,7 @@ public class Miner extends Unit {
         MapLocation closestRefine = chooseRefineLoc();
         if(closestRefine != null && hqAttacked && !MagicConstants.BUILD_REFINERY)
             return false;
-        int distToClosestRefine = closestRefine == null ? 150 : Utils.manhattan(here, closestRefine);
+        int distToClosestRefine = closestRefine == null ? 150 : Utils.minXYDiff(here, closestRefine);
         for(RobotInfo f: friends) {
             if(f.type == RobotType.REFINERY)
                 distToClosestRefine = Math.min(distToClosestRefine, Utils.manhattan(here, f.location));
@@ -339,7 +339,7 @@ public class Miner extends Unit {
         if(unitCounts[RobotType.REFINERY.ordinal()] - unitCounts[RobotType.VAPORATOR.ordinal()] > 1)
             soupPriority = Math.max(soupPriority, MagicConstants.MIN_IF_2_LESS_THAN_VAPES);
         Utils.log("dist factor " + distFactor + " soup factor " + soupFactor + " soup priority " + soupPriority);
-        if (rc.getTeamSoup() >= soupPriority){
+        if (rc.getTeamSoup() >= soupPriority || rc.getSoupCarrying() == type.soupLimit && closestRefine == null){
             Utils.log("trying to build refinery!");
             if(tryBuild(RobotType.REFINERY, buildDirection, tryOthers)) {
                 return true;

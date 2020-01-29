@@ -22,6 +22,10 @@ public class Utils {
         return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
     }
 
+    public static int minXYDiff(MapLocation a, MapLocation b) {
+        return Math.min(Math.abs(a.x-b.x), Math.abs(a.y-b.y));
+    }
+
     public static MapLocation[] removeElement(MapLocation[] arr, int idx) {
         int at = 0;
         MapLocation[] ret = new MapLocation[arr.length-1];
