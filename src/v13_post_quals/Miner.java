@@ -1,4 +1,4 @@
-package v12_quals_bot_tuned;
+package v13_post_quals;
 
 import battlecode.common.*;
 
@@ -33,6 +33,7 @@ public class Miner extends Unit {
         nearbyFulfillment = false;
         builtFulfillmentRound = -100;
         targetLoc = center;
+        numNearbyEnemyDrones = 0;
         fulfillmentDist = 100; //inf basically;
         if(strat instanceof EcoLattice) {
             comms.readMessages();
@@ -154,6 +155,8 @@ public class Miner extends Unit {
             }
         }
         comms.readMessages();
+        if(numWaterLocs <= MagicConstants.MAX_WATER_LOCS && comms.isCaughtUp())
+            broadcastWater();
     }
 
     private void doRush() throws GameActionException{
@@ -280,7 +283,7 @@ public class Miner extends Unit {
         for(int i=0; i<unitCounts[RobotType.REFINERY.ordinal()]; i++){
             if(invalidRefineries[i])
                 continue;
-            //System.out.println("checking " + refineries[i]);
+            // System.out.println("checking " + refineries[i]);
             if(rc.canSenseLocation(refineries[i])) {
                 RobotInfo ri = rc.senseRobotAtLocation(refineries[i]);
                 if(ri == null || ri.team != us || ri.type != RobotType.REFINERY) {
@@ -299,20 +302,44 @@ public class Miner extends Unit {
         return bestLoc;
     }
 
+    private int countNearbySoup() throws GameActionException {
+        int count = 0;
+        for(MapLocation loc: rc.senseNearbySoup()) {
+            if(canReachAdj(loc, false, MagicConstants.MINER_ELEVATION_TOLERANCE))
+                count += rc.senseSoup(loc);
+        }
+        return count;
+    }
+
     private boolean buildRefineryIfShould(Direction buildDirection, boolean tryOthers) throws GameActionException {
         if(buildMiner ||
             buildDirection == null ||
             !rushing && strat instanceof Rush && round < 250)
             return false;
         MapLocation closestRefine = chooseRefineLoc();
-        if(closestRefine != null && (rc.getTeamSoup() < MagicConstants.SOUP_REQUIRED_FOR_REFINERY || (hqAttacked && !MagicConstants.BUILD_REFINERY)|| here.distanceSquaredTo(closestRefine) < MagicConstants.REQUIRED_REFINERY_DIST))
+        if(closestRefine != null && hqAttacked && !MagicConstants.BUILD_REFINERY)
             return false;
+        int distToClosestRefine = closestRefine == null ? 150 : Utils.manhattan(here, closestRefine);
+        for(RobotInfo f: friends) {
+            if(f.type == RobotType.REFINERY)
+                distToClosestRefine = Math.min(distToClosestRefine, Utils.manhattan(here, f.location));
+        }
+        int numNearbySoup = countNearbySoup();
         updateTargetMineLoc();
         if(targetMineLoc != null && Utils.DEBUG)
             rc.setIndicatorLine(here, targetMineLoc, 255, 0 ,0);
         if(closestRefine != null && Utils.DEBUG)
-            rc.setIndicatorLine(here, targetMineLoc, 0, 0,255);
-        if (closestRefine == null || targetMineLoc != null && here.distanceSquaredTo(targetMineLoc) <= 25){
+            rc.setIndicatorLine(here, closestRefine, 0, 0,255);
+        if(targetMineLoc == null && rc.getSoupCarrying() < type.soupLimit)
+            return false;
+        int distFactor = Math.min(distToClosestRefine * MagicConstants.REFINERY_DIST_MULTIPLIER + (closestRefine == hqLoc ? MagicConstants.NO_REFINERIES_FACTOR : 0), 3500);
+        int soupFactor = Math.min(numNearbySoup * MagicConstants.REFINERY_SOUP_MULTIPLIER, 3500);
+        int dronePenalty = numNearbyEnemyDrones * MagicConstants.DRONE_PENALTY_MULTIPLIER;
+        int soupPriority = Math.max(RobotType.REFINERY.cost + 1, 5000 - distFactor - soupFactor + dronePenalty);
+        if(unitCounts[RobotType.REFINERY.ordinal()] - unitCounts[RobotType.VAPORATOR.ordinal()] > 1)
+            soupPriority = Math.max(soupPriority, MagicConstants.MIN_IF_2_LESS_THAN_VAPES);
+        Utils.log("dist factor " + distFactor + " soup factor " + soupFactor + " soup priority " + soupPriority);
+        if (rc.getTeamSoup() >= soupPriority){
             Utils.log("trying to build refinery!");
             if(tryBuild(RobotType.REFINERY, buildDirection, tryOthers)) {
                 return true;
