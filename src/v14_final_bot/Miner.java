@@ -350,10 +350,10 @@ public class Miner extends Unit {
     }
 
     private boolean buildIfShould() throws GameActionException {
-        Direction[] buildDirections = getBuildDirections();
+        RobotType rt = strat.determineBuildingNeeded();
+        Direction[] buildDirections = getBuildDirections(rt);
         boolean tryOthers = !(strat instanceof EcoLattice);
         if(buildDirections[0] != null) {
-            RobotType rt = strat.determineBuildingNeeded();
             if(rt != null && tryBuild(rt, buildDirections[0], tryOthers)) {
                 return true;
             }

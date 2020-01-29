@@ -50,7 +50,7 @@ public class Unit extends Bot {
         }
     }
 
-    public Direction[] getBuildDirections() throws GameActionException {
+    public Direction[] getBuildDirections(RobotType rt) throws GameActionException {
         if(strat instanceof Turtle) {
             return new Direction[]{hqLoc.directionTo(here), hqLoc.directionTo(here)};
         }
@@ -58,13 +58,15 @@ public class Unit extends Bot {
             return new Direction[]{here.directionTo(hqLoc), here.directionTo(hqLoc)};
         }
         else if(strat instanceof EcoLattice) {
+            if(rt == null)
+                rt = RobotType.DESIGN_SCHOOL;
             Direction[] buildDirs = new Direction[]{null, null};
             int minDist0 = Integer.MAX_VALUE;
             int minDist1 = Integer.MAX_VALUE;
             for(Direction dir: directions) {
                 MapLocation loc = here.add(dir);
-                if(rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir)) {
-                    if(shouldBuildInLoc(loc, RobotType.DESIGN_SCHOOL)) {
+                if(rc.canBuildRobot(rt, dir)) {
+                    if(shouldBuildInLoc(loc, rt)) {
                         int dist = -hqLoc.distanceSquaredTo(loc);
                         if (dist < minDist0) {
                             minDist0 = dist;
@@ -86,13 +88,19 @@ public class Unit extends Bot {
     }
 
     public boolean shouldBuildInLoc(MapLocation loc, RobotType type) throws GameActionException {
+        if(type == RobotType.FULFILLMENT_CENTER) {
+            for(RobotInfo e: enemies) {
+                if(here.isWithinDistanceSquared(e.location, 5) && (e.type == RobotType.NET_GUN || e.type == RobotType.HQ))
+                    return false;
+            }
+        }
         if(loc.distanceSquaredTo(hqLoc) == 8 || (enemyHQLoc != null && loc.distanceSquaredTo(enemyHQLoc) <= 50 && loc.distanceSquaredTo(enemyHQLoc) < loc.distanceSquaredTo(hqLoc))) {
             return type == RobotType.NET_GUN;
         }
         if(loc.distanceSquaredTo(hqLoc) < 8) {
             return (loc.x + loc.y) % 2 == (hqLoc.x + hqLoc.y) % 2;
         }
-        else if(type == RobotType.REFINERY || rc.getTeamSoup() > MagicConstants.BUILD_OFF_LATTICE_THRESHOLD) {
+        else if(type == RobotType.REFINERY || type == RobotType.FULFILLMENT_CENTER && hqAttacked && unitCounts[RobotType.FULFILLMENT_CENTER.ordinal()] == 1) {
             return isOnLatticeIntersection(loc) && (!isOnWall(loc) || rc.senseElevation(loc) >= MagicConstants.LATTICE_HEIGHT);
         }
         else {

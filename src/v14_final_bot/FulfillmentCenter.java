@@ -24,8 +24,30 @@ public class FulfillmentCenter extends Building {
 
     @Override
     public Direction getBuildDirection() {
-        if(hqLoc != null && hqAttacked)
-            return here.directionTo(hqLoc);
-        return hqLoc.directionTo(here);
+        Direction bestDir = null;
+        int bestScore = Integer.MIN_VALUE;
+        for(Direction d: directions) {
+            boolean safe = true;
+            MapLocation loc = here.add(d);
+            for(RobotInfo e: enemies) {
+                if(e.type == RobotType.NET_GUN || e.type == RobotType.HQ) {
+                    if(here.isWithinDistanceSquared(e.location, GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)) {
+                        safe = false;
+                        break;
+                    }
+                }
+            }
+            if(!safe)
+                continue;
+            int score = hqLoc.distanceSquaredTo(loc);
+            if(hqAttacked)
+                score = -score;
+            if(score > bestScore) {
+                bestDir = d;
+                bestScore = score;
+            }
+        }
+        return bestDir;
     }
+
 }

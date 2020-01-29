@@ -468,7 +468,7 @@ public class Bot {
     }
 
     static boolean tryBuild(RobotType type, Direction dir, boolean tryOthers) throws GameActionException {
-        if (rc.getCooldownTurns() >= 1 || rc.getTeamSoup() - 1 < type.cost)
+        if (dir == null || rc.getCooldownTurns() >= 1 || rc.getTeamSoup() - 1 < type.cost)
             return false;
         if (rc.canBuildRobot(type, dir)) {
             rc.buildRobot(type, dir);
@@ -574,6 +574,24 @@ public class Bot {
     public boolean floodingNextRound(MapLocation loc) throws GameActionException {
         int roundsLeft = Utils.getRoundFlooded(rc.senseElevation(loc)) - round;
         return roundsLeft < 2 && isWaterAdjacent(loc);
+    }
+
+    public boolean canBuildOutOfNetGunRange() {
+        for(Direction d: directions) {
+            MapLocation loc = here.add(d);
+            boolean safe = true;
+            for(RobotInfo e: enemies) {
+                if(e.type == RobotType.NET_GUN || e.type == RobotType.HQ) {
+                    if(here.isWithinDistanceSquared(e.location, GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)) {
+                        safe = false;
+                        break;
+                    }
+                }
+            }
+            if(safe)
+                return true;
+        }
+        return false;
     }
 
     public boolean isOnLatticeIntersection(MapLocation loc) {
