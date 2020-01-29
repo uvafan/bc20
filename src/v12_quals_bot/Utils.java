@@ -5,11 +5,7 @@ import battlecode.common.*;
 public class Utils {
 
     public static boolean DEBUG = false;
-<<<<<<< HEAD
-    public static boolean DEBUG_BYTECODE = false;
-=======
     public static boolean DEBUG_BYTECODE = true;
->>>>>>> origin/master
 
     public static void log(String s){
         if(DEBUG) {
