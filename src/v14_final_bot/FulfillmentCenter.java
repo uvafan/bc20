@@ -31,7 +31,7 @@ public class FulfillmentCenter extends Building {
             MapLocation loc = here.add(d);
             for(RobotInfo e: enemies) {
                 if(e.type == RobotType.NET_GUN || e.type == RobotType.HQ) {
-                    if(here.isWithinDistanceSquared(e.location, GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)) {
+                    if(loc.isWithinDistanceSquared(e.location, GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)) {
                         safe = false;
                         break;
                     }
