@@ -39,7 +39,6 @@ public class Landscaper extends Unit {
 
 	public void takeTurn() throws GameActionException {
 		super.takeTurn();
-
 		defending = hqAttacked && !doneDefending;
 		RobotInfo buildingToBury = getBuildingToBury();
 		if(!rushing && rc.getCooldownTurns() < 1 && round < MagicConstants.CRUNCH_ROUND) {
