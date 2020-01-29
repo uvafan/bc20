@@ -546,7 +546,7 @@ public class DeliveryDrone extends Unit {
     }
 
     public boolean shouldCrunch() {
-        return round >= MagicConstants.CRUNCH_ROUND && !isDefending();
+        return round >= MagicConstants.CRUNCH_ROUND && !isDefending() && obj != Objective.HELP_FRIEND_UP;
     }
 
     public boolean seesNearbyDrone() {
