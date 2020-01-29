@@ -28,6 +28,8 @@ public class Building extends Bot {
     @Override
     public void takeTurn() throws GameActionException {
         super.takeTurn();
+        if(type != RobotType.HQ && isActuallyOnWall(here) && round > MagicConstants.CRUNCH_ROUND)
+            rc.disintegrate();
         if(round < MagicConstants.CRUNCH_ROUND && type != RobotType.HQ && !deathBroadcasted && (type.dirtLimit < rc.getDirtCarrying() + 3 || floodingNextRound(here))) {
            deathBroadcasted = true;
            comms.broadcastUnitDeath(type);
@@ -47,15 +49,17 @@ public class Building extends Bot {
 
     public void shootDrones() throws GameActionException {
         RobotInfo[] enemiesInRange = rc.senseNearbyRobots(GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED, enemy);
-
+        int minDist = Integer.MAX_VALUE;
+        int idToShoot = -1;
         for (RobotInfo e : enemiesInRange) {
-            if (e.type == RobotType.DELIVERY_DRONE) {
-                if (rc.canShootUnit(e.ID)){
-                    rc.shootUnit(e.ID);
-                    break;
-                }
+            int dist = here.distanceSquaredTo(e.location);
+            if (e.type == RobotType.DELIVERY_DRONE && dist < minDist) {
+                minDist = dist;
+                idToShoot = e.ID;
             }
         }
+        if(idToShoot != -1 && rc.canShootUnit(idToShoot))
+            rc.shootUnit(idToShoot);
     }
 
 }

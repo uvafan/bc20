@@ -127,7 +127,7 @@ public class Bot {
         enemyNetGunLocs = new MapLocation[100];
         invalidNetGun = new boolean[100];
         numEnemyNetGuns = 0;
-        rand = new Random();
+        rand = new Random(rc.getID());
         strat = new EcoLattice(this);
         for (RobotInfo e : enemies) {
             if (e.type == RobotType.HQ) {
@@ -632,5 +632,22 @@ public class Bot {
         }
     }
 
+    public boolean isActuallyOnWall(MapLocation loc) {
+        int maybeWall = loc.distanceSquaredTo(hqLoc);
+        boolean ret = false;
+        if(maybeWall <= 18) {
+            ret = true;
+        }
+        if(maybeWall <= 8)
+            ret = false;
+        switch(maybeWall) {
+            case 16:
+            case 17:
+                ret = false;;
+                break;
+            default:
+        }
+        return ret;
+    }
 
 }

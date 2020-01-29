@@ -105,7 +105,7 @@ public class EcoLattice extends Strategy {
             Utils.log("Landscaper priority: " + soupPriorities[RobotType.LANDSCAPER.ordinal()]);
         }
         else {
-            if (unitCounts[RobotType.FULFILLMENT_CENTER.ordinal()] == 0 || bot.hqAttacked && unitCounts[RobotType.FULFILLMENT_CENTER.ordinal()] == 1 && unitCounts[RobotType.LANDSCAPER.ordinal()] > 5 && unitCounts[RobotType.DELIVERY_DRONE.ordinal()] < 3)
+            if (unitCounts[RobotType.FULFILLMENT_CENTER.ordinal()] == 0 || bot.hqAttacked && unitCounts[RobotType.FULFILLMENT_CENTER.ordinal()] == 1 && unitCounts[RobotType.LANDSCAPER.ordinal()] > 5 && unitCounts[RobotType.DELIVERY_DRONE.ordinal()] < 3 && bot.rand.nextInt() % 10 == 0)
                 soupPriorities[RobotType.FULFILLMENT_CENTER.ordinal()] = RobotType.FULFILLMENT_CENTER.cost + 1;
             else if (unitCounts[RobotType.DESIGN_SCHOOL.ordinal()] == 0)
                 soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = RobotType.DESIGN_SCHOOL.cost + 1;

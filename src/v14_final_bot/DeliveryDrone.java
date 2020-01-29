@@ -91,9 +91,11 @@ public class DeliveryDrone extends Unit {
                 }
             }
         }
+        if(round > 1640 && here.distanceSquaredTo(hqLoc) <= 8)
+            rc.disintegrate();
         if(rc.getCooldownTurns() < 1) {
             updateObjective();
-            System.out.println("objective: " + obj + " state: " + state);
+            // System.out.println("objective: " + obj + " state: " + state);
             switch (obj) {
                 case RUSH:
                     doRush();
@@ -269,7 +271,7 @@ public class DeliveryDrone extends Unit {
             int dy = MagicConstants.WALL_Y_OFFSETS[i];
             MapLocation check = new MapLocation(hqLoc.x + dx, hqLoc.y + dy);
             if(rc.canSenseLocation(check) && !rc.isLocationOccupied(check) && safeFromDrones(check)
-                && rc.senseElevation(check) >= MagicConstants.LATTICE_HEIGHT && rc.senseElevation(check) <= MagicConstants.LATTICE_TOLERANCE) {
+                && rc.senseElevation(check) >= MagicConstants.LATTICE_HEIGHT && (rc.senseElevation(check) <= MagicConstants.LATTICE_TOLERANCE || round > MagicConstants.CRUNCH_ROUND)) {
                 int dist = here.distanceSquaredTo(check);
                 if(dist < minDist && dist > 0) {
                     minDist = dist;
@@ -283,7 +285,7 @@ public class DeliveryDrone extends Unit {
         closestFriend = null;
         int minDist = Integer.MAX_VALUE;
         for (RobotInfo ri : friends) {
-            if ((ri.type == RobotType.MINER && (isWallComplete || round > MagicConstants.HELP_MINER_UP_ROUND)) || ri.type == RobotType.LANDSCAPER) {
+            if (((ri.type == RobotType.MINER && round < MagicConstants.CRUNCH_ROUND) && (isWallComplete || round > MagicConstants.HELP_MINER_UP_ROUND)) || ri.type == RobotType.LANDSCAPER) {
                 if (ri.location.distanceSquaredTo(hqLoc) < 9 && here.distanceSquaredTo(ri.location) < minDist) {
                     minDist = here.distanceSquaredTo(ri.location);
                     closestFriend = ri;

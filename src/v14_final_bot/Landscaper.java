@@ -425,7 +425,7 @@ public class Landscaper extends Unit {
 	}
 
 	private void doDefense() throws GameActionException {
-		System.out.println("defending!");
+		//System.out.println("defending!");
 		if(!rc.canSenseLocation(hqLoc)) {
 			goTo(hqLoc);
 			return;
@@ -526,10 +526,12 @@ public class Landscaper extends Unit {
 				adjBuilding = e.location;
 			}
 		}
+		/*
 		if(spot != null)
 			System.out.println("spot is " + spot + " priority: " + spotPriority);
 		if(building != null)
 			System.out.println("building at " + building + " priority: " + buildingPriority);
+		*/
 		if(spot == null && building == null) {
 			if(closestFriendlyBuilding == null)
 				doneDefending = true;
