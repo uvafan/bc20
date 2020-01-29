@@ -39,7 +39,6 @@ public class Landscaper extends Unit {
 
 	public void takeTurn() throws GameActionException {
 		super.takeTurn();
-
 		defending = hqAttacked && !doneDefending;
 		RobotInfo buildingToBury = getBuildingToBury();
 		if(!rushing && rc.getCooldownTurns() < 1 && round < MagicConstants.CRUNCH_ROUND) {
@@ -534,7 +533,7 @@ public class Landscaper extends Unit {
 	}
 
 	private void doDefense() throws GameActionException {
-		System.out.println("defending!");
+		//System.out.println("defending!");
 		if(!rc.canSenseLocation(hqLoc)) {
 			goTo(hqLoc);
 			return;
@@ -635,10 +634,12 @@ public class Landscaper extends Unit {
 				adjBuilding = e.location;
 			}
 		}
+		/*
 		if(spot != null)
 			System.out.println("spot is " + spot + " priority: " + spotPriority);
 		if(building != null)
 			System.out.println("building at " + building + " priority: " + buildingPriority);
+		*/
 		if(spot == null && building == null) {
 			if(closestFriendlyBuilding == null)
 				doneDefending = true;

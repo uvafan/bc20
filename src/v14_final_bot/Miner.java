@@ -62,6 +62,14 @@ public class Miner extends Unit {
         }
         if(Clock.getBytecodesLeft() < 1000)
             return;
+        if(round >= MagicConstants.CRUNCH_ROUND) {
+            if (isActuallyOnWall(here)) {
+                rc.disintegrate();
+            }
+            else if(here.distanceSquaredTo(hqLoc) <= 8 && round > 1640) {
+                rc.disintegrate();
+            }
+        }
         if(standingOnLattice() || here.distanceSquaredTo(hqLoc) <= 8)
             runningBackToLattice = false;
         if(!rushing && rc.getCooldownTurns() < 1)

@@ -92,6 +92,8 @@ class SafetyPolicyAvoidAllUnits extends Bot implements NavSafetyPolicy {
 				return false;
 			if(round < MagicConstants.CRUNCH_ROUND && enemyHQLocGuessed != null && loc.distanceSquaredTo(enemyHQLocGuessed) <= GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED)
 				return false;
+			if(round > MagicConstants.CRUNCH_ROUND && isActuallyOnWall(loc))
+				return false;
 			break;
 		default:
 				//if(rc.senseFlooding(loc)) //change this to if the tile will flood next turn
