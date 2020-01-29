@@ -39,7 +39,7 @@ public class MagicConstants {
 	public static int PICK_UP_LANDSCAPER_ROUND = 1175;
 	public static int DONT_PICK_UP = 1460;
 	public static int MINER_DIST_THRESHOLD = 13;
-	public static int MINER_GIVE_UP_DIST_THRESHOLD = 36;
+	public static int MINER_GIVE_UP_DIST_THRESHOLD = 25;
 	public static int BECOME_NON_DROPPER_DIST = 100;
 	public static int LANDSCAPER_MINER_RATIO = 7;
 
