@@ -27,7 +27,7 @@ def getMapNames():
 
 def runMatches(teamA, teamB, stats, maps, flipTeams=False):
 	for mapName in maps:
-		command = ['gradlew.bat', 'run', '-PteamA='+teamA, '-PteamB='+teamB, '-Pmaps='+mapName]
+		command = ['gradlew', 'run', '-PteamA='+teamA, '-PteamB='+teamB, '-Pmaps='+mapName]
 		print(command)
 		result = subprocess.check_output(command, shell=True).decode("utf-8")
 		winningTeam = result[result.find(') wins')-1]
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 	mapNames = ''
 	teamA = ''
 	teamB = ''
-	doBothDirs = True
+	doBothDirs = False
 	skipNext = False
 	for i in range(1, len(sys.argv)):
 		if skipNext:

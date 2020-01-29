@@ -1,4 +1,4 @@
-package v14_final_bot;
+package v14_final_bot_tuned;
 
 import battlecode.common.RobotType;
 
@@ -38,7 +38,7 @@ public class MagicConstants {
 	public static int CRUNCH_ROUND = 1500;
 	public static int PICK_UP_LANDSCAPER_ROUND = 1175;
 	public static int DONT_PICK_UP = 1460;
-	public static int MINER_DIST_THRESHOLD = 13; //tune
+	public static int MINER_DIST_THRESHOLD = 10; //tune
 	public static int MINER_GIVE_UP_DIST_THRESHOLD = 25; //tune
 	public static int BECOME_NON_DROPPER_DIST = 100;
 	public static int LANDSCAPER_MINER_RATIO = 7; 
@@ -122,7 +122,7 @@ public class MagicConstants {
 	public static int BUILD_OFF_LATTICE_THRESHOLD = 700;
 
 	// mining
-	public static int MINER_ELEVATION_TOLERANCE = 13;
+	public static int MINER_ELEVATION_TOLERANCE = 10;
 	public static int MAX_CLUSTER_DIST = RobotType.MINER.sensorRadiusSquared;
 	public static int GIVE_UP_CLUSTER_DIST = 8;
 	public static int REQUIRED_REFINERY_DIST = 50;
