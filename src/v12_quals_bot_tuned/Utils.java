@@ -1,4 +1,4 @@
-package v7_seeding;
+package v12_quals_bot_tuned;
 
 import battlecode.common.Clock;
 import battlecode.common.MapLocation;
@@ -10,12 +10,16 @@ public class Utils {
     public static boolean DEBUG_BYTECODE = false;
 
     public static void log(String s){
-        if(DEBUG) {
+        if(DEBUG && false) {
             System.out.println(s);
             if(DEBUG_BYTECODE){
                 System.out.println(Clock.getBytecodesLeft() + " bytecodes left.");
             }
         }
+    }
+
+    public static int manhattan(MapLocation a, MapLocation b) {
+        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
     }
 
     public static MapLocation[] removeElement(MapLocation[] arr, int idx) {
@@ -32,9 +36,12 @@ public class Utils {
     public static MapLocation[] removeElement(MapLocation[] arr, MapLocation loc) {
         int at = 0;
         MapLocation[] ret = new MapLocation[arr.length-1];
+        boolean removed = false;
         for(int i=0; i<arr.length; i++){
-            if(arr[i].equals(loc))
+            if(!removed && arr[i].equals(loc)) {
+                removed = true;
                 continue;
+            }
             ret[at++] = arr[i];
         }
         return ret;
@@ -46,6 +53,8 @@ public class Utils {
             case DESIGN_SCHOOL: return true;
             case FULFILLMENT_CENTER: return true;
             case REFINERY: return true;
+            case NET_GUN: return true;
+            case VAPORATOR: return true;
             default: return false;
         }
     }
