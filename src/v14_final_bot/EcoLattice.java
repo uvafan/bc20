@@ -79,8 +79,12 @@ public class EcoLattice extends Strategy {
                 }
                 else if (numFriendlyDS == 0 && unitCounts[RobotType.DESIGN_SCHOOL.ordinal()] == 0 && (unitCounts[RobotType.DELIVERY_DRONE.ordinal()] > 0 || seesEnemyNetGun || bot.numEnemyNetGuns > 0))
                     soupPriorities[RobotType.DESIGN_SCHOOL.ordinal()] = RobotType.DESIGN_SCHOOL.cost + 1;
-                else if (seesEnemyNetGun)
-                    soupPriorities[RobotType.LANDSCAPER.ordinal()] = RobotType.LANDSCAPER.cost + 1;
+                else if (seesEnemyNetGun && !(bot.type == RobotType.FULFILLMENT_CENTER && bot.canBuildOutOfNetGunRange())) {
+                    if(unitCounts[RobotType.LANDSCAPER.ordinal()] < 5)
+                        soupPriorities[RobotType.LANDSCAPER.ordinal()] = RobotType.LANDSCAPER.cost + 1;
+                    else
+                        soupPriorities[RobotType.LANDSCAPER.ordinal()] = RobotType.LANDSCAPER.cost + 20;
+                }
                 else
                     updateBasedOnDesiredComp(unitCounts,
                             MagicConstants.RUSH_DEFENSE_ARMY_COMP,
