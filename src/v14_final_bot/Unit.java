@@ -137,12 +137,10 @@ public class Unit extends Bot {
             (!reallyWantToBuildNetGun && here.distanceSquaredTo(closestEnemyDrone) > MagicConstants.MAX_DIST_TO_BUILD_NET_GUN)
             || (numDrones == 1 && round < MagicConstants.BUILD_NET_GUN_ROUND))
             return false;
-        if(!reallyWantToBuildNetGun) {
-            int numNGs = unitCounts[RobotType.NET_GUN.ordinal()];
-            int numVaps = unitCounts[RobotType.VAPORATOR.ordinal()];
-            if (round < MagicConstants.CRUNCH_ROUND - 300 && (numNGs > 3 && numVaps < numNGs || numNGs > 1 && numVaps == 0))
-                return false;
-        }
+        int numNGs = unitCounts[RobotType.NET_GUN.ordinal()];
+        int numVaps = unitCounts[RobotType.VAPORATOR.ordinal()];
+        if (round < MagicConstants.CRUNCH_ROUND - 300 && (numNGs > 3 && numVaps < numNGs || numNGs > 1 && numVaps == 0))
+            return false;
         int numFriendlyNGs = 0;
         MapLocation[] friendlyNGs = new MapLocation[100];
         for(RobotInfo f: friends) {

@@ -4,10 +4,10 @@ import battlecode.common.RobotType;
 
 public class MagicConstants {
 	// comms
-	public static int FAST_SECRET_NUM = 274215;
-	public static int SLOW_SECRET_NUM = 678931;
-	public static int LOCATION_SECRET_NUM = 194536;
-	public static int ORDINAL_SECRET_NUM = 134868;
+	public static int FAST_SECRET_NUM = 215569;
+	public static int SLOW_SECRET_NUM = 341299;
+	public static int LOCATION_SECRET_NUM = 166540;
+	public static int ORDINAL_SECRET_NUM = 121090;
 
 	// misc
 	public static int GIVE_UP_WATER_DIST = 2;

@@ -91,7 +91,7 @@ public class Strategy {
                 secondHighestNum = comp;
             }
         }
-        System.out.println("best type is "+ bestType);
+        // System.out.println("best type is "+ bestType);
         for(int i=0; i < desiredComp.length; i++) {
             RobotType type = types[i];
             if (type == bestType)
@@ -102,7 +102,7 @@ public class Strategy {
                 soupPriorities[type.ordinal()] = bestType.cost + type.cost + 2;
             else
                 soupPriorities[type.ordinal()] = (int) (bestType.cost + type.cost + (ratios[i] - bestRatio) * MagicConstants.SOUP_RATIO_MULTIPLIER);
-            System.out.println("priority for type " + type + " is " + soupPriorities[type.ordinal()]);
+            // System.out.println("priority for type " + type + " is " + soupPriorities[type.ordinal()]);
         }
     }
 

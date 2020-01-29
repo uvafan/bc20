@@ -63,7 +63,7 @@ public class EcoLattice extends Strategy {
                 if(f.type == RobotType.MINER)
                     minersInVision++;
             }
-            if(bot.numMiners < expectedMiners && minersInVision < MagicConstants.MIN_MINERS_IN_VISION_DONT_BUILD) {
+            if(bot.numMiners < expectedMiners && minersInVision < MagicConstants.MIN_MINERS_IN_VISION_DONT_BUILD && bot.round < MagicConstants.CRUNCH_ROUND) {
                 if(bot.numMiners > unitCounts[RobotType.VAPORATOR.ordinal()])
                     soupPriorities[RobotType.MINER.ordinal()] = RobotType.VAPORATOR.cost + 100;
                 else

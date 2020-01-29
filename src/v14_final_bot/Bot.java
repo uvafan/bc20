@@ -130,7 +130,7 @@ public class Bot {
         waterLocs = new MapLocation[100];
         invalidWater = new boolean[100];
         numWaterLocs = 0;
-        enemyNetGunLocs = new MapLocation[100];
+        enemyNetGunLocs = new MapLocation[200];
         invalidNetGun = new boolean[100];
         numEnemyNetGuns = 0;
         rand = new Random(rc.getID());

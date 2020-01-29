@@ -91,7 +91,7 @@ public class DeliveryDrone extends Unit {
                 }
             }
         }
-        if(round > 1640 && here.distanceSquaredTo(hqLoc) <= 8)
+        if(round > 1640 && here.distanceSquaredTo(hqLoc) <= 8 && state != State.HOLDING_ENEMY)
             rc.disintegrate();
         if(rc.getCooldownTurns() < 1) {
             updateObjective();
