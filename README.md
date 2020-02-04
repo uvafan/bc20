@@ -26,9 +26,9 @@ Two members of the team, Aaron and Eli, have participated in Battlecode for each
 
 2016: [Polar Vortex](https://github.com/Platinuman/Battlecode2016) (2nd, with Nate and Jonah)
 
-2017: [sdrawrofsitisaemaseht](https://github.com/npfoss/team008) (not top 16, but 5th in ranked scrims. With Nate and Jonah)
+2017: [sdrawrofsitisaemaseht](https://github.com/npfoss/team008) (not top 16, but 5th in ranked scrims, with Nate and Jonah)
 
-2018: some other team (not top 16. With Nate)
+2018: some other team (not top 16, with Nate)
 
 2019: [Standard Technology](https://github.com/uvafan/bc2019) (4th)
 
