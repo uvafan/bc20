@@ -1,27 +1,27 @@
-# Battlecode 2020 Scaffold
+# Battlecode 2020: The High Ground
 
-This is the Battlecode 2020 scaffold, containing an `examplefuncsplayer`. Read https://2020.battlecode.org/getting-started!
+This repo contains our code for the 2020 edition of the [Battlecode](https://battlecode.org) competition. Our team consisted of Eli Lifland, Aaron Ho, and Alex Hoganson.
 
-### Project Structure
+Our final bot is in `src/v14_final_bot`
+Our qualifying tournament bot is in `src/v12_quals_bot`
+Our seeding bot is in `src/v7_seeding`
 
-- `README.md`
-    This file.
-- `build.gradle`
-    The Gradle build file used to build and run players.
-- `src/`
-    Player source code.
-- `test/`
-    Player test code.
-- `client/`
-    Contains the client.
-- `build/`
-    Contains compiled player code and other artifacts of the build process. Can be safely ignored.
-- `matches/`
-    The output folder for match files.
-- `maps/`
-    The default folder for custom maps.
-- `gradlew`, `gradlew.bat`
-    The Unix (OS X/Linux) and Windows versions, respectively, of the Gradle wrapper. These are nifty scripts that you can execute in a terminal to run the Gradle build tasks of this project. If you aren't planning to do command line development, these can be safely ignored.
-- `gradle/`
-    Contains files used by the Gradle wrapper scripts. Can be safely ignored.
+## Results
+
+Our final bot placed 4th in the final tournament. We were ranked 1st in ranked scrimmages when they were closed a day before the final deadline. Our seeding bot placed 4th in the seeding tournament.
+
+## Links
+
+Coming soon: Postmortem and potentially reflection on 6 years of Battlecode!
+
+## Past Teams 
+
+Two members of the team, Aaron and Eli, have participated in Battlecode for each of the past 6 years. Our teams and placings are below:
+
+2015: Puzzles (13th-16th, with Nate and Jonah)
+2016: [Polar Vortex](https://github.com/Platinuman/Battlecode2016) (2nd, with Nate and Jonah)
+2017: [sdrawrofsitisaemaseht](https://github.com/npfoss/team008) (not top 16, but 5th in ranked scrims. With Nate and Jonah)
+2018: some other team (not top 16. With Nate)
+2019: [Standard Technology](https://github.com/uvafan/bc2019) (4th)
+2020: The High Ground (4th, with Alex)
 
