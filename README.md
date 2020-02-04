@@ -28,7 +28,7 @@ Two members of the team, Aaron and Eli, have participated in Battlecode for each
 
 2017: [sdrawrofsitisaemaseht](https://github.com/npfoss/team008) (not top 16, but 5th in ranked scrims, with Nate and Jonah)
 
-2018: some other team (not top 16, with Nate)
+2018: [Some other team](https://github.com/npfoss/battlecode-2018) (not top 16, with Nate)
 
 2019: [Standard Technology](https://github.com/uvafan/bc2019) (4th)
 
