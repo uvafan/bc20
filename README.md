@@ -14,9 +14,9 @@ Our final bot placed **4th** in the final tournament.
 We were ranked **1st** in ranked scrimmages when they were closed a day before the final deadline. 
 Our seeding bot placed **4th** in the seeding tournament.
 
-## Links
+## Postmortem
 
-Coming soon: Postmortem and potentially reflection on 6 years of Battlecode!
+Our postmortem is in `Postmortem.pdf`. It contains both reflection on this year and advice based on Eli and Aaron's 6 years of Battlecode experience.
 
 ## Past Teams 
 
